@@ -1,0 +1,1 @@
+# onlyforgame2026.github.io
