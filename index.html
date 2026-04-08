@@ -1,660 +1,648 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Only for game Discord 群組｜聊天、遊戲、語音、交易區、找隊友</title>
-  <meta
-    name="description"
-    content="Only for game Discord 群組，提供聊天、遊戲交流、語音找隊友、新手入口、身分組選擇、交易區與商品販售、生活興趣頻道。適合想找朋友、找隊友、加入穩定社群的人。"
-  />
-  <style>
-    :root {
-      --bg: #071226;
-      --bg-2: #0b1833;
-      --panel: rgba(255, 255, 255, 0.08);
-      --panel-strong: rgba(255, 255, 255, 0.12);
-      --text: #f8fbff;
-      --muted: #c8d3ea;
-      --line: rgba(255, 255, 255, 0.1);
-      --accent: #6d6df7;
-      --accent-2: #8d7bff;
-      --accent-3: #33c3ff;
-      --success: #39d98a;
-      --warning: #ffb84d;
-      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-      --radius: 22px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Only for game Discord 群組｜台港澳聊天、League、Minecraft、語音找隊友</title>
+<meta name="description" content="Only for game Discord 群組，提供台港澳聊天交友、League of Legends、Minecraft、語音互動、找隊友、交易區與新手友善交流空間。" />
+<style>
+:root {
+  --bg: #071226;
+  --bg-2: #0b1833;
+  --panel: rgba(255,255,255,0.08);
+  --panel-2: rgba(255,255,255,0.05);
+  --line: rgba(255,255,255,0.10);
+  --text: #f8fbff;
+  --muted: #c8d3ea;
+  --accent: #6d6df7;
+  --accent-2: #8d7bff;
+  --accent-3: #49c7ff;
+  --success: #39d98a;
+  --shadow: 0 20px 50px rgba(0,0,0,0.35);
+  --radius: 22px;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+body {
+  margin: 0;
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(109, 109, 247, 0.22), transparent 28%),
+    radial-gradient(circle at top right, rgba(51, 195, 255, 0.18), transparent 26%),
+    linear-gradient(180deg, #081326 0%, #09152a 30%, #071226 100%);
+  line-height: 1.75;
+}
 
-    body {
-      margin: 0;
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(109, 109, 247, 0.22), transparent 28%),
-        radial-gradient(circle at top right, rgba(51, 195, 255, 0.18), transparent 26%),
-        linear-gradient(180deg, #081326 0%, #09152a 30%, #071226 100%);
-      line-height: 1.75;
-    }
+a { color: inherit; text-decoration: none; }
 
-    a {
-      color: inherit;
-    }
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
 
-    .container {
-      width: min(1120px, calc(100% - 32px));
-      margin: 0 auto;
-    }
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(16px);
+  background: rgba(7, 18, 38, 0.72);
+  border-bottom: 1px solid var(--line);
+}
 
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(16px);
-      background: rgba(7, 18, 38, 0.72);
-      border-bottom: 1px solid var(--line);
-    }
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70px;
+  gap: 16px;
+}
 
-    .topbar-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      min-height: 70px;
-    }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 700;
+}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-    }
+.brand-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #44a7ff, #6c5cff);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  line-height: 1.1;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+}
 
-    .brand-badge {
-      width: 46px;
-      height: 46px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #44a7ff, #6c5cff);
-      display: grid;
-      place-items: center;
-      box-shadow: var(--shadow);
-      font-size: 14px;
-      font-weight: 800;
-    }
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
 
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.2;
-    }
+.brand-text small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
 
-    .brand-text small {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 500;
-    }
+.nav-link {
+  color: var(--muted);
+  font-size: 14px;
+}
 
-    .nav-link {
-      text-decoration: none;
-      color: var(--muted);
-      font-size: 14px;
-      transition: 0.2s ease;
-    }
+.nav-link:hover { color: #fff; }
 
-    .nav-link:hover {
-      color: #fff;
-    }
+.hero { padding: 72px 0 36px; }
 
-    .hero {
-      padding: 72px 0 36px;
-    }
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 36px;
+  background: linear-gradient(135deg, rgba(109,109,247,0.18), rgba(51,195,255,0.08)), rgba(255,255,255,0.04);
+}
 
-    .hero-panel {
-      position: relative;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(135deg, rgba(109, 109, 247, 0.18), rgba(51, 195, 255, 0.08)),
-        rgba(255, 255, 255, 0.04);
-      border-radius: 28px;
-      box-shadow: var(--shadow);
-      padding: 36px;
-    }
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  right: -80px;
+  top: -80px;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(141,123,255,0.35), transparent 70%);
+  pointer-events: none;
+}
 
-    .hero-panel::before {
-      content: "";
-      position: absolute;
-      right: -80px;
-      top: -80px;
-      width: 220px;
-      height: 220px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(141, 123, 255, 0.35), transparent 70%);
-      pointer-events: none;
-    }
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 28px;
+  align-items: center;
+}
 
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.35fr 0.85fr;
-      gap: 28px;
-      align-items: center;
-    }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: #d7e2fa;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      color: #d7e2fa;
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
+h1 {
+  margin: 0 0 16px;
+  font-size: clamp(34px, 6vw, 58px);
+  line-height: 1.15;
+  letter-spacing: -1.2px;
+}
 
-    h1 {
-      margin: 0 0 16px;
-      font-size: clamp(34px, 6vw, 58px);
-      line-height: 1.15;
-      letter-spacing: -1.2px;
-    }
+.lead {
+  margin: 0;
+  font-size: 19px;
+  color: var(--muted);
+  max-width: 760px;
+}
 
-    .lead {
-      margin: 0;
-      font-size: 19px;
-      color: var(--muted);
-      max-width: 760px;
-    }
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 28px;
+}
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-top: 28px;
-    }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: 14px;
+  font-weight: 700;
+  transition: transform 0.18s ease;
+  border: 1px solid transparent;
+}
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      min-height: 52px;
-      padding: 0 22px;
-      border-radius: 14px;
-      text-decoration: none;
-      font-weight: 700;
-      transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
-      border: 1px solid transparent;
-    }
+.btn:hover { transform: translateY(-1px); }
 
-    .btn:hover {
-      transform: translateY(-1px);
-    }
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  box-shadow: 0 16px 32px rgba(109,109,247,0.35);
+}
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: white;
-      box-shadow: 0 16px 32px rgba(109, 109, 247, 0.35);
-    }
+.btn-secondary {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--line);
+  color: #eef4ff;
+}
 
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: var(--line);
-      color: #eef4ff;
-    }
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
 
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
-    }
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--line);
+  color: #edf3ff;
+  font-size: 13px;
+  font-weight: 600;
+}
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--line);
-      color: #edf3ff;
-      font-size: 13px;
-      font-weight: 600;
-    }
+.server-card {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(68,167,255,0.14), rgba(255,255,255,0.04) 30%), rgba(255,255,255,0.04);
+  box-shadow: var(--shadow);
+}
 
-    .server-card {
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      padding: 22px;
-      background:
-        linear-gradient(180deg, rgba(68, 167, 255, 0.14), rgba(255, 255, 255, 0.04) 30%),
-        rgba(255, 255, 255, 0.04);
-      box-shadow: var(--shadow);
-    }
+.server-card-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
 
-    .server-card-top {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
+.server-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #44a7ff, #78d3ff);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-weight: 800;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.1;
+  padding: 8px;
+  box-shadow: var(--shadow);
+}
 
-    .server-logo {
-      width: 72px;
-      height: 72px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, #44a7ff, #78d3ff);
-      display: grid;
-      place-items: center;
-      color: white;
-      font-weight: 800;
-      box-shadow: var(--shadow);
-      text-align: center;
-      font-size: 13px;
-      padding: 8px;
-    }
+.server-meta h2 {
+  margin: 0 0 6px;
+  font-size: 28px;
+}
 
-    .server-meta h2 {
-      margin: 0 0 6px;
-      font-size: 28px;
-    }
+.server-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
 
-    .server-sub {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 14px;
-    }
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--success);
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
 
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      background: var(--success);
-      display: inline-block;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
+.quote {
+  margin: 16px 0 0;
+  color: #e8efff;
+  font-size: 15px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+}
 
-    .quote {
-      margin: 16px 0 0;
-      color: #e8efff;
-      font-size: 15px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 16px;
-    }
+section { padding: 18px 0 0; }
 
-    section {
-      padding: 18px 0 0;
-    }
+.section-title {
+  margin: 0 0 18px;
+  font-size: 30px;
+  letter-spacing: -0.5px;
+}
 
-    .section-title {
-      margin: 0 0 18px;
-      font-size: 30px;
-      letter-spacing: -0.5px;
-    }
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
+.card {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
 
-    .card {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      border-radius: var(--radius);
-      padding: 24px;
-      box-shadow: var(--shadow);
-    }
+.card h3 {
+  margin: 0 0 12px;
+  font-size: 24px;
+}
 
-    .card h3 {
-      margin: 0 0 12px;
-      font-size: 24px;
-    }
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 17px;
+}
 
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 17px;
-    }
+.card ul {
+  margin: 0;
+  padding-left: 22px;
+  color: #edf4ff;
+  font-size: 17px;
+}
 
-    .card ul {
-      margin: 0;
-      padding-left: 22px;
-      color: #edf4ff;
-      font-size: 17px;
-    }
+.card li + li { margin-top: 8px; }
 
-    .card li + li {
-      margin-top: 8px;
-    }
+.icon-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
 
-    .icon-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+.icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--line);
+  font-size: 18px;
+}
 
-    .icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--line);
-      font-size: 18px;
-    }
+.feature-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
 
-    .feature-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      margin-top: 18px;
-    }
+.feature-item {
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  border-radius: 18px;
+  padding: 16px;
+  color: #edf4ff;
+  font-size: 15px;
+}
 
-    .feature-item {
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 18px;
-      padding: 16px;
-      color: #edf4ff;
-      font-size: 15px;
-    }
+.feature-item strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #fff;
+  font-size: 16px;
+}
 
-    .feature-item strong {
-      display: block;
-      margin-bottom: 6px;
-      color: #fff;
-      font-size: 16px;
-    }
+.footer {
+  padding: 42px 0 60px;
+  color: var(--muted);
+  font-size: 14px;
+}
 
-    .footer {
-      padding: 42px 0 60px;
-      color: var(--muted);
-      font-size: 14px;
-    }
+.footer-box {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.04);
+  border-radius: 20px;
+  padding: 18px 20px;
+}
 
-    .footer-box {
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 20px;
-      padding: 18px 20px;
-    }
+@media (max-width: 980px) {
+  .hero-grid,
+  .grid-3,
+  .grid-2,
+  .feature-list {
+    grid-template-columns: 1fr;
+  }
 
-    @media (max-width: 980px) {
-      .hero-grid,
-      .grid-3,
-      .grid-2,
-      .feature-list {
-        grid-template-columns: 1fr;
-      }
+  .hero-panel { padding: 26px; }
 
-      .hero-panel {
-        padding: 26px;
-      }
+  .server-meta h2 { font-size: 24px; }
+}
 
-      .server-meta h2 {
-        font-size: 24px;
-      }
-    }
+@media (max-width: 640px) {
+  .topbar-inner { min-height: 62px; }
+  .hero { padding-top: 44px; }
 
-    @media (max-width: 640px) {
-      .topbar-inner {
-        min-height: 62px;
-      }
+  .brand-badge {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
 
-      .hero {
-        padding-top: 44px;
-      }
+  .server-logo {
+    width: 62px;
+    height: 62px;
+    border-radius: 20px;
+  }
 
-      .brand-badge {
-        width: 42px;
-        height: 42px;
-        border-radius: 14px;
-      }
-
-      .server-card-top {
-        align-items: flex-start;
-      }
-
-      .server-logo {
-        width: 62px;
-        height: 62px;
-        border-radius: 20px;
-      }
-
-      .btn {
-        width: 100%;
-      }
-    }
-  </style>
+  .btn { width: 100%; }
+}
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="container topbar-inner">
-      <div class="brand">
-        <div class="brand-badge">Only<br>for game</div>
-        <div class="brand-text">
-          <span>Only for game</span>
-          <small>Discord 遊戲交流社群</small>
-        </div>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <div class="brand-badge">Only<br>for game</div>
+      <div class="brand-text">
+        <span>Only for game</span>
+        <small>Discord 遊戲交流社群</small>
       </div>
-      <a class="nav-link" href="#join">快速加入</a>
     </div>
-  </header>
+    <a class="nav-link" href="#join">快速加入</a>
+  </div>
+</header>
 
-  <main class="container">
-    <section class="hero">
-      <div class="hero-panel">
-        <div class="hero-grid">
-          <div>
-            <div class="eyebrow">🎮 穩定社群・聊天互動・語音找隊友・交易區</div>
-            <h1>歡迎加入 Only for game Discord 群組</h1>
-            <p class="lead">
-              這裡是我們的 Discord 社群，提供聊天、遊戲交流、語音互動、新手入口、
-              身分組選擇、生活興趣分享，以及交易區商品分享與販售。
-              無論你是想找朋友、找隊友，還是想加入一個穩定互動的群組，都歡迎加入。
-            </p>
+<main class="container">
+  <section class="hero">
+    <div class="hero-panel">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">🎮 台港澳玩家・League・Minecraft・聊天交友・語音找隊友・交易區</div>
+          <h1>歡迎加入 Only for game Discord 群組</h1>
+          <p class="lead">
+            這裡是以台港澳玩家為主的 Discord 社群，提供 League of Legends、Minecraft、
+            聊天交友、語音互動、找隊友、新手入口與交易區交流。
+            不管你是想找人一起打遊戲、想找聊天圈，還是想加入一個穩定互動的群組，都歡迎加入。
+          </p>
 
-            <div class="hero-actions" id="join">
-              <a class="btn btn-primary" href="https://discord.gg/bWTKbMzct3" target="_blank" rel="noopener">
-                立即加入 Discord
-              </a>
-              <a class="btn btn-secondary" href="#content">
-                看群組內容
-              </a>
-            </div>
-
-            <div class="tag-row">
-              <span class="tag">🕹️ League of Legends</span>
-              <span class="tag">⛏️ Minecraft</span>
-              <span class="tag">💻 Steam</span>
-              <span class="tag">🚗 GTA</span>
-              <span class="tag">🛒 交易區</span>
-              <span class="tag">🎧 語音聊天</span>
-            </div>
+          <div class="hero-actions" id="join">
+            <a class="btn btn-primary" href="https://discord.gg/bWTKbMzct3" target="_blank" rel="noopener">
+              立即加入 Discord
+            </a>
+            <a class="btn btn-secondary" href="#content">看群組內容</a>
           </div>
 
-          <aside class="server-card">
-            <div class="server-card-top">
-              <div class="server-logo">Only for game</div>
-              <div class="server-meta">
-                <h2>Only for game</h2>
-                <div class="server-sub">
-                  <span><span class="dot"></span>穩定互動中</span>
-                  <span>聊天 / 遊戲 / 語音 / 交易</span>
-                </div>
+          <div class="tag-row">
+            <span class="tag">🕹️ League of Legends</span>
+            <span class="tag">⛏️ Minecraft</span>
+            <span class="tag">💬 聊天交友</span>
+            <span class="tag">🎧 語音互動</span>
+            <span class="tag">🌏 台港澳玩家</span>
+            <span class="tag">🛒 交易區</span>
+            <span class="tag">🌱 新手友善</span>
+          </div>
+        </div>
+
+        <aside class="server-card">
+          <div class="server-card-top">
+            <div class="server-logo">Only for game</div>
+            <div class="server-meta">
+              <h2>Only for game</h2>
+              <div class="server-sub">
+                <span><span class="dot"></span>台港澳玩家交流中</span>
+                <span>League / Minecraft / 聊天 / 語音 / 交易</span>
               </div>
             </div>
-
-            <p class="quote">
-              我們不是在隨便亂踢人，也不是只看表面做決定。每一次處理，我們都會顧及規則、情緒和整體群組的感受。
-            </p>
-          </aside>
-        </div>
+          </div>
+          <p class="quote">
+            我們不是死群，也不只是找人打遊戲的工具群。
+            這裡有人聊天、有人開語音，也有人一起慢慢熟起來。
+          </p>
+        </aside>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="content">
-      <h2 class="section-title">群組內容</h2>
-
-      <div class="grid-3">
-        <div class="card">
-          <div class="icon-title">
-            <div class="icon">🚪</div>
-            <h3>新手入口</h3>
-          </div>
-          <ul>
-            <li>板規</li>
-            <li>身分組說明</li>
-            <li>降落跑道</li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <div class="icon-title">
-            <div class="icon">💬</div>
-            <h3>大廳交流</h3>
-          </div>
-          <ul>
-            <li>聊天-chat</li>
-            <li>遊戲-game</li>
-            <li>交易區</li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <div class="icon-title">
-            <div class="icon">🎙️</div>
-            <h3>語音互動</h3>
-          </div>
-          <ul>
-            <li>聊天語音</li>
-            <li>遊戲語音</li>
-            <li>找隊友與日常互動</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="feature-list">
-        <div class="feature-item">
-          <strong>核心交流</strong>
-          有核心聊天頻道，適合熟悉群組後的深度互動。
-        </div>
-        <div class="feature-item">
-          <strong>生活頻道</strong>
-          美食、寵物、剪輯、音樂，除了遊戲也能日常聊天。
-        </div>
-        <div class="feature-item">
-          <strong>身分組選擇</strong>
-          可依照興趣選擇想看的內容與主題。
-        </div>
-        <div class="feature-item">
-          <strong>加入前導引</strong>
-          有加入前問題，方便新成員快速找到合適頻道。
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="grid-2">
-        <div class="card">
-          <div class="icon-title">
-            <div class="icon">🔥</div>
-            <h3>熱門遊戲主題</h3>
-          </div>
-          <ul>
-            <li>League of Legends</li>
-            <li>Minecraft</li>
-            <li>Steam 遊戲</li>
-            <li>GTA</li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <div class="icon-title">
-            <div class="icon">🛒</div>
-            <h3>交易專區</h3>
-          </div>
-          <ul>
-            <li>可在交易區分享與販售商品</li>
-            <li>買賣前請先確認商品資訊與交易規則</li>
-            <li>如需廣告或大量販售，建議先與管理人員確認</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="grid-2">
-        <div class="card">
-          <div class="icon-title">
-            <div class="icon">🌱</div>
-            <h3>新手友善</h3>
-          </div>
-          <ul>
-            <li>有加入前問題，方便導引你找到合適頻道</li>
-            <li>可依照自己的需求選擇想看的內容</li>
-            <li>剛加入也能先從聊天、遊戲、生活頻道開始熟悉</li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <div class="icon-title">
-            <div class="icon">👥</div>
-            <h3>適合誰加入？</h3>
-          </div>
-          <ul>
-            <li>想找遊戲夥伴的人</li>
-            <li>喜歡 Discord 聊天與語音互動的人</li>
-            <li>想加入穩定社群的人</li>
-            <li>想找朋友、找隊友、找日常交流圈的人</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section>
+  <section id="content">
+    <h2 class="section-title">群組內容</h2>
+    <div class="grid-3">
       <div class="card">
         <div class="icon-title">
-          <div class="icon">🫶</div>
-          <h3>群組理念</h3>
+          <div class="icon">🚪</div>
+          <h3>新手入口</h3>
         </div>
-        <p>
-          我們不是在隨便亂踢人，也不是只看表面做決定。每一次處理，我們都會顧及規則、情緒和整體群組的感受。
-          因為群組從來不是一個人的，而是一群人願意一起珍惜、一起往前走，才有今天的樣子。
-        </p>
+        <ul>
+          <li>板規</li>
+          <li>身分組說明</li>
+          <li>降落跑道</li>
+        </ul>
       </div>
-    </section>
 
-    <footer class="footer">
-      <div class="footer-box">
-        Only for game Discord 群組｜聊天、遊戲、語音、交易區、找隊友
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">💬</div>
+          <h3>大廳交流</h3>
+        </div>
+        <ul>
+          <li>聊天-chat</li>
+          <li>遊戲-game</li>
+          <li>交易區</li>
+        </ul>
       </div>
-    </footer>
-  </main>
+
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">🎙️</div>
+          <h3>語音互動</h3>
+        </div>
+        <ul>
+          <li>聊天語音</li>
+          <li>遊戲語音</li>
+          <li>找隊友與日常互動</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <strong>活人感社群</strong>
+        平常有人聊天、有人開語音，不是加進來就安靜的死群。
+      </div>
+      <div class="feature-item">
+        <strong>生活頻道</strong>
+        美食、寵物、剪輯、音樂，除了遊戲也能日常聊天。
+      </div>
+      <div class="feature-item">
+        <strong>身分組選擇</strong>
+        可依照興趣選擇想看的內容與主題。
+      </div>
+      <div class="feature-item">
+        <strong>加入前導引</strong>
+        有加入前問題與新手入口，方便新成員快速找到合適頻道。
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="grid-2">
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">🔥</div>
+          <h3>熱門遊戲主題</h3>
+        </div>
+        <ul>
+          <li>League of Legends</li>
+          <li>Minecraft</li>
+          <li>Steam 遊戲</li>
+          <li>GTA</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">🛒</div>
+          <h3>交易專區</h3>
+        </div>
+        <ul>
+          <li>可在交易區分享與販售商品</li>
+          <li>買賣前請先確認商品資訊與交易規則</li>
+          <li>如需廣告或大量販售，建議先與管理人員確認</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="grid-2">
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">🌱</div>
+          <h3>新手友善</h3>
+        </div>
+        <ul>
+          <li>剛加入也不怕迷路，有新手入口可先熟悉環境</li>
+          <li>可依照自己的需求選擇想看的內容</li>
+          <li>想聊天、想找隊友、想慢慢融入都可以</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">👥</div>
+          <h3>適合誰加入？</h3>
+        </div>
+        <ul>
+          <li>想找 League 隊友的人</li>
+          <li>想找 Minecraft 夥伴的人</li>
+          <li>喜歡 Discord 聊天與語音互動的人</li>
+          <li>想找朋友、找隊友、找固定圈子的人</li>
+          <li>台港澳玩家或繁中交流玩家</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="grid-2">
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">✨</div>
+          <h3>大家為什麼會留下來？</h3>
+        </div>
+        <ul>
+          <li>想聊天時，群裡常常找得到人</li>
+          <li>想打遊戲時，比較容易找到隊友</li>
+          <li>除了遊戲，也能聊生活和興趣</li>
+          <li>不是只進來看一眼就走的工具群</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="icon-title">
+          <div class="icon">🌙</div>
+          <h3>不只遊戲，也有陪伴感</h3>
+        </div>
+        <ul>
+          <li>除了找隊友，也能日常聊天</li>
+          <li>有人會在語音裡陪玩、陪聊、混時間</li>
+          <li>熟了之後更容易找到固定圈子</li>
+          <li>適合想慢慢融入群組的人</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <div class="icon-title">
+        <div class="icon">🫶</div>
+        <h3>群組理念</h3>
+      </div>
+      <p>
+        我們不是在隨便亂踢人，也不是只看表面做決定。
+        每一次處理，我們都會顧及規則、情緒和整體群組的感受。
+        因為群組從來不是一個人的，而是一群人願意一起珍惜、一起往前走，才有今天的樣子。
+      </p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-box">
+      Only for game Discord 群組｜台港澳聊天交友・League・Minecraft・語音找隊友・交易區・新手友善
+    </div>
+  </footer>
+</main>
 </body>
 </html>
