@@ -105,11 +105,14 @@ a { color: inherit; text-decoration: none; }
 .hero-panel {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  box-shadow: var(--shadow);
-  padding: 36px;
-  background: linear-gradient(135deg, rgba(109,109,247,0.18), rgba(51,195,255,0.08)), rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 34px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.42);
+  padding: 46px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(116, 104, 255, 0.28), transparent 28%),
+    radial-gradient(circle at 85% 15%, rgba(73, 199, 255, 0.22), transparent 24%),
+    linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
 }
 
 .hero-panel::before {
@@ -126,8 +129,8 @@ a { color: inherit; text-decoration: none; }
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.35fr 0.85fr;
-  gap: 28px;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 36px;
   align-items: center;
 }
 
@@ -135,27 +138,28 @@ a { color: inherit; text-decoration: none; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-  color: #d7e2fa;
+  background: rgba(255,255,255,0.07);
+  color: #dfe8ff;
   font-size: 13px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 h1 {
-  margin: 0 0 16px;
-  font-size: clamp(34px, 6vw, 58px);
-  line-height: 1.15;
-  letter-spacing: -1.2px;
+  margin: 0 0 18px;
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1.03;
+  letter-spacing: -2px;
+  max-width: 760px;
 }
-
 .lead {
   margin: 0;
-  font-size: 19px;
-  color: var(--muted);
-  max-width: 760px;
+  font-size: 21px;
+  line-height: 1.9;
+  color: #d5def2;
+  max-width: 780px;
 }
 
 .hero-actions {
@@ -169,54 +173,57 @@ h1 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 52px;
-  padding: 0 22px;
-  border-radius: 14px;
-  font-weight: 700;
-  transition: transform 0.18s ease;
+  min-height: 58px;
+  padding: 0 26px;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 17px;
+  transition: 0.2s ease;
   border: 1px solid transparent;
 }
 
 .btn:hover { transform: translateY(-1px); }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: linear-gradient(135deg, #7a70ff, #8d7bff 55%, #6ad6ff);
   color: white;
-  box-shadow: 0 16px 32px rgba(109,109,247,0.35);
+  box-shadow: 0 20px 40px rgba(109,109,247,0.38);
 }
 
 .btn-secondary {
   background: rgba(255,255,255,0.06);
-  border-color: var(--line);
+  border-color: rgba(255,255,255,0.12);
   color: #eef4ff;
 }
 
 .tag-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 12px;
+  margin-top: 22px;
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 12px;
+  padding: 11px 14px;
   border-radius: 999px;
   background: rgba(255,255,255,0.08);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255,255,255,0.10);
   color: #edf3ff;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .server-card {
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  padding: 22px;
-  background: linear-gradient(180deg, rgba(68,167,255,0.14), rgba(255,255,255,0.04) 30%), rgba(255,255,255,0.04);
-  box-shadow: var(--shadow);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 30px;
+  padding: 26px;
+  background:
+    linear-gradient(180deg, rgba(103,149,255,0.18), rgba(255,255,255,0.05) 35%),
+    rgba(255,255,255,0.04);
+  box-shadow: 0 24px 50px rgba(0,0,0,0.35);
 }
 
 .server-card-top {
@@ -227,24 +234,25 @@ h1 {
 }
 
 .server-logo {
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #44a7ff, #78d3ff);
+  width: 84px;
+  height: 84px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #6ec7ff, #7d74ff);
   display: grid;
   place-items: center;
   color: white;
-  font-weight: 800;
+  font-weight: 900;
   text-align: center;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.1;
   padding: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.28);
 }
 
 .server-meta h2 {
-  margin: 0 0 6px;
-  font-size: 28px;
+  margin: 0 0 8px;
+  font-size: 38px;
+  line-height: 1.1;
 }
 
 .server-sub {
@@ -266,13 +274,14 @@ h1 {
 }
 
 .quote {
-  margin: 16px 0 0;
-  color: #e8efff;
-  font-size: 15px;
+  margin: 18px 0 0;
+  color: #eef4ff;
+  font-size: 17px;
+  line-height: 1.9;
   background: rgba(255,255,255,0.05);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 20px;
+  padding: 18px;
 }
 
 section { padding: 18px 0 0; }
@@ -425,56 +434,92 @@ section { padding: 18px 0 0; }
 </header>
 
 <main class="container">
-  <section class="hero">
-    <div class="hero-panel">
-      <div class="hero-grid">
-        <div>
-          <div class="eyebrow">🎮 台港澳玩家・League・Minecraft・聊天交友・語音找隊友・交易區</div>
-          <h1>歡迎加入 Only for game Discord 群組</h1>
-          <p class="lead">
-            這裡是以台港澳玩家為主的 Discord 社群，提供 League of Legends、Minecraft、
-            聊天交友、語音互動、找隊友、新手入口與交易區交流。
-            不管你是想找人一起打遊戲、想找聊天圈，還是想加入一個穩定互動的群組，都歡迎加入。
-          </p>
+<section class="hero">
+  <div class="hero-panel">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">🎮 台港澳玩家・聊天交友・語音找隊友・League・Minecraft</div>
 
-          <div class="hero-actions" id="join">
-            <a class="btn btn-primary" href="https://discord.gg/bWTKbMzct3" target="_blank" rel="noopener">
-              立即加入 Discord
-            </a>
-            <a class="btn btn-secondary" href="#content">看群組內容</a>
-          </div>
+        <h1>
+          找隊友、找聊天圈、找固定群組<br>
+          都可以從 Only for game 開始
+        </h1>
 
-          <div class="tag-row">
-            <span class="tag">🕹️ League of Legends</span>
-            <span class="tag">⛏️ Minecraft</span>
-            <span class="tag">💬 聊天交友</span>
-            <span class="tag">🎧 語音互動</span>
-            <span class="tag">🌏 台港澳玩家</span>
-            <span class="tag">🛒 交易區</span>
-            <span class="tag">🌱 新手友善</span>
+        <p class="lead">
+          這裡不是只有丟連結就沒人說話的死群。
+          平常有人聊天、有人開語音、有人找隊友，也有人慢慢在這裡混熟。
+          不管你是想打 League、玩 Minecraft，還是只是想找個能長期待著的 Discord 群組，都可以先進來看看。
+        </p>
+
+        <div class="hero-actions" id="join">
+          <a class="btn btn-primary" href="https://discord.gg/bWTKbMzct3" target="_blank" rel="noopener">
+            立即加入 Discord
+          </a>
+          <a class="btn btn-secondary" href="#content">先看群組內容</a>
+        </div>
+
+        <div class="tag-row">
+          <span class="tag">🕹️ League of Legends</span>
+          <span class="tag">⛏️ Minecraft</span>
+          <span class="tag">💬 活人聊天</span>
+          <span class="tag">🎧 語音互動</span>
+          <span class="tag">👥 找固定圈子</span>
+          <span class="tag">🌱 新手友善</span>
+        </div>
+      </div>
+
+      <aside class="server-card">
+        <div class="server-card-top">
+          <div class="server-logo">Only for game</div>
+          <div class="server-meta">
+            <h2>Only for game</h2>
+            <div class="server-sub">
+              <span><span class="dot"></span>穩定互動中</span>
+              <span>聊天 / 遊戲 / 語音 / 交易</span>
+            </div>
           </div>
         </div>
 
-        <aside class="server-card">
-          <div class="server-card-top">
-            <div class="server-logo">Only for game</div>
-            <div class="server-meta">
-              <h2>Only for game</h2>
-              <div class="server-sub">
-                <span><span class="dot"></span>台港澳玩家交流中</span>
-                <span>League / Minecraft / 聊天 / 語音 / 交易</span>
-              </div>
-            </div>
-          </div>
-          <p class="quote">
-            我們不是死群，也不只是找人打遊戲的工具群。
-            這裡有人聊天、有人開語音，也有人一起慢慢熟起來。
-          </p>
-        </aside>
-      </div>
+        <p class="quote">
+          台港澳玩家為主，想找人打遊戲、找人聊天、找能待下來的圈子，
+          都比較容易在這裡慢慢找到。不是只進來看一眼就走的工具群。
+        </p>
+      </aside>
     </div>
-  </section>
+  </div>
+</section>
+ <section>
+  <div class="grid-3">
+    <div class="card">
+      <div class="icon-title">
+        <div class="icon">💬</div>
+        <h3>不是死群</h3>
+      </div>
+      <p>平常有人聊天，有人開語音，不是加進來就只看到一堆安靜頻道。</p>
+    </div>
 
+    <div class="card">
+      <div class="icon-title">
+        <div class="icon">🎮</div>
+        <h3>不只一種玩法</h3>
+      </div>
+      <p>除了 League、Minecraft，也能聊 Steam、GTA、日常生活和各種興趣。</p>
+    </div>
+
+    <div class="card">
+      <div class="icon-title">
+        <div class="icon">🫶</div>
+        <h3>能慢慢待下來</h3>
+      </div>
+      <p>有些人是來找隊友，有些人是來找聊天圈，熟了之後比較容易變成固定圈子。</p>
+    </div>
+  </div>
+</section>
+  
+  
+  
+  
+  
   <section id="content">
     <h2 class="section-title">群組內容</h2>
     <div class="grid-3">
