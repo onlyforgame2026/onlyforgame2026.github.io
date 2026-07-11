@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>ServerBloom｜Discord 社群分享廣場</title>
-<meta name="description" content="以影片首頁般的卡片網格探索台港澳 Discord 社群。填寫資料後即可確認上傳。">
+<meta name="description" content="以影片首頁般的卡片網格探索台港澳 Discord 社群。填寫資料後即可確認上船。">
 
 <style>
 :root{
@@ -932,7 +932,7 @@ footer{
 
     <div class="hero-stat">
       <strong id="heroCount">1 個社群</strong>
-      <span>目前顯示於這台裝置</span>
+      <span>所有訪客共用資料庫</span>
     </div>
   </section>
 
@@ -1081,9 +1081,9 @@ footer{
         ></p>
 
         <div class="storage-note">
-          目前投稿保存在填表者自己的瀏覽器；
-          不同裝置尚未共用同一份名單。
-          這不影響版面與上船流程。
+          投稿會同步到 ServerBloom 共用資料庫；
+          所有訪客都會看到相同的社群名單。
+          違規內容由管理員在 Google 試算表移除。
         </div>
       </form>
     </div>
@@ -1098,7 +1098,8 @@ footer{
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "serverBloomSubmissionsV22";
+  const API_URL =
+    "https://script.google.com/macros/s/AKfycbwsU40XuJqCBFzCZjH_Mp57y05OIIFp3RAtxFD1HisM_she08o2951ajf4ovzA1Q1gW/exec";
 
   const BUILTIN = {
     id: "only-for-game",
@@ -1114,7 +1115,6 @@ footer{
   };
 
   const $ = (selector) => document.querySelector(selector);
-
   const grid = $("#serverGrid");
   const search = $("#search");
   const chips = $("#chips");
@@ -1137,30 +1137,156 @@ footer{
   const previewDescription = $("#previewDescription");
 
   let activeCategory = "all";
+  let remoteServers = [];
 
-  function readServers() {
-    try {
-      const value = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || "[]"
-      );
-
-      return Array.isArray(value) ? value : [];
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
+  function sleep(milliseconds) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, milliseconds);
+    });
   }
 
-  function saveServers(items) {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(items)
+  function normalizeTags(value) {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => String(item).trim())
+        .filter(Boolean)
+        .slice(0, 5);
+    }
+
+    return String(value || "")
+      .split(/[、,，\s]+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 5);
+  }
+
+  function normalizeServer(server) {
+    return {
+      id: String(server.id || ""),
+      name: String(server.name || "").trim(),
+      category: String(server.category || "其他").trim(),
+      inviteUrl: String(server.inviteUrl || "").trim(),
+      tags: normalizeTags(server.tags),
+      description: String(server.description || "").trim(),
+      color: /^#[0-9a-f]{6}$/i.test(String(server.color || ""))
+        ? String(server.color)
+        : "#8b5cf6",
+      createdAt: server.createdAt || new Date().toISOString(),
+      pinned: false
+    };
+  }
+
+  function setStatus(message, type = "") {
+    status.textContent = message;
+    status.className =
+      "status" + (type ? ` ${type}` : "");
+  }
+
+  function loadServers() {
+    return new Promise((resolve, reject) => {
+      const callbackName =
+        `serverBloomCallback_${Date.now()}_${Math.random()
+          .toString(36)
+          .slice(2)}`;
+
+      const script = document.createElement("script");
+
+      const cleanup = () => {
+        script.remove();
+        try {
+          delete window[callbackName];
+        } catch {
+          window[callbackName] = undefined;
+        }
+      };
+
+      const timeoutId = window.setTimeout(() => {
+        cleanup();
+        reject(new Error("讀取共用資料逾時。"));
+      }, 12000);
+
+      window[callbackName] = (payload) => {
+        window.clearTimeout(timeoutId);
+        cleanup();
+
+        if (!payload || payload.ok !== true) {
+          reject(
+            new Error(
+              payload && payload.error
+                ? payload.error
+                : "共用資料讀取失敗。"
+            )
+          );
+          return;
+        }
+
+        remoteServers = Array.isArray(payload.servers)
+          ? payload.servers
+              .map(normalizeServer)
+              .filter(
+                (server) =>
+                  server.name &&
+                  server.inviteUrl
+              )
+          : [];
+
+        render();
+        resolve(remoteServers);
+      };
+
+      script.onerror = () => {
+        window.clearTimeout(timeoutId);
+        cleanup();
+        reject(new Error("無法連線到 ServerBloom 資料庫。"));
+      };
+
+      script.src =
+        `${API_URL}?callback=${encodeURIComponent(callbackName)}` +
+        `&_=${Date.now()}`;
+
+      document.body.appendChild(script);
+    });
+  }
+
+  async function submitToDatabase(server) {
+    const body = new URLSearchParams();
+
+    body.set("name", server.name);
+    body.set("category", server.category);
+    body.set("inviteUrl", server.inviteUrl);
+    body.set("tags", server.tags.join(","));
+    body.set("description", server.description);
+    body.set("color", server.color);
+
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      body
+    });
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await sleep(1000 + attempt * 600);
+      await loadServers();
+
+      const found = remoteServers.some(
+        (item) =>
+          item.inviteUrl.toLowerCase() ===
+          server.inviteUrl.toLowerCase()
+      );
+
+      if (found) {
+        return;
+      }
+    }
+
+    throw new Error(
+      "投稿已送出，但資料仍在同步。請稍後重新整理頁面確認。"
     );
   }
 
   function initials(name) {
     return (
-      name
+      String(name || "")
         .trim()
         .split(/\s+/)
         .map((word) => word[0] || "")
@@ -1169,27 +1295,20 @@ footer{
     );
   }
 
-  function normalizeTags(value) {
-    return String(value || "")
-      .split(/[、,，\s]+/)
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .slice(0, 5);
-  }
-
   function allServers() {
     return [
       BUILTIN,
-      ...readServers().sort(
-        (a, b) => b.createdAt - a.createdAt
-      )
-    ];
-  }
+      ...remoteServers
+        .slice()
+        .sort((first, second) => {
+          const firstTime =
+            new Date(first.createdAt).getTime() || 0;
+          const secondTime =
+            new Date(second.createdAt).getTime() || 0;
 
-  function setStatus(message, type = "") {
-    status.textContent = message;
-    status.className =
-      "status" + (type ? ` ${type}` : "");
+          return secondTime - firstTime;
+        })
+    ];
   }
 
   function isDiscordInvite(value) {
@@ -1288,13 +1407,15 @@ footer{
         ? "ServerBloom 精選"
         : "社群投稿者";
 
+    const date = new Date(server.createdAt);
+    const dateText = Number.isNaN(date.getTime())
+      ? "最近投稿"
+      : date.toLocaleDateString("zh-TW");
+
     const stats = document.createElement("div");
     stats.className = "stats";
     stats.textContent =
-      `${server.category} · ${
-        new Date(server.createdAt)
-          .toLocaleDateString("zh-TW")
-      }`;
+      `${server.category} · ${dateText}`;
 
     copy.append(title, channel, stats);
 
@@ -1313,15 +1434,11 @@ footer{
     const tags = document.createElement("div");
     tags.className = "card-tags";
 
-    (server.tags || [])
-      .slice(0, 5)
-      .forEach((tag) => {
-        const item =
-          document.createElement("span");
-
-        item.textContent = `#${tag}`;
-        tags.appendChild(item);
-      });
+    normalizeTags(server.tags).forEach((tag) => {
+      const item = document.createElement("span");
+      item.textContent = `#${tag}`;
+      tags.appendChild(item);
+    });
 
     const actions = document.createElement("div");
     actions.className = "card-actions";
@@ -1334,40 +1451,6 @@ footer{
     join.textContent = "加入 Discord";
 
     actions.appendChild(join);
-
-    if (!server.pinned) {
-      const remove =
-        document.createElement("button");
-
-      remove.className = "delete";
-      remove.type = "button";
-      remove.textContent = "刪除本機投稿";
-
-      remove.addEventListener("click", () => {
-        if (
-          !confirm(
-            `確定刪除「${server.name}」嗎？`
-          )
-        ) {
-          return;
-        }
-
-        saveServers(
-          readServers().filter(
-            (item) => item.id !== server.id
-          )
-        );
-
-        render();
-
-        setStatus(
-          "已刪除這筆本機投稿。",
-          "success"
-        );
-      });
-
-      actions.appendChild(remove);
-    }
 
     article.append(
       thumb,
@@ -1390,7 +1473,7 @@ footer{
           server.name,
           server.category,
           server.description,
-          ...(server.tags || [])
+          ...normalizeTags(server.tags)
         ]
           .join(" ")
           .toLowerCase();
@@ -1476,59 +1559,46 @@ footer{
   form.addEventListener("input", updatePreview);
   form.addEventListener("change", updatePreview);
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     submitButton.disabled = true;
-    submitButton.textContent = "正在確認…";
+    submitButton.textContent = "正在同步…";
     setStatus("");
 
     try {
-      const name =
-        nameInput.value.trim();
-
-      const category =
-        categoryInput.value;
-
-      const inviteUrl =
-        inviteInput.value.trim();
-
-      const description =
-        descriptionInput.value.trim();
-
-      const color =
-        colorInput.value || "#8b5cf6";
-
-      const tags =
-        normalizeTags(tagsInput.value);
+      const server = {
+        name: nameInput.value.trim(),
+        category: categoryInput.value,
+        inviteUrl: inviteInput.value.trim(),
+        tags: normalizeTags(tagsInput.value),
+        description: descriptionInput.value.trim(),
+        color: colorInput.value || "#8b5cf6"
+      };
 
       if (
-        !name ||
-        !category ||
-        !inviteUrl ||
-        !description
+        !server.name ||
+        !server.category ||
+        !server.inviteUrl ||
+        !server.description
       ) {
         throw new Error(
           "請完整填寫社群名稱、分類、邀請網址與社群介紹。"
         );
       }
 
-      if (!isDiscordInvite(inviteUrl)) {
+      if (!isDiscordInvite(server.inviteUrl)) {
         throw new Error(
           "請填入有效的 Discord 邀請網址。"
         );
       }
 
-      const servers = readServers();
-
       const duplicated =
-        servers.some(
-          (server) =>
-            server.inviteUrl.toLowerCase() ===
-            inviteUrl.toLowerCase()
-        ) ||
-        BUILTIN.inviteUrl.toLowerCase() ===
-          inviteUrl.toLowerCase();
+        allServers().some(
+          (item) =>
+            item.inviteUrl.toLowerCase() ===
+            server.inviteUrl.toLowerCase()
+        );
 
       if (duplicated) {
         throw new Error(
@@ -1536,21 +1606,7 @@ footer{
         );
       }
 
-      servers.push({
-        id:
-          crypto.randomUUID
-            ? crypto.randomUUID()
-            : `${Date.now()}-${Math.random()}`,
-        name,
-        category,
-        inviteUrl,
-        tags,
-        description,
-        color,
-        createdAt: Date.now()
-      });
-
-      saveServers(servers);
+      await submitToDatabase(server);
 
       form.reset();
       colorInput.value = "#8b5cf6";
@@ -1571,7 +1627,7 @@ footer{
       render();
 
       setStatus(
-        "確認成功，歡迎上船！社群卡片已顯示在上方。",
+        "確認成功！投稿已寫入共用資料庫，所有訪客都看得到。",
         "success"
       );
 
@@ -1595,6 +1651,14 @@ footer{
 
   updatePreview();
   render();
+
+  loadServers().catch((error) => {
+    console.error(error);
+    setStatus(
+      "共用資料暫時讀取失敗，請稍後重新整理。",
+      "error"
+    );
+  });
 })();
 </script>
 
