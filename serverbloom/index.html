@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>ServerBloom｜Discord 社群分享廣場</title>
-<meta name="description" content="以影片首頁般的卡片網格探索台港澳 Discord 社群。填寫資料後即可確認上船。">
+<meta name="description" content="以影片首頁般的卡片網格探索台港澳 Discord 社群。填寫資料後即可確認上架。">
 
 <style>
 :root{
@@ -926,7 +926,7 @@ footer{
 
       <p>
         遊戲、聊天、創作與科技社群，以一格一格的卡片呈現。
-        填好資料後按「確認上船」，不需要經過 Only for Game 人工審核。
+        填好資料後按「確認上架」，不需要經過 Only for Game 人工審核。
       </p>
     </div>
 
@@ -969,7 +969,7 @@ footer{
         <p>
           填好名稱、分類、永久邀請網址與簡介，
           右側會同步產生影片式卡片預覽。
-          確認內容後直接上船，不會跳轉至 Only for Game。
+          確認內容後直接上架，不會跳轉至 Only for Game。
         </p>
 
         <div class="notice">
@@ -1070,7 +1070,7 @@ footer{
           id="submitButton"
           type="submit"
         >
-          確認上船
+          確認上架
         </button>
 
         <p
@@ -1602,7 +1602,7 @@ footer{
 
       if (duplicated) {
         throw new Error(
-          "這個 Discord 邀請網址已經上船，不能重複投稿。"
+          "這個 Discord 邀請網址已經上架，不能重複投稿。"
         );
       }
 
@@ -1645,7 +1645,7 @@ footer{
     } finally {
       submitButton.disabled = false;
       submitButton.textContent =
-        "確認上船";
+        "確認上架";
     }
   });
 
