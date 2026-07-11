@@ -543,6 +543,140 @@ document.querySelector("#form").addEventListener("submit", async event => {
   },500);
 });
 </script>
+<style>
+.color-setting{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:12px 14px;
+  background:rgba(8,6,21,.75);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:13px;
+}
 
+.color-setting label{
+  flex:1;
+  color:#cec3dc;
+}
+
+.color-setting input[type="color"]{
+  width:65px;
+  height:42px;
+  padding:3px;
+  cursor:pointer;
+}
+
+.server-preview{
+  --chosen:#8b5cf6;
+  grid-column:1/-1;
+  position:relative;
+  overflow:hidden;
+  padding:18px;
+  border:2px solid var(--chosen);
+  border-radius:18px;
+  background:#110c24;
+  box-shadow:0 0 28px var(--chosen);
+}
+
+.server-preview::before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:0;
+  width:7px;
+  background:var(--chosen);
+}
+
+.server-preview strong{
+  display:block;
+  margin-bottom:6px;
+  font-size:19px;
+}
+
+.server-preview span{
+  color:#cec3dc;
+  font-size:13px;
+}
+</style>
+
+<script>
+const submissionForm = document.querySelector("#form");
+const nameField = document.querySelector("#name");
+const descriptionField = document.querySelector("#desc");
+
+const colorSetting = document.createElement("div");
+colorSetting.className = "color-setting";
+colorSetting.innerHTML = `
+  <label for="cardColor">社群卡片框架／背景顏色</label>
+  <input id="cardColor" type="color" value="#8b5cf6">
+`;
+
+const serverPreview = document.createElement("div");
+serverPreview.className = "server-preview";
+serverPreview.innerHTML = `
+  <strong id="previewServerName">你的伺服器名稱</strong>
+  <span id="previewDescription">這裡會顯示社群卡片預覽</span>
+`;
+
+descriptionField.before(colorSetting);
+descriptionField.before(serverPreview);
+
+const cardColor = document.querySelector("#cardColor");
+const previewServerName = document.querySelector("#previewServerName");
+const previewDescription = document.querySelector("#previewDescription");
+
+function updateServerPreview(){
+  serverPreview.style.setProperty("--chosen",cardColor.value);
+
+  previewServerName.textContent =
+    nameField.value.trim() || "你的伺服器名稱";
+
+  previewDescription.textContent =
+    descriptionField.value.trim() || "這裡會顯示社群卡片預覽";
+}
+
+cardColor.addEventListener("input",updateServerPreview);
+nameField.addEventListener("input",updateServerPreview);
+descriptionField.addEventListener("input",updateServerPreview);
+
+updateServerPreview();
+
+submissionForm.onsubmit = async event => {
+  event.preventDefault();
+
+  const invite = document.querySelector("#invite").value.trim();
+  const status = document.querySelector("#status");
+
+  const validInvite =
+    /^https:\/\/(discord\.gg|discord\.com\/invite)\/[\w-]+/i.test(invite);
+
+  if(!validInvite){
+    status.textContent = "請輸入有效的 Discord 邀請網址。";
+    return;
+  }
+
+  const submissionText =
+`【ServerBloom 伺服器投稿】
+名稱：${nameField.value}
+分類：${document.querySelector("#cat").value}
+邀請：${invite}
+標籤：${document.querySelector("#tags").value}
+卡片顏色：${cardColor.value}
+介紹：${descriptionField.value}`;
+
+  try{
+    await navigator.clipboard.writeText(submissionText);
+    status.textContent = "投稿內容已複製，正在前往 Only for Game…";
+  }catch{
+    prompt("請複製以下投稿內容：",submissionText);
+  }
+
+  setTimeout(() => {
+    window.open("https://discord.gg/bWTKbMzct3","_blank");
+  },500);
+};
+</script>
 </body>
 </html>
