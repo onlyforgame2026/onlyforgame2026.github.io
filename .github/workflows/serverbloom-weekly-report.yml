@@ -1,0 +1,34 @@
+name: ServerBloom private weekly report
+
+on:
+  schedule:
+    # GitHub cron uses UTC. Monday 00:00 UTC is Monday 08:00 in Taiwan.
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: serverbloom-private-weekly-report
+  cancel-in-progress: false
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Analyze cards and send private report
+        env:
+          SERVERBLOOM_REPORT_SMTP_USERNAME: ${{ secrets.SERVERBLOOM_REPORT_SMTP_USERNAME }}
+          SERVERBLOOM_REPORT_SMTP_APP_PASSWORD: ${{ secrets.SERVERBLOOM_REPORT_SMTP_APP_PASSWORD }}
+          SERVERBLOOM_REPORT_RECIPIENT: ${{ secrets.SERVERBLOOM_REPORT_RECIPIENT }}
+        run: python .github/scripts/serverbloom_weekly_report.py
