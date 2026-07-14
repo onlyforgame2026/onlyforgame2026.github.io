@@ -449,8 +449,10 @@ header,main,footer{position:relative;z-index:2}
 }
 
 .avatar{
+  position:relative;
   width:40px;
   height:40px;
+  flex:0 0 auto;
   border-radius:50%;
   display:grid;
   place-items:center;
@@ -458,6 +460,25 @@ header,main,footer{position:relative;z-index:2}
   font-size:13px;
   font-weight:900;
   box-shadow:0 0 0 2px #ffffff12;
+}
+
+.growth-badge{
+  position:absolute;
+  right:-4px;
+  bottom:-4px;
+  z-index:2;
+  width:18px;
+  height:18px;
+  display:grid;
+  place-items:center;
+  border:2px solid #100b1b;
+  border-radius:6px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  color:#fff;
+  box-shadow:0 0 12px #8b5cf688;
+  font-size:10px;
+  font-weight:950;
+  line-height:1;
 }
 
 .meta-copy{min-width:0}
@@ -524,11 +545,12 @@ header,main,footer{position:relative;z-index:2}
 
 .card-actions{
   display:flex;
+  flex-wrap:wrap;
   gap:8px;
   margin:12px 0 0 53px;
 }
 
-.join,.delete{
+.join,.browser-join,.copy-invite,.delete{
   min-height:35px;
   display:inline-flex;
   align-items:center;
@@ -544,6 +566,17 @@ header,main,footer{position:relative;z-index:2}
 .join{
   background:linear-gradient(135deg,var(--purple),var(--pink));
   color:white;
+}
+
+.browser-join,.copy-invite{
+  border:1px solid #ffffff1b;
+  background:#ffffff0b;
+  color:#f4eafa;
+  text-decoration:none;
+}
+
+.browser-join:hover,.copy-invite:hover{
+  background:#ffffff14;
 }
 
 .delete{
@@ -1214,6 +1247,19 @@ footer{
       .slice(0, 5);
   }
 
+  function optionalNumber(value) {
+    if (
+      value === null ||
+      value === undefined ||
+      String(value).trim() === ""
+    ) {
+      return null;
+    }
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
   function normalizeServer(server) {
     return {
       id: String(server.id || ""),
@@ -1226,6 +1272,10 @@ footer{
         ? String(server.color)
         : "#8b5cf6",
       createdAt: server.createdAt || new Date().toISOString(),
+      updatedAt: server.updatedAt || "",
+      growth30d: optionalNumber(server.growth30d),
+      clicks7d: optionalNumber(server.clicks7d),
+      clicksPrevious7d: optionalNumber(server.clicksPrevious7d),
       pinned: false
     };
   }
@@ -1394,6 +1444,67 @@ footer{
     }
   }
 
+  function discordInviteCode(value) {
+    if (!isDiscordInvite(value)) return "";
+
+    try {
+      const url = new URL(value);
+      const parts = url.pathname
+        .split("/")
+        .filter(Boolean);
+
+      const code =
+        url.hostname.toLowerCase().endsWith("discord.gg")
+          ? parts[0]
+          : parts[1];
+
+      return /^[a-z0-9_-]+$/i.test(code || "")
+        ? code
+        : "";
+    } catch {
+      return "";
+    }
+  }
+
+  function discordAppInviteUrl(value) {
+    const code = discordInviteCode(value);
+    return code
+      ? `discord://-/invite/${encodeURIComponent(code)}`
+      : "";
+  }
+
+  function growthGrade(value) {
+    if (!Number.isFinite(value) || value < 5) return "";
+    if (value >= 30) return "A";
+    if (value >= 25) return "B";
+    if (value >= 20) return "C";
+    if (value >= 15) return "D";
+    if (value >= 10) return "E";
+    return "F";
+  }
+
+  async function copyText(value) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    const copied = document.execCommand("copy");
+    textarea.remove();
+
+    if (!copied) {
+      throw new Error("Clipboard copy failed");
+    }
+  }
+
   function createCard(server) {
     const article = document.createElement("article");
     article.className = "video-card";
@@ -1448,6 +1559,20 @@ footer{
     avatar.className = "avatar";
     avatar.textContent = initials(server.name);
 
+    const grade = growthGrade(server.growth30d);
+    if (grade) {
+      const growthBadge = document.createElement("span");
+      growthBadge.className = "growth-badge";
+      growthBadge.textContent = grade;
+      growthBadge.title =
+        `最近 30 天成員淨成長等級 ${grade}`;
+      growthBadge.setAttribute(
+        "aria-label",
+        `最近 30 天成員淨成長等級 ${grade}`
+      );
+      avatar.appendChild(growthBadge);
+    }
+
     const copy = document.createElement("div");
     copy.className = "meta-copy";
 
@@ -1497,14 +1622,51 @@ footer{
     const actions = document.createElement("div");
     actions.className = "card-actions";
 
-    const join = document.createElement("a");
+    const join = document.createElement("button");
     join.className = "join";
-    join.href = server.inviteUrl;
-    join.target = "_blank";
-    join.rel = "noopener noreferrer";
+    join.type = "button";
     join.textContent = "加入 Discord";
+    join.addEventListener("click", () => {
+      const appUrl = discordAppInviteUrl(server.inviteUrl);
 
-    actions.appendChild(join);
+      if (appUrl) {
+        window.location.href = appUrl;
+      } else {
+        window.open(
+          server.inviteUrl,
+          "_blank",
+          "noopener,noreferrer"
+        );
+      }
+    });
+
+    const browserJoin = document.createElement("a");
+    browserJoin.className = "browser-join";
+    browserJoin.href = server.inviteUrl;
+    browserJoin.target = "_blank";
+    browserJoin.rel = "noopener noreferrer";
+    browserJoin.textContent = "瀏覽器加入";
+
+    const copyInvite = document.createElement("button");
+    copyInvite.className = "copy-invite";
+    copyInvite.type = "button";
+    copyInvite.textContent = "複製邀請";
+    copyInvite.addEventListener("click", async () => {
+      try {
+        await copyText(server.inviteUrl);
+        copyInvite.textContent = "已複製";
+        window.setTimeout(() => {
+          copyInvite.textContent = "複製邀請";
+        }, 1800);
+      } catch {
+        window.prompt(
+          "請複製邀請連結並貼到 Discord App：",
+          server.inviteUrl
+        );
+      }
+    });
+
+    actions.append(join, browserJoin, copyInvite);
 
     article.append(
       thumb,
