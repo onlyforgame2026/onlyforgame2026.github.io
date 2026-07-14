@@ -473,12 +473,40 @@ header,main,footer{position:relative;z-index:2}
   place-items:center;
   border:2px solid #100b1b;
   border-radius:6px;
-  background:linear-gradient(135deg,var(--purple),var(--pink));
   color:#fff;
-  box-shadow:0 0 12px #8b5cf688;
   font-size:10px;
   font-weight:950;
   line-height:1;
+}
+
+.growth-badge--a{
+  background:linear-gradient(135deg,#ffd166,#ff70b7);
+  box-shadow:0 0 12px #ffb36faa;
+}
+
+.growth-badge--b{
+  background:linear-gradient(135deg,#9b5cff,#ff70b7);
+  box-shadow:0 0 12px #d06cff99;
+}
+
+.growth-badge--c{
+  background:linear-gradient(135deg,#7048d8,#a875ff);
+  box-shadow:0 0 12px #8b5cf688;
+}
+
+.growth-badge--d{
+  background:linear-gradient(135deg,#246bdb,#5da9ff);
+  box-shadow:0 0 12px #3e8dff88;
+}
+
+.growth-badge--e{
+  background:linear-gradient(135deg,#069da7,#4de0d1);
+  box-shadow:0 0 12px #22c9c488;
+}
+
+.growth-badge--f{
+  background:linear-gradient(135deg,#625574,#9080a5);
+  box-shadow:0 0 10px #77678c77;
 }
 
 .meta-copy{min-width:0}
@@ -1483,6 +1511,15 @@ footer{
     return "F";
   }
 
+  function growthGradeFromCard(card) {
+    const rawGrowth = card.dataset.growth;
+    if (rawGrowth === undefined || rawGrowth.trim() === "") {
+      return "";
+    }
+
+    return growthGrade(Number(rawGrowth));
+  }
+
   async function copyText(value) {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(value);
@@ -1509,6 +1546,9 @@ footer{
     const article = document.createElement("article");
     article.className = "video-card";
     article.dataset.category = server.category;
+    article.dataset.growth = Number.isFinite(server.growth30d)
+      ? String(server.growth30d)
+      : "";
     article.style.setProperty(
       "--card-color",
       server.color || "#8b5cf6"
@@ -1559,10 +1599,11 @@ footer{
     avatar.className = "avatar";
     avatar.textContent = initials(server.name);
 
-    const grade = growthGrade(server.growth30d);
+    const grade = growthGradeFromCard(article);
     if (grade) {
       const growthBadge = document.createElement("span");
-      growthBadge.className = "growth-badge";
+      growthBadge.className =
+        `growth-badge growth-badge--${grade.toLowerCase()}`;
       growthBadge.textContent = grade;
       growthBadge.title =
         `最近 30 天成員淨成長等級 ${grade}`;
