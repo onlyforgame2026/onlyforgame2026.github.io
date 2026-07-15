@@ -340,7 +340,35 @@ header,main,footer{position:relative;z-index:2}
   gap:32px 18px;
 }
 
-.video-card{min-width:0}
+.video-card{
+  min-width:0;
+  scroll-margin-top:110px;
+  border-radius:18px;
+}
+
+.video-card.is-share-target{
+  animation:shareTargetGlow 6s ease-out;
+}
+
+@keyframes shareTargetGlow{
+  0%,12%{
+    transform:translateY(-4px);
+    box-shadow:
+      0 0 0 2px var(--cyan),
+      0 0 24px #4bd9ffcc,
+      0 0 55px #f467b477;
+  }
+  48%{
+    box-shadow:
+      0 0 0 2px var(--pink),
+      0 0 20px #f467b4aa,
+      0 0 42px #8b5cf666;
+  }
+  100%{
+    transform:none;
+    box-shadow:0 0 0 0 transparent;
+  }
+}
 
 .thumbnail{
   position:relative;
@@ -439,6 +467,21 @@ header,main,footer{position:relative;z-index:2}
   background:#050307de;
   font-size:11px;
   font-weight:800;
+}
+
+.early-badge{
+  position:absolute;
+  z-index:3;
+  right:10px;
+  top:10px;
+  padding:5px 8px;
+  border:1px solid #ffb6dc70;
+  border-radius:999px;
+  background:linear-gradient(135deg,#8b5cf6df,#f467b4df);
+  box-shadow:0 0 14px #f467b466;
+  font-size:9px;
+  font-weight:950;
+  letter-spacing:.8px;
 }
 
 .card-meta{
@@ -578,7 +621,7 @@ header,main,footer{position:relative;z-index:2}
   margin:12px 0 0 53px;
 }
 
-.join,.browser-join,.copy-invite,.delete{
+.join,.browser-join,.copy-invite,.share-community,.delete{
   min-height:35px;
   display:inline-flex;
   align-items:center;
@@ -596,16 +639,35 @@ header,main,footer{position:relative;z-index:2}
   color:white;
 }
 
-.browser-join,.copy-invite{
+.browser-join,.copy-invite,.share-community{
   border:1px solid #ffffff1b;
   background:#ffffff0b;
   color:#f4eafa;
   text-decoration:none;
 }
 
-.browser-join:hover,.copy-invite:hover{
+.browser-join:hover,.copy-invite:hover,.share-community:hover{
   background:#ffffff14;
 }
+
+.share-community{
+  border-color:#f467b45e;
+  background:linear-gradient(135deg,#8b5cf61f,#f467b426);
+}
+
+.viewing-notice{
+  margin:-5px 0 18px;
+  padding:11px 14px;
+  border:1px solid #4bd9ff4f;
+  border-radius:12px;
+  background:linear-gradient(90deg,#4bd9ff16,#8b5cf61d,#f467b417);
+  color:#eafaff;
+  box-shadow:0 0 20px #4bd9ff1c;
+  font-size:14px;
+  font-weight:800;
+}
+
+.viewing-notice[hidden]{display:none}
 
 .delete{
   border:1px solid #ffffff1b;
@@ -621,6 +683,195 @@ header,main,footer{position:relative;z-index:2}
   border-radius:18px;
   color:var(--muted);
   background:#ffffff06;
+}
+
+.recruitment-section{
+  margin-top:68px;
+}
+
+.recruitment-panel{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:28px;
+  padding:25px 28px;
+  border:1px solid #f467b442;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 85% 20%,#f467b424,transparent 36%),
+    linear-gradient(125deg,#4bd9ff0d,#8b5cf61c 52%,#f467b416),
+    #100b1bdb;
+  box-shadow:0 22px 58px #0004;
+}
+
+.recruitment-panel h2{
+  margin:0 0 8px;
+  font-size:clamp(23px,3vw,34px);
+}
+
+.recruitment-panel p{
+  max-width:920px;
+  margin:0;
+  color:var(--muted);
+  line-height:1.75;
+}
+
+.recruitment-button{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:46px;
+  padding:0 18px;
+  border-radius:12px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  box-shadow:0 12px 28px #8b5cf638;
+  font-weight:900;
+}
+
+.share-modal{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:#05030bc9;
+  backdrop-filter:blur(12px);
+}
+
+.share-modal[hidden]{display:none}
+
+.share-dialog{
+  width:min(620px,100%);
+  max-height:min(760px,calc(100vh - 32px));
+  overflow:auto;
+  padding:25px;
+  border:1px solid #ffffff24;
+  border-radius:24px;
+  background:
+    linear-gradient(145deg,#4bd9ff0b,#8b5cf61d 50%,#f467b417),
+    #100b1bf7;
+  box-shadow:0 30px 90px #000b,0 0 34px #8b5cf62e;
+}
+
+.share-dialog-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+}
+
+.share-dialog-head h2{
+  margin:7px 0 4px;
+  font-size:27px;
+}
+
+.share-server-name{
+  margin:0;
+  color:#f4c4e2;
+  font-weight:800;
+}
+
+.share-close{
+  width:38px;
+  height:38px;
+  border:1px solid #ffffff22;
+  border-radius:11px;
+  background:#ffffff0c;
+  cursor:pointer;
+  font-size:22px;
+}
+
+.share-url-box{
+  margin:18px 0 13px;
+  padding:12px 13px;
+  border:1px solid #4bd9ff35;
+  border-radius:12px;
+  background:#070510a8;
+  color:#cfefff;
+  font-size:12px;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+
+.share-options{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.share-option{
+  min-height:48px;
+  padding:10px 13px;
+  border:1px solid #ffffff1f;
+  border-radius:12px;
+  background:#ffffff0b;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:900;
+  text-align:left;
+}
+
+.share-option:hover{
+  border-color:#d292ff77;
+  background:#ffffff12;
+}
+
+.share-option.primary{
+  background:linear-gradient(135deg,#8b5cf634,#f467b436);
+}
+
+.share-preview{
+  margin-top:16px;
+  padding:14px;
+  border:1px solid #ffffff16;
+  border-radius:13px;
+  background:#080611a8;
+}
+
+.share-preview strong{
+  display:block;
+  margin-bottom:7px;
+  color:#f6d3e8;
+}
+
+.share-preview pre{
+  margin:0;
+  color:#c8becf;
+  font:12px/1.65 Arial,"Microsoft JhengHei",sans-serif;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.share-toast{
+  position:fixed;
+  z-index:100;
+  left:50%;
+  bottom:26px;
+  transform:translate(-50%,20px);
+  max-width:min(460px,calc(100% - 28px));
+  padding:12px 16px;
+  border:1px solid #ffffff24;
+  border-radius:12px;
+  background:#151020f2;
+  box-shadow:0 16px 45px #0009,0 0 20px #8b5cf64a;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease;
+  text-align:center;
+  font-size:13px;
+  font-weight:850;
+}
+
+.share-toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+.share-toast.error{
+  border-color:#ff8fa85c;
+  color:#ffd3dc;
 }
 
 .seo-ad-section{
@@ -871,6 +1122,7 @@ footer{
   .hero-stat{display:none}
   .server-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .submit-shell{grid-template-columns:1fr}
+  .recruitment-panel{align-items:flex-start;flex-direction:column}
   .sakura-branch{width:60vw}
   .circuit{width:72vw}
 }
@@ -901,6 +1153,15 @@ footer{
   .submit-copy h2{font-size:31px}
 
   .card-desc,.card-tags,.card-actions{margin-left:53px}
+  .share-modal{padding:10px}
+  .share-dialog{
+    max-height:calc(100vh - 20px);
+    padding:19px;
+    border-radius:19px;
+  }
+  .share-options{grid-template-columns:1fr}
+  .recruitment-panel{padding:21px}
+  .recruitment-button{width:100%}
 
   .sakura-branch{
     width:82vw;
@@ -914,7 +1175,10 @@ footer{
 
 @media(prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important}
-  .petal,.circuit path{animation:none!important}
+  .petal,.circuit path,.video-card.is-share-target{animation:none!important}
+  .video-card.is-share-target{
+    box-shadow:0 0 0 2px var(--cyan),0 0 28px #f467b45e;
+  }
 }
 </style>
 </head>
@@ -1050,7 +1314,33 @@ footer{
       <span class="result-count" id="resultCount"></span>
     </div>
 
+    <div
+      class="viewing-notice"
+      id="viewingNotice"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></div>
+
     <div class="server-grid" id="serverGrid"></div>
+  </section>
+
+  <section class="recruitment-section" aria-labelledby="recruitmentTitle">
+    <div class="recruitment-panel">
+      <div>
+        <h2 id="recruitmentTitle">
+          首批社群募集 <span id="earlyCommunityCount">0</span>／30
+        </h2>
+        <p>
+          免費建立社群卡片、專屬配色與一鍵宣傳工具，
+          讓群主分享自己的社群時，也能一起擴大 ServerBloom 的共同流量。
+        </p>
+      </div>
+
+      <a class="recruitment-button" href="#submit">
+        免費提交社群
+      </a>
+    </div>
   </section>
 
   <section class="seo-ad-section" aria-labelledby="discordAdTitle">
@@ -1209,12 +1499,80 @@ footer{
   © 2026 ServerBloom · 社群伺服器分享廣場 · Powered by Only for Game
 </footer>
 
+<div class="share-modal" id="shareModal" hidden>
+  <div
+    class="share-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="shareDialogTitle"
+  >
+    <div class="share-dialog-head">
+      <div>
+        <span class="kicker">COMMUNITY PROMOTION TOOL</span>
+        <h2 id="shareDialogTitle">分享社群</h2>
+        <p class="share-server-name" id="shareServerName"></p>
+      </div>
+
+      <button
+        class="share-close"
+        id="shareClose"
+        type="button"
+        aria-label="關閉分享視窗"
+      >×</button>
+    </div>
+
+    <div class="share-url-box" id="shareUrlPreview"></div>
+
+    <div class="share-options" id="shareOptions">
+      <button class="share-option" type="button" data-share-action="discord">
+        複製 Discord 宣傳文
+      </button>
+      <button class="share-option" type="button" data-share-action="threads">
+        複製 Threads 宣傳文
+      </button>
+      <button class="share-option" type="button" data-share-action="bahamut-title">
+        複製巴哈姆特標題
+      </button>
+      <button class="share-option" type="button" data-share-action="bahamut">
+        複製巴哈姆特宣傳文
+      </button>
+      <button class="share-option" type="button" data-share-action="url">
+        複製 ServerBloom 分享網址
+      </button>
+      <button class="share-option primary" type="button" data-share-action="native">
+        系統原生分享
+      </button>
+    </div>
+
+    <div class="share-preview">
+      <strong>宣傳內容預覽</strong>
+      <pre id="shareTextPreview"></pre>
+    </div>
+  </div>
+</div>
+
+<div
+  class="share-toast"
+  id="shareToast"
+  role="status"
+  aria-live="polite"
+></div>
+
 <script>
 (() => {
   "use strict";
 
   const API_URL =
     "https://script.google.com/macros/s/AKfycbwsU40XuJqCBFzCZjH_Mp57y05OIIFp3RAtxFD1HisM_she08o2951ajf4ovzA1Q1gW/exec";
+
+  const SITE_URL =
+    "https://onlyforgame2026.github.io/serverbloom/";
+
+  const KNOWN_SERVER_SLUGS = new Map([
+    ["only for game", "only-for-game"],
+    ["花花世界不必當真", "timo-earth"],
+    ["just a server", "just-a-server"]
+  ]);
 
   const BUILTIN = {
     id: "only-for-game",
@@ -1235,6 +1593,16 @@ footer{
   const chips = $("#chips");
   const resultCount = $("#resultCount");
   const heroCount = $("#heroCount");
+  const earlyCommunityCount = $("#earlyCommunityCount");
+  const viewingNotice = $("#viewingNotice");
+
+  const shareModal = $("#shareModal");
+  const shareClose = $("#shareClose");
+  const shareOptions = $("#shareOptions");
+  const shareServerName = $("#shareServerName");
+  const shareUrlPreview = $("#shareUrlPreview");
+  const shareTextPreview = $("#shareTextPreview");
+  const shareToast = $("#shareToast");
 
   const form = $("#serverForm");
   const nameInput = $("#serverName");
@@ -1253,6 +1621,11 @@ footer{
 
   let activeCategory = "all";
   let remoteServers = [];
+  let activeShareServer = null;
+  let shareReturnFocus = null;
+  let lastFocusedSlug = "";
+  let targetGlowTimer = 0;
+  let toastTimer = 0;
 
   function sleep(milliseconds) {
     return new Promise((resolve) => {
@@ -1291,6 +1664,7 @@ footer{
   function normalizeServer(server) {
     return {
       id: String(server.id || ""),
+      slug: String(server.slug || "").trim(),
       name: String(server.name || "").trim(),
       category: String(server.category || "其他").trim(),
       inviteUrl: String(server.inviteUrl || "").trim(),
@@ -1427,8 +1801,52 @@ footer{
     );
   }
 
+  function safeSlug(value) {
+    return String(value || "")
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 64);
+  }
+
+  function stableHash(value) {
+    let hash = 2166136261;
+
+    for (const character of String(value || "")) {
+      hash ^= character.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+
+    return (hash >>> 0).toString(36);
+  }
+
+  function baseServerSlug(server) {
+    const known = KNOWN_SERVER_SLUGS.get(
+      String(server.name || "").trim().toLowerCase()
+    );
+
+    if (known) return known;
+
+    const explicitSlug = safeSlug(server.slug);
+    if (explicitSlug) return explicitSlug;
+
+    const nameSlug = safeSlug(server.name);
+    if (nameSlug) return nameSlug;
+
+    return `community-${stableHash(
+      `${server.name}|${server.inviteUrl}`
+    ).slice(0, 8)}`;
+  }
+
+  function isPlaceholderServer(server) {
+    return String(server.name || "").trim() ===
+      "下一個盛開的社群";
+  }
+
   function allServers() {
-    return [
+    const servers = [
       BUILTIN,
       ...remoteServers
         .slice()
@@ -1441,6 +1859,28 @@ footer{
           return secondTime - firstTime;
         })
     ];
+
+    const usedSlugs = new Set();
+
+    return servers.map((server) => {
+      const baseSlug = baseServerSlug(server);
+      let slug = baseSlug;
+
+      if (usedSlugs.has(slug)) {
+        slug = `${baseSlug}-${stableHash(
+          server.inviteUrl
+        ).slice(0, 5)}`;
+      }
+
+      usedSlugs.add(slug);
+      return { ...server, slug };
+    });
+  }
+
+  function formalServers() {
+    return allServers().filter(
+      (server) => !isPlaceholderServer(server)
+    );
   }
 
   function isDiscordInvite(value) {
@@ -1542,10 +1982,239 @@ footer{
     }
   }
 
+  function shareUrlFor(server) {
+    return `${SITE_URL}?server=${encodeURIComponent(server.slug)}`;
+  }
+
+  function shareContentFor(server) {
+    const shareUrl = shareUrlFor(server);
+    const normalizedTags = normalizeTags(server.tags);
+    const tagText = normalizedTags.length
+      ? normalizedTags.join("、")
+      : server.category;
+    const bahamutTitle =
+      `【Discord 社群招生】${server.name}｜${tagText}`;
+
+    const discord =
+      `正在尋找【${tagText}】的玩家嗎？\n` +
+      `【${server.name}】目前正在招募新成員。\n` +
+      "可先在 ServerBloom 查看介紹與加入方式：\n" +
+      shareUrl;
+
+    const threads =
+      `最近發現一個【${server.category}】社群：` +
+      `【${server.name}】。\n` +
+      `適合對【${tagText}】有興趣的玩家。\n` +
+      "介紹與加入入口：\n" +
+      `${shareUrl}\n` +
+      "#Discord社群 #遊戲公會 #ServerBloom";
+
+    const bahamut =
+      `${bahamutTitle}\n\n` +
+      `社群名稱：${server.name}\n` +
+      `社群類型：${server.category}\n` +
+      `社群標籤：${tagText}\n\n` +
+      `社群介紹：\n${server.description}\n\n` +
+      "完整介紹與加入方式請見 ServerBloom：\n" +
+      shareUrl;
+
+    return {
+      url: shareUrl,
+      discord,
+      threads,
+      bahamutTitle,
+      bahamut
+    };
+  }
+
+  function showShareToast(message, type = "success") {
+    window.clearTimeout(toastTimer);
+    shareToast.textContent = message;
+    shareToast.className =
+      `share-toast show${type === "error" ? " error" : ""}`;
+
+    toastTimer = window.setTimeout(() => {
+      shareToast.className = "share-toast";
+    }, 2600);
+  }
+
+  async function copyShareValue(value, label) {
+    try {
+      await copyText(value);
+      showShareToast(`${label}已複製`);
+      return true;
+    } catch {
+      showShareToast(`${label}自動複製失敗，請手動複製`, "error");
+      window.prompt(`請手動複製${label}：`, value);
+      return false;
+    }
+  }
+
+  function openShareModal(server, sourceButton) {
+    if (!server || isPlaceholderServer(server)) return;
+
+    activeShareServer = server;
+    shareReturnFocus = sourceButton || null;
+
+    const content = shareContentFor(server);
+    shareServerName.textContent = server.name;
+    shareUrlPreview.textContent = content.url;
+    shareTextPreview.textContent = content.discord;
+    shareModal.hidden = false;
+    document.body.style.overflow = "hidden";
+    shareClose.focus();
+  }
+
+  function closeShareModal() {
+    if (shareModal.hidden) return;
+
+    shareModal.hidden = true;
+    document.body.style.overflow = "";
+    activeShareServer = null;
+
+    if (
+      shareReturnFocus &&
+      document.contains(shareReturnFocus)
+    ) {
+      shareReturnFocus.focus();
+    }
+
+    shareReturnFocus = null;
+  }
+
+  async function handleShareAction(action) {
+    if (!activeShareServer) {
+      showShareToast("找不到要分享的社群", "error");
+      return;
+    }
+
+    const server = activeShareServer;
+    const content = shareContentFor(server);
+
+    if (action === "discord") {
+      shareTextPreview.textContent = content.discord;
+      await copyShareValue(content.discord, "Discord 宣傳文");
+      return;
+    }
+
+    if (action === "threads") {
+      shareTextPreview.textContent = content.threads;
+      await copyShareValue(content.threads, "Threads 宣傳文");
+      return;
+    }
+
+    if (action === "bahamut-title") {
+      shareTextPreview.textContent = content.bahamutTitle;
+      await copyShareValue(content.bahamutTitle, "巴哈姆特標題");
+      return;
+    }
+
+    if (action === "bahamut") {
+      shareTextPreview.textContent = content.bahamut;
+      await copyShareValue(content.bahamut, "巴哈姆特宣傳文");
+      return;
+    }
+
+    if (action === "url") {
+      shareTextPreview.textContent = content.url;
+      await copyShareValue(content.url, "ServerBloom 分享網址");
+      return;
+    }
+
+    if (action === "native") {
+      if (typeof navigator.share === "function") {
+        try {
+          await navigator.share({
+            title: `${server.name}｜ServerBloom`,
+            text:
+              `${server.name} 的社群介紹與加入入口`,
+            url: content.url
+          });
+          showShareToast("系統分享已開啟");
+        } catch (error) {
+          if (error && error.name === "AbortError") {
+            showShareToast("已取消系統分享", "error");
+          } else {
+            await copyShareValue(
+              content.url,
+              "ServerBloom 分享網址"
+            );
+          }
+        }
+      } else {
+        await copyShareValue(
+          content.url,
+          "ServerBloom 分享網址"
+        );
+        showShareToast(
+          "此瀏覽器不支援系統分享，已改為複製網址"
+        );
+      }
+    }
+  }
+
+  function requestedServerSlug() {
+    try {
+      const value = new URLSearchParams(
+        window.location.search
+      ).get("server");
+
+      if (!value) return "";
+
+      const normalized = value.trim().toLowerCase();
+      return /^[a-z0-9-]{1,80}$/.test(normalized)
+        ? normalized
+        : "";
+    } catch {
+      return "";
+    }
+  }
+
+  function focusRequestedServer() {
+    const slug = requestedServerSlug();
+    if (!slug) return;
+
+    const target = Array.from(
+      grid.querySelectorAll("[data-server-slug]")
+    ).find(
+      (card) => card.dataset.serverSlug === slug
+    );
+
+    if (!target) return;
+
+    const serverName =
+      target.querySelector("h3")?.textContent?.trim() ||
+      slug;
+    const shouldScroll = lastFocusedSlug !== slug;
+
+    target.classList.remove("is-share-target");
+    void target.offsetWidth;
+    target.classList.add("is-share-target");
+
+    viewingNotice.textContent =
+      `你正在查看：${serverName}`;
+    viewingNotice.hidden = false;
+
+    window.clearTimeout(targetGlowTimer);
+    targetGlowTimer = window.setTimeout(() => {
+      target.classList.remove("is-share-target");
+    }, 6000);
+
+    if (shouldScroll) {
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+
+    lastFocusedSlug = slug;
+  }
+
   function createCard(server) {
     const article = document.createElement("article");
     article.className = "video-card";
     article.dataset.category = server.category;
+    article.dataset.serverSlug = server.slug;
     article.dataset.growth = Number.isFinite(server.growth30d)
       ? String(server.growth30d)
       : "";
@@ -1584,6 +2253,11 @@ footer{
     duration.textContent =
       server.pinned ? "官方" : "NEW";
 
+    const earlyBadge = document.createElement("span");
+    earlyBadge.className = "early-badge";
+    earlyBadge.textContent = "EARLY";
+    earlyBadge.title = "首批上架社群";
+
     thumb.append(
       gridPattern,
       badge,
@@ -1591,6 +2265,10 @@ footer{
       thumbName,
       duration
     );
+
+    if (!isPlaceholderServer(server)) {
+      thumb.appendChild(earlyBadge);
+    }
 
     const meta = document.createElement("div");
     meta.className = "card-meta";
@@ -1696,10 +2374,15 @@ footer{
       try {
         await copyText(server.inviteUrl);
         copyInvite.textContent = "已複製";
+        showShareToast("Discord 邀請連結已複製");
         window.setTimeout(() => {
           copyInvite.textContent = "複製邀請";
         }, 1800);
       } catch {
+        showShareToast(
+          "邀請連結自動複製失敗，請手動複製",
+          "error"
+        );
         window.prompt(
           "請複製邀請連結並貼到 Discord App：",
           server.inviteUrl
@@ -1707,7 +2390,19 @@ footer{
       }
     });
 
+    const shareCommunity = document.createElement("button");
+    shareCommunity.className = "share-community";
+    shareCommunity.type = "button";
+    shareCommunity.textContent = "分享社群";
+    shareCommunity.addEventListener("click", () => {
+      openShareModal(server, shareCommunity);
+    });
+
     actions.append(join, browserJoin, copyInvite);
+
+    if (!isPlaceholderServer(server)) {
+      actions.appendChild(shareCommunity);
+    }
 
     article.append(
       thumb,
@@ -1724,8 +2419,10 @@ footer{
     const word =
       search.value.toLowerCase().trim();
 
+    const servers = allServers();
+
     const items =
-      allServers().filter((server) => {
+      servers.filter((server) => {
         const text = [
           server.name,
           server.category,
@@ -1770,7 +2467,16 @@ footer{
       `顯示 ${items.length} 個結果`;
 
     heroCount.textContent =
-      `${allServers().length} 個社群`;
+      `${servers.length} 個社群`;
+
+    earlyCommunityCount.textContent =
+      String(
+        servers.filter(
+          (server) => !isPlaceholderServer(server)
+        ).length
+      );
+
+    window.requestAnimationFrame(focusRequestedServer);
   }
 
   function updatePreview() {
@@ -1793,6 +2499,34 @@ footer{
   }
 
   search.addEventListener("input", render);
+
+  shareClose.addEventListener("click", closeShareModal);
+
+  shareModal.addEventListener("click", (event) => {
+    if (event.target === shareModal) {
+      closeShareModal();
+    }
+  });
+
+  shareOptions.addEventListener("click", (event) => {
+    const button = event.target.closest(
+      "[data-share-action]"
+    );
+
+    if (!button) return;
+
+    handleShareAction(
+      button.dataset.shareAction
+    ).catch(() => {
+      showShareToast("分享操作失敗，請稍後再試", "error");
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !shareModal.hidden) {
+      closeShareModal();
+    }
+  });
 
   chips.addEventListener("click", (event) => {
     const button =
