@@ -39,8 +39,9 @@
       description: String(server.description || '').trim(),
       primaryColor: String(server.color || server.primaryColor || '#755cff'),
       color: String(server.color || server.primaryColor || '#755cff'),
-      memberCount: 0,
-      onlineCount: 0,
+      memberCount: null,
+      onlineCount: null,
+      countsUnknown: true,
       isNew: true,
       banner: '',
       icon: ''
@@ -55,7 +56,7 @@
     const official = localServers.filter(server =>
       String(server.id || '').replaceAll('-', '').toLowerCase() === 'onlyforgame' ||
       String(server.name || '').trim().toLowerCase() === 'only for game'
-    );
+    ).map(server => ({ ...server, members: null, online: null, memberCount: null, onlineCount: null, countsUnknown: true }));
 
     let submitted = [];
     try {
