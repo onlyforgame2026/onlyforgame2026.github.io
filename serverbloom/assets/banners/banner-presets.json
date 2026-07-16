@@ -118,5 +118,125 @@
     "name": "Minimal",
     "file": "10-minimal.webp",
     "category": "minimal"
+  },
+  {
+    "id": "sakura-kimono",
+    "name": "Sakura Kimono",
+    "file": "21-sakura-kimono.webp",
+    "category": "anime"
+  },
+  {
+    "id": "moon-butterfly",
+    "name": "Moon Butterfly",
+    "file": "22-moon-butterfly.webp",
+    "category": "anime"
+  },
+  {
+    "id": "sky-schoolgirl",
+    "name": "Sky Schoolgirl",
+    "file": "23-sky-schoolgirl.webp",
+    "category": "anime"
+  },
+  {
+    "id": "cyber-goth",
+    "name": "Cyber Goth",
+    "file": "24-cyber-goth.webp",
+    "category": "cyber"
+  },
+  {
+    "id": "ocean-princess",
+    "name": "Ocean Princess",
+    "file": "25-ocean-princess.webp",
+    "category": "anime"
+  },
+  {
+    "id": "rose-goth",
+    "name": "Rose Goth",
+    "file": "26-rose-goth.webp",
+    "category": "anime"
+  },
+  {
+    "id": "neon-gamer",
+    "name": "Neon Gamer",
+    "file": "27-neon-gamer.webp",
+    "category": "game"
+  },
+  {
+    "id": "witch-sunset",
+    "name": "Witch Sunset",
+    "file": "28-witch-sunset.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "white-flower",
+    "name": "White Flower",
+    "file": "29-white-flower.webp",
+    "category": "anime"
+  },
+  {
+    "id": "moon-warrior",
+    "name": "Moon Warrior",
+    "file": "30-moon-warrior.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "sakura-shrine",
+    "name": "Sakura Shrine",
+    "file": "31-sakura-shrine.webp",
+    "category": "nature"
+  },
+  {
+    "id": "sakura-city",
+    "name": "Sakura City",
+    "file": "32-sakura-city.webp",
+    "category": "nature"
+  },
+  {
+    "id": "sakura-girl",
+    "name": "Sakura Girl",
+    "file": "33-sakura-girl.webp",
+    "category": "anime"
+  },
+  {
+    "id": "pink-sky",
+    "name": "Pink Sky",
+    "file": "34-pink-sky.webp",
+    "category": "nature"
+  },
+  {
+    "id": "sakura-street",
+    "name": "Sakura Street",
+    "file": "35-sakura-street.webp",
+    "category": "nature"
+  },
+  {
+    "id": "pink-gaming-room",
+    "name": "Pink Gaming Room",
+    "file": "36-pink-gaming-room.webp",
+    "category": "game"
+  },
+  {
+    "id": "sakura-train",
+    "name": "Sakura Train",
+    "file": "37-sakura-train.webp",
+    "category": "nature"
+  },
+  {
+    "id": "sakura-castle",
+    "name": "Sakura Castle",
+    "file": "38-sakura-castle.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "sakura-cafe",
+    "name": "Sakura Cafe",
+    "file": "39-sakura-cafe.webp",
+    "category": "chat"
+  },
+  {
+    "id": "sakura-moon",
+    "name": "Sakura Moon",
+    "file": "40-sakura-moon.webp",
+    "category": "nature"
   }
 ]
