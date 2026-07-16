@@ -20,6 +20,7 @@
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}.score-ring{box-shadow:none}.server-icon{box-shadow:0 0 0 4px #050914}}
   </style>
   <style>body{min-width:0}</style>
+  <link rel="stylesheet" href="assets/css/detail-v2.css">
 </head>
 <body>
   <header class="topbar"><div class="shell nav"><a class="brand" href="index.html"><span class="brand-mark">∞</span>ServerBloom</a><a class="back" href="index.html">← 返回探索</a></div></header>
@@ -27,6 +28,7 @@
   <div class="lightbox" id="lightbox" hidden><button class="lightbox-close" id="lightboxClose" aria-label="關閉">×</button><img id="lightboxImage" alt="Gallery 放大圖片"></div>
   <script src="assets/js/server-data.js"></script>
   <script src="assets/js/server-banner.js"></script>
+  <script src="assets/js/discord-app.js" defer></script>
   <script>
   (()=>{'use strict';
     const app=document.querySelector('#app'),lightbox=document.querySelector('#lightbox'),lightboxImage=document.querySelector('#lightboxImage');
