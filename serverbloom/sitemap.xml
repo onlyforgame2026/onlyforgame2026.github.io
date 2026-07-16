@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://onlyforgame2026.github.io/serverbloom/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/knowledge.html</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/server.html?id=onlyforgame</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/server.html?id=minecraft-taiwan</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/server.html?id=valorant-tactics</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/server.html?id=anime-club</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/server.html?id=code-community</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/article.html?id=why-discord-server-no-chat</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/article.html?id=how-to-retain-new-members</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/article.html?id=discord-event-planning-guide</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/article.html?id=discord-role-design</loc></url>
+  <url><loc>https://onlyforgame2026.github.io/serverbloom/article.html?id=five-ways-to-recruit-members</loc></url>
 </urlset>
