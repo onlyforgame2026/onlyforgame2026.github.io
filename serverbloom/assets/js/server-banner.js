@@ -2,18 +2,20 @@
   'use strict';
 
   const DEFAULT_BANNER = './assets/default-server-banner.svg';
-  const bannerPresetMap = Object.freeze({
-    'cyberpunk-purple': './assets/banners/community-neon-default.svg',
-    'gaming-purple': './assets/banners/game-default.svg',
-    'anime-pink': './assets/banners/anime-default.svg',
-    'sakura-pink': './assets/banners/sakura-pink.svg',
-    'steam-style': './assets/banners/steam-style.svg',
-    'chat-night': './assets/banners/midnight-grid-default.svg',
-    'chat-neon': './assets/banners/chat-default.svg',
-    'tech-blue': './assets/banners/tech-default.svg',
-    'music-orange': './assets/banners/music-default.svg',
-    'fantasy': './assets/banners/fantasy.svg',
-    'cyber-purple': './assets/banners/community-neon-default.svg'
+  const PRESET_LIBRARY_URL = './assets/banners/banner-presets.json';
+  const PRESET_ASSET_BASE = './assets/banners/presets/';
+  const presetMap = new Map();
+  const legacyPresetAliases = Object.freeze({
+    'cyber-purple': 'cyber',
+    'cyberpunk-purple': 'cyber',
+    'gaming-purple': 'game',
+    'anime-pink': 'anime',
+    'sakura-pink': 'sakura',
+    'steam-style': 'steam',
+    'chat-night': 'chat01',
+    'chat-neon': 'chat02',
+    'tech-blue': 'cyber',
+    'music-orange': 'music'
   });
   const categoryBannerMap = Object.freeze({
     '遊戲': './assets/banners/game-default.svg',
@@ -28,9 +30,48 @@
     '學習': './assets/banners/learning-default.svg',
     '其他': './assets/banners/other-default.svg'
   });
+  let presetLibraryPromise = null;
 
   function clean(value) {
     return typeof value === 'string' ? value.trim() : '';
+  }
+
+  function safePresetFile(file) {
+    const value = clean(file);
+    return /^[a-z0-9][a-z0-9._-]*\.webp$/i.test(value) ? value : '';
+  }
+
+  function normalizePreset(entry) {
+    const id = clean(entry && entry.id);
+    const file = safePresetFile(entry && entry.file);
+    if (!id || !file) return null;
+    return Object.freeze({
+      id,
+      name: clean(entry.name) || id,
+      file,
+      category: clean(entry.category) || 'other',
+      src: `${PRESET_ASSET_BASE}${file}`
+    });
+  }
+
+  function loadBannerPresets() {
+    if (presetLibraryPromise) return presetLibraryPromise;
+    presetLibraryPromise = fetch(PRESET_LIBRARY_URL, { cache: 'no-cache' })
+      .then(response => {
+        if (!response.ok) throw new Error(`Banner preset library HTTP ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        const presets = (Array.isArray(data) ? data : []).map(normalizePreset).filter(Boolean);
+        presetMap.clear();
+        presets.forEach(preset => presetMap.set(preset.id, preset));
+        return Object.freeze(presets);
+      })
+      .catch(error => {
+        presetLibraryPromise = null;
+        throw error;
+      });
+    return presetLibraryPromise;
   }
 
   function getCategoryFallbackBanner(category) {
@@ -38,7 +79,9 @@
   }
 
   function resolveBannerPreset(preset) {
-    return bannerPresetMap[clean(preset)] || '';
+    const requested = clean(preset);
+    const id = legacyPresetAliases[requested] || requested;
+    return presetMap.get(id)?.src || '';
   }
 
   function getBannerCandidates(server) {
@@ -95,11 +138,12 @@
   global.resolveServerBanner = resolveServerBanner;
   global.ServerBloomBanner = Object.freeze({
     DEFAULT_BANNER,
-    DEFAULT_BANNERS: Object.freeze(Object.values(bannerPresetMap)),
-    bannerPresetMap,
+    PRESET_LIBRARY_URL,
+    PRESET_ASSET_BASE,
     categoryBannerMap,
-    getCategoryFallbackBanner,
+    loadBannerPresets,
     resolveBannerPreset,
+    getCategoryFallbackBanner,
     getBannerCandidates,
     getBannerOptions,
     resolveServerBanner,
