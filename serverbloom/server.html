@@ -25,6 +25,7 @@
   <header class="topbar"><div class="shell nav"><a class="brand" href="index.html"><span class="brand-mark">∞</span>ServerBloom</a><a class="back" href="index.html">← 返回探索</a></div></header>
   <div id="app"><div class="error-page"><div><h1>正在載入 Server…</h1><p>請稍候</p></div></div></div>
   <div class="lightbox" id="lightbox" hidden><button class="lightbox-close" id="lightboxClose" aria-label="關閉">×</button><img id="lightboxImage" alt="Gallery 放大圖片"></div>
+  <script src="assets/js/server-data.js"></script>
   <script src="assets/js/server-banner.js"></script>
   <script>
   (()=>{'use strict';
@@ -68,7 +69,7 @@
       document.querySelector('#shareButton').addEventListener('click',async event=>{const data={title:`${server.name}｜ServerBloom`,text:server.shortDescription||server.description,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(location.href);event.currentTarget.textContent='已複製分享連結'}}catch{window.prompt('請複製分享連結：',location.href)}})
     }
     function showError(message){app.innerHTML=`<div class="error-page"><div><h1>找不到 Server</h1><p>${esc(message)}</p><a class="back" href="index.html">返回探索</a></div></div>`}
-    async function start(){const id=new URLSearchParams(location.search).get('id');if(!id){showError('網址缺少 id 參數。');return}try{const response=await fetch('data/servers.json',{cache:'no-store'});if(!response.ok)throw new Error('無法讀取 servers.json');const payload=await response.json(),servers=Array.isArray(payload)?payload:(Array.isArray(payload.servers)?payload.servers:[]),requested=String(id).toLowerCase().replaceAll('-',''),server=servers.find(item=>identity(item).replaceAll('-','')===requested);if(!server){showError(`沒有找到 id 為「${id}」的 Server。`);return}render(server,servers)}catch(error){showError(`${error.message}。請透過本地伺服器預覽，不要直接使用 file:// 開啟。`)}}
+    async function start(){const id=new URLSearchParams(location.search).get('id');if(!id){showError('網址缺少 id 參數。');return}try{const servers=await ServerBloomData.loadServers(),requested=String(id).toLowerCase().replaceAll('-',''),server=servers.find(item=>identity(item).replaceAll('-','')===requested);if(!server){showError(`沒有找到 id 為「${id}」的 Server。`);return}render(server,servers)}catch(error){showError(`${error.message}。請透過本地伺服器預覽，不要直接使用 file:// 開啟。`)}}
     function closeLightbox(){lightbox.hidden=true;lightboxImage.src='';document.body.style.overflow=''}
     document.querySelector('#lightboxClose').addEventListener('click',closeLightbox);lightbox.addEventListener('click',event=>{if(event.target===lightbox)closeLightbox()});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeLightbox()});start();
   })();
