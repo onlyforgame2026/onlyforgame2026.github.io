@@ -38,7 +38,7 @@
 
   function safePresetFile(file) {
     const value = clean(file);
-    return /^[a-z0-9][a-z0-9._-]*\.webp$/i.test(value) ? value : '';
+    return /^[a-z0-9][a-z0-9._-]*\.(?:webp|svg)$/i.test(value) ? value : '';
   }
 
   function normalizePreset(entry) {
@@ -80,7 +80,7 @@
 
   function resolveBannerPreset(preset) {
     const requested = clean(preset);
-    const id = legacyPresetAliases[requested] || requested;
+    const id = presetMap.has(requested) ? requested : (legacyPresetAliases[requested] || requested);
     return presetMap.get(id)?.src || '';
   }
 
