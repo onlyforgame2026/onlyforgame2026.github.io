@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" role="img" aria-label="Midnight grid banner">
+  <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#030915"/><stop offset=".58" stop-color="#071d3a"/><stop offset="1" stop-color="#11245c"/></linearGradient><linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#00d9ff" stop-opacity="0"/><stop offset=".5" stop-color="#00d9ff"/><stop offset="1" stop-color="#765cff" stop-opacity="0"/></linearGradient></defs>
+  <rect width="1600" height="600" fill="url(#sky)"/><circle cx="1260" cy="150" r="95" fill="#b9f5ff" opacity=".82"/>
+  <g stroke="url(#line)" fill="none" opacity=".45"><path d="M0 430H1600"/><path d="M0 490H1600"/><path d="M0 555H1600"/><path d="M800 360L260 600M800 360L500 600M800 360L680 600M800 360L920 600M800 360L1100 600M800 360L1340 600"/></g>
+  <path d="M0 410L210 300 390 395 620 250 820 390 1050 285 1260 380 1460 260 1600 345V600H0Z" fill="#050a19" opacity=".92"/>
+</svg>
