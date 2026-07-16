@@ -13,23 +13,39 @@
 
   function getDiscordTargets(url) {
     const code = inviteCode(url);
-    return code ? { app: `discord://-/invite/${encodeURIComponent(code)}`, web: `https://discord.gg/${code}` } : null;
+    return code ? {
+      app: `discord://-/invite/${encodeURIComponent(code)}`,
+      web: `https://discord.com/invite/${encodeURIComponent(code)}`
+    } : null;
   }
 
-  window.ServerBloomDiscord = Object.freeze({ inviteCode, getDiscordTargets });
+  function openDiscordInvite(url) {
+    const targets = getDiscordTargets(url);
+    if (!targets) return false;
+
+    let appOpened = document.hidden;
+    const onVisibility = () => {
+      if (document.hidden) appOpened = true;
+    };
+
+    document.addEventListener('visibilitychange', onVisibility);
+    location.href = targets.app;
+
+    window.setTimeout(() => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (!appOpened && !document.hidden) location.href = targets.web;
+    }, 1800);
+
+    return true;
+  }
+
+  window.ServerBloomDiscord = Object.freeze({ inviteCode, getDiscordTargets, openDiscordInvite });
 
   document.addEventListener('click', event => {
     const link = event.target.closest('a.action.primary[href*="discord"]');
     if (!link) return;
-    const targets = getDiscordTargets(link.href);
-    if (!targets) return;
+    if (!getDiscordTargets(link.href)) return;
     event.preventDefault();
-    let leftPage = false;
-    const onVisibility = () => { if (document.hidden) leftPage = true; };
-    document.addEventListener('visibilitychange', onVisibility, { once: true });
-    location.href = targets.app;
-    window.setTimeout(() => {
-      if (!leftPage) location.href = targets.web;
-    }, 1200);
+    openDiscordInvite(link.href);
   });
 })();

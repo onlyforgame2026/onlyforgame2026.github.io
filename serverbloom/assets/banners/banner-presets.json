@@ -1,0 +1,62 @@
+[
+  {
+    "id": "anime",
+    "name": "Anime",
+    "file": "01-anime.webp",
+    "category": "anime"
+  },
+  {
+    "id": "sakura",
+    "name": "Sakura",
+    "file": "02-sakura.webp",
+    "category": "nature"
+  },
+  {
+    "id": "cyber",
+    "name": "Cyberpunk",
+    "file": "03-cyber.webp",
+    "category": "cyber"
+  },
+  {
+    "id": "game",
+    "name": "Game",
+    "file": "04-game.webp",
+    "category": "game"
+  },
+  {
+    "id": "chat01",
+    "name": "Chat 01",
+    "file": "05-chat-01.webp",
+    "category": "chat"
+  },
+  {
+    "id": "chat02",
+    "name": "Chat 02",
+    "file": "06-chat-02.webp",
+    "category": "chat"
+  },
+  {
+    "id": "steam",
+    "name": "Steam",
+    "file": "07-steam.webp",
+    "category": "steam"
+  },
+  {
+    "id": "fantasy",
+    "name": "Fantasy",
+    "file": "08-fantasy.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "music",
+    "name": "Music",
+    "file": "09-music.webp",
+    "category": "music"
+  },
+  {
+    "id": "minimal",
+    "name": "Minimal",
+    "file": "10-minimal.webp",
+    "category": "minimal"
+  }
+]
