@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" role="img" aria-label="ServerBloom default server banner">
+  <defs>
+    <radialGradient id="a" cx="20%" cy="30%" r="80%"><stop stop-color="#5b32d9" stop-opacity=".5"/><stop offset="1" stop-color="#070b18" stop-opacity="0"/></radialGradient>
+    <radialGradient id="b" cx="85%" cy="75%" r="70%"><stop stop-color="#0878ba" stop-opacity=".45"/><stop offset="1" stop-color="#070b18" stop-opacity="0"/></radialGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#080c1b"/><stop offset="1" stop-color="#040711"/></linearGradient>
+  </defs>
+  <rect width="1600" height="600" fill="url(#c)"/><rect width="1600" height="600" fill="url(#a)"/><rect width="1600" height="600" fill="url(#b)"/>
+  <g fill="none" stroke="#8e69ff" stroke-opacity=".18"><circle cx="180" cy="470" r="210"/><circle cx="180" cy="470" r="150"/><path d="M0 430C300 250 500 580 800 390s500-80 800-210"/></g>
+  <g fill="#8abfff" fill-opacity=".35"><circle cx="120" cy="120" r="4"/><circle cx="440" cy="190" r="3"/><circle cx="1120" cy="110" r="4"/><circle cx="1450" cy="350" r="3"/></g>
+</svg>
