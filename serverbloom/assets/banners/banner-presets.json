@@ -1,5 +1,65 @@
 [
   {
+    "id": "cyberpunk-purple",
+    "name": "Cyberpunk Purple",
+    "file": "01-cyberpunk-purple.svg",
+    "category": "cyber"
+  },
+  {
+    "id": "gaming-purple",
+    "name": "Gaming Purple",
+    "file": "02-gaming-purple.svg",
+    "category": "game"
+  },
+  {
+    "id": "anime-pink",
+    "name": "Anime Pink",
+    "file": "03-anime-pink.svg",
+    "category": "anime"
+  },
+  {
+    "id": "sakura-pink",
+    "name": "Sakura Pink",
+    "file": "04-sakura-pink.svg",
+    "category": "anime"
+  },
+  {
+    "id": "steam-style",
+    "name": "Steam Style",
+    "file": "05-steam-style.svg",
+    "category": "steam"
+  },
+  {
+    "id": "chat-night",
+    "name": "Chat Night",
+    "file": "06-chat-night.svg",
+    "category": "chat"
+  },
+  {
+    "id": "chat-neon",
+    "name": "Chat Neon",
+    "file": "07-chat-neon.svg",
+    "category": "chat"
+  },
+  {
+    "id": "tech-blue",
+    "name": "Tech Blue",
+    "file": "08-tech-blue.svg",
+    "category": "cyber"
+  },
+  {
+    "id": "music-orange",
+    "name": "Music Orange",
+    "file": "09-music-orange.svg",
+    "category": "music"
+  },
+  {
+    "id": "fantasy-classic",
+    "name": "Fantasy Classic",
+    "file": "10-fantasy.svg",
+    "category": "fantasy"
+  },
+  {
     "id": "anime",
     "name": "Anime",
     "file": "01-anime.webp",
