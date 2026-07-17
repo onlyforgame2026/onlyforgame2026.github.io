@@ -15,9 +15,9 @@
     "description": "歡迎所有遊戲玩家加入！我們提供各種遊戲的組隊、攻略與討論空間。\n\n不論你是剛開始的新手，還是經驗豐富的老玩家，都能在這裡慢慢找到固定的遊戲圈。",
     "inviteUrl": "https://discord.gg/bWTKbMzct3",
     "icon": "https://api.dicebear.com/9.x/shapes/svg?seed=OnlyForGame&backgroundColor=6d28d9",
-    "banner": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1800&q=88",
-    "customBanner": "assets/servers/onlyforgame/banner-custom.webp",
-    "bannerPreset": "cyber-purple",
+    "banner": "",
+    "customBanner": "",
+    "bannerPreset": "sakura-girl",
     "aiReview": {
       "score": 82,
       "summary": "這是一個適合遊戲組隊與聊天的綜合社群。",
