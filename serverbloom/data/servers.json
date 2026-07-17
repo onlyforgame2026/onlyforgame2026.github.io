@@ -16,7 +16,7 @@
     "inviteUrl": "https://discord.gg/bWTKbMzct3",
     "icon": "https://api.dicebear.com/9.x/shapes/svg?seed=OnlyForGame&backgroundColor=6d28d9",
     "banner": "",
-    "customBanner": "",
+    "customBanner": "assets/banners/presets/33-sakura-girl.webp",
     "bannerPreset": "sakura-girl",
     "aiReview": {
       "score": 82,
