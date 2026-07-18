@@ -93,40 +93,34 @@
       console.warn(error.message);
     }
 
-    const remoteIndex = new Map();
-    submitted.forEach(server => {
+    const localIndex = new Map();
+    official.forEach(server => {
       const key = identity(server);
-      if (key.id) remoteIndex.set(`id:${key.id}`, server);
-      if (key.invite) remoteIndex.set(`invite:${key.invite}`, server);
-      if (key.name) remoteIndex.set(`name:${key.name}`, server);
+      if (key.id) localIndex.set(`id:${key.id}`, server);
+      if (key.invite) localIndex.set(`invite:${key.invite}`, server);
+      if (key.name) localIndex.set(`name:${key.name}`, server);
     });
 
-    const mergedOfficial = official.map(server => {
-      const key = identity(server);
-      const remote = remoteIndex.get(`id:${key.id}`) ||
-        remoteIndex.get(`invite:${key.invite}`) ||
-        remoteIndex.get(`name:${key.name}`);
-      if (!remote) return server;
-
-      const remoteKey = identity(remote);
-      remoteIndex.delete(`id:${remoteKey.id}`);
-      remoteIndex.delete(`invite:${remoteKey.invite}`);
-      remoteIndex.delete(`name:${remoteKey.name}`);
+    const source = submitted.length ? submitted.map(remote => {
+      const key = identity(remote);
+      const local = localIndex.get(`id:${key.id}`) ||
+        localIndex.get(`invite:${key.invite}`) ||
+        localIndex.get(`name:${key.name}`);
+      if (!local) return remote;
 
       return {
-        ...server,
+        ...local,
         ...remote,
-        id: server.id || remote.id,
-        banner: remote.banner || server.banner || '',
-        customBanner: remote.customBanner || server.customBanner || '',
-        bannerPreset: remote.bannerPreset || server.bannerPreset || '',
-        icon: remote.icon || server.icon || ''
+        id: remote.id || local.id,
+        banner: remote.banner || local.banner || '',
+        customBanner: remote.customBanner || local.customBanner || '',
+        bannerPreset: remote.bannerPreset || local.bannerPreset || '',
+        icon: remote.icon || local.icon || ''
       };
-    });
+    }) : official;
 
-    const remainingSubmitted = [...new Set(remoteIndex.values())];
     const seen = new Set();
-    return [...mergedOfficial, ...remainingSubmitted].filter(server => {
+    return source.filter(server => {
       const key = String(server.inviteUrl || server.id || server.name).toLowerCase();
       if (!key || seen.has(key)) return false;
       seen.add(key);
