@@ -238,5 +238,113 @@
     "name": "Sakura Moon",
     "file": "40-sakura-moon.webp",
     "category": "nature"
+  },
+  {
+    "id": "pastel-clouds",
+    "name": "Pastel Clouds",
+    "file": "41-pastel-clouds.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "floral-library",
+    "name": "Floral Library",
+    "file": "42-floral-library.webp",
+    "category": "nature"
+  },
+  {
+    "id": "moon-princess",
+    "name": "Moon Princess",
+    "file": "43-moon-princess.webp",
+    "category": "anime"
+  },
+  {
+    "id": "shadow-swordsman",
+    "name": "Shadow Swordsman",
+    "file": "44-shadow-swordsman.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "crimson-warrior",
+    "name": "Crimson Warrior",
+    "file": "45-crimson-warrior.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "spring-cafe",
+    "name": "Spring Cafe",
+    "file": "46-spring-cafe.webp",
+    "category": "chat"
+  },
+  {
+    "id": "sakura-cyber-city",
+    "name": "Sakura Cyber City",
+    "file": "47-sakura-cyber-city.webp",
+    "category": "cyber"
+  },
+  {
+    "id": "cozy-pets",
+    "name": "Cozy Pets",
+    "file": "48-cozy-pets.webp",
+    "category": "chat"
+  },
+  {
+    "id": "sakura-rain-couple",
+    "name": "Sakura Rain Couple",
+    "file": "49-sakura-rain-couple.webp",
+    "category": "anime"
+  },
+  {
+    "id": "midnight-skyline",
+    "name": "Midnight Skyline",
+    "file": "50-midnight-skyline.webp",
+    "category": "chat"
+  },
+  {
+    "id": "cozy-friends",
+    "name": "Cozy Friends",
+    "file": "51-cozy-friends.webp",
+    "category": "chat"
+  },
+  {
+    "id": "taipei-night",
+    "name": "Taipei Night",
+    "file": "52-taipei-night.webp",
+    "category": "cyber"
+  },
+  {
+    "id": "crimson-lord",
+    "name": "Crimson Lord",
+    "file": "53-crimson-lord.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "crimson-battlefield",
+    "name": "Crimson Battlefield",
+    "file": "54-crimson-battlefield.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "golden-bakery",
+    "name": "Golden Bakery",
+    "file": "55-golden-bakery.webp",
+    "category": "chat"
+  },
+  {
+    "id": "dark-king",
+    "name": "Dark King",
+    "file": "56-dark-king.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "crimson-warrior-ii",
+    "name": "Crimson Warrior II",
+    "file": "57-crimson-warrior-ii.webp",
+    "category": "fantasy"
+  },
+  {
+    "id": "eclipse-duel",
+    "name": "Eclipse Duel",
+    "file": "58-eclipse-duel.webp",
+    "category": "fantasy"
   }
 ]
