@@ -50,11 +50,18 @@
     };
   }
 
+  function normalizeIdentity(value) {
+    return String(value || '')
+      .normalize('NFKC')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, '');
+  }
+
   function identity(server) {
     return {
-      id: String(server.id || server.slug || '').replace(/[^a-z0-9]/gi, '').toLowerCase(),
+      id: normalizeIdentity(server.id || server.slug),
       invite: String(server.inviteUrl || '').trim().toLowerCase(),
-      name: String(server.name || '').replace(/[^a-z0-9\u4e00-\u9fff]/gi, '').toLowerCase()
+      name: normalizeIdentity(server.name)
     };
   }
 
@@ -65,11 +72,22 @@
       .filter(server => server.id && server.name && server.inviteUrl);
   }
 
-  async function getRemoteServerById(id) {
-    const requested = String(id || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
-    if (!requested) return null;
+  async function getRemoteServer(reference) {
+    const requested = typeof reference === 'object'
+      ? identity(reference || {})
+      : { id: normalizeIdentity(reference), invite: '', name: '' };
+    if (!requested.id && !requested.invite && !requested.name) return null;
     const servers = await loadRemoteServers();
-    return servers.find(server => identity(server).id === requested) || null;
+    return servers.find(server => {
+      const candidate = identity(server);
+      return (requested.id && candidate.id === requested.id) ||
+        (requested.invite && candidate.invite === requested.invite) ||
+        (requested.name && candidate.name === requested.name);
+    }) || null;
+  }
+
+  async function getRemoteServerById(id) {
+    return getRemoteServer(id);
   }
 
   async function loadServers() {
@@ -139,6 +157,7 @@
     API_URL,
     loadServers,
     loadRemoteServers,
+    getRemoteServer,
     getRemoteServerById
   });
 })();
