@@ -81,7 +81,7 @@
 
   filterNav.addEventListener('click',event=>{const button=event.target.closest('[data-filter]');if(button)filter(button.dataset.filter)});
   grid.addEventListener('click',event=>{const button=event.target.closest('[data-preset]');if(button)previewPreset(button.dataset.preset)});
-  modal.querySelector('.preset-apply').addEventListener('click',async()=>{if(!pendingPreset||!applyPreset(pendingPreset))returnconst applied=pendingPreset;returnconst applied=pendingPreset;                                                                    
+  modal.querySelector('.preset-apply').addEventListener('click',async()=>{if(!pendingPreset||!applyPreset(pendingPreset))return;const applied=pendingPreset;                                                                   
   await saveBanner(activeCard,applied);
   pendingPreset='';originalPreview=null;modal.querySelector('.preset-apply').disabled=true;modal.querySelector('.preset-copy').dataset.json=`"bannerPreset":"${applied}"`});
   modal.querySelector('.preset-copy').addEventListener('click',async event=>{const value=event.currentTarget.dataset.json||`"bannerPreset":"${pendingPreset}"`;if(!pendingPreset&&!event.currentTarget.dataset.json)return;try{await navigator.clipboard.writeText(value);event.currentTarget.textContent='已複製 JSON'}catch{window.prompt('請複製 Banner JSON：',value)}});
