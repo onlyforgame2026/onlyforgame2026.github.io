@@ -13,7 +13,7 @@
   let uploadUrl = '';
   let pendingPreset = '';
   let originalPreview = null;
-
+  const API = 'https://script.google.com/macros/s/AKfycbwsU40XuJqCBFzCZjH_Mp57y05OIIFp3RAtxFD1HisM_she08o2951ajf4ovzA1Q1gW/exec';
   const style = document.createElement('style');
   style.textContent = `
     .banner-gallery[hidden]{display:none}.banner-gallery{position:fixed;z-index:1200;inset:0;display:grid;place-items:center;padding:18px;background:#01040de8;backdrop-filter:blur(15px)}
@@ -64,6 +64,8 @@
   }
 
   function cardName(card){return card?.querySelector('h3')?.textContent.replace('◆','').trim()||'server'}
+  function cardId(card){const link=card?.querySelector('.details');if(!link)return '';return new URL(link.href,location.href).searchParams.get('id')||''}
+  async function saveBanner(card,id){const serverId=cardId(card);if(!serverId)throw new Error('找不到社群 id');const body=new URLSearchParams({action:'updateBanner',id:serverId,bannerPreset:id,customBanner:''});await fetch(API,{method:'POST',mode:'no-cors',body})}
   function storageKey(card){return `serverbloom:banner:${cardName(card)}`}
   function label(card,type){let node=card.querySelector('.banner-label');if(!node){node=document.createElement('span');node.className='banner-label';card.querySelector('.banner').appendChild(node)}node.textContent=type}
   function setPreview(card,id){if(!card)return false;const src=ServerBloomBanner.resolveBannerPreset(id),image=card.querySelector('.card-banner-image');if(!src||!image)return false;image.dataset.bannerManualSource='Official Banner';image.dataset.bannerSource='Official Banner';image.src=src;label(card,'Official Banner');card.querySelector('.bookmark').textContent='★';return true}
@@ -79,7 +81,9 @@
 
   filterNav.addEventListener('click',event=>{const button=event.target.closest('[data-filter]');if(button)filter(button.dataset.filter)});
   grid.addEventListener('click',event=>{const button=event.target.closest('[data-preset]');if(button)previewPreset(button.dataset.preset)});
-  modal.querySelector('.preset-apply').addEventListener('click',()=>{if(!pendingPreset||!applyPreset(pendingPreset))return;const applied=pendingPreset;pendingPreset='';originalPreview=null;modal.querySelector('.preset-apply').disabled=true;modal.querySelector('.preset-copy').dataset.json=`"bannerPreset":"${applied}"`});
+  modal.querySelector('.preset-apply').addEventListener('click',async()=>{if(!pendingPreset||!applyPreset(pendingPreset))returnconst applied=pendingPreset;
+  await saveBanner(activeCard,applied);
+  pendingPreset='';originalPreview=null;modal.querySelector('.preset-apply').disabled=true;modal.querySelector('.preset-copy').dataset.json=`"bannerPreset":"${applied}"`});
   modal.querySelector('.preset-copy').addEventListener('click',async event=>{const value=event.currentTarget.dataset.json||`"bannerPreset":"${pendingPreset}"`;if(!pendingPreset&&!event.currentTarget.dataset.json)return;try{await navigator.clipboard.writeText(value);event.currentTarget.textContent='已複製 JSON'}catch{window.prompt('請複製 Banner JSON：',value)}});
   modal.querySelector('.banner-gallery-close').addEventListener('click',close);modal.addEventListener('click',event=>{if(event.target===modal)close()});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!modal.hidden)close()});
   modal.querySelector('.upload-open').addEventListener('click',()=>modal.querySelector('.upload-box').classList.toggle('visible'));
