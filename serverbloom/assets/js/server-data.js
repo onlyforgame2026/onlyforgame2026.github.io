@@ -120,12 +120,19 @@
     }) : official;
 
     const seen = new Set();
-    return source.filter(server => {
+    const servers = source.filter(server => {
       const key = String(server.inviteUrl || server.id || server.name).toLowerCase();
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     });
+
+    const pinnedIndex = servers.findIndex(server =>
+      identity(server).id === 'onlyforgame' ||
+      String(server.name || '').trim().toLowerCase() === 'only for game'
+    );
+    if (pinnedIndex > 0) servers.unshift(servers.splice(pinnedIndex, 1)[0]);
+    return servers;
   }
 
   window.ServerBloomData = Object.freeze({
