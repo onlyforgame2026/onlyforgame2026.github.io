@@ -26,8 +26,8 @@
   <header class="topbar"><div class="shell nav"><a class="brand" href="index.html"><span class="brand-mark">∞</span>ServerBloom</a><a class="back" href="index.html">← 返回探索</a></div></header>
   <div id="app"><div class="error-page"><div><h1>正在載入 Server…</h1><p>請稍候</p></div></div></div>
   <div class="lightbox" id="lightbox" hidden><button class="lightbox-close" id="lightboxClose" aria-label="關閉">×</button><img id="lightboxImage" alt="Gallery 放大圖片"></div>
-  <script src="assets/js/server-data.js"></script>
-  <script src="assets/js/server-banner.js?v=banner-library-v2"></script>
+  <script src="assets/js/server-data.js?v=banner-sync-v1"></script>
+  <script src="assets/js/server-banner.js?v=banner-sync-v1"></script>
   <script src="assets/js/discord-app.js?v=hotfix-v1" defer></script>
   <script>
   (()=>{'use strict';
@@ -67,14 +67,13 @@
       document.querySelectorAll('.recommend-copy p').forEach((element,index)=>{if(related[index]?.countsUnknown)element.textContent=`${related[index].category||'其他'} · 成員數未公開`});
       const legacyAi=[...document.querySelectorAll('.section')].find(section=>section.querySelector('h2')?.textContent.includes('AI Review'));if(legacyAi)legacyAi.outerHTML=aiReviewMarkup(server.aiReview);
       const heroImage=document.querySelector('.hero-image');ServerBloomBanner.bindBannerFallback(heroImage,server);heroImage.src=resolveServerBanner(server);
-      const bannerStorageKey=`serverbloom:banner:${server.name}`;window.addEventListener('storage',event=>{if(event.key!==bannerStorageKey)return;server.bannerPreset=event.newValue||'';heroImage.dataset.bannerCandidateIndex='0';heroImage.src=resolveServerBanner(server)});
       document.querySelectorAll('.recommend img').forEach((image,index)=>{const item=related[index];if(item){ServerBloomBanner.bindBannerFallback(image,item);image.src=resolveServerBanner(item)}});
       document.querySelectorAll('[data-gallery]').forEach(button=>button.addEventListener('click',()=>{lightboxImage.src=button.dataset.gallery;lightbox.hidden=false;document.body.style.overflow='hidden'}));
       document.querySelector('#copyButton').addEventListener('click',async event=>{try{await navigator.clipboard.writeText(server.inviteUrl);event.currentTarget.textContent='已複製邀請'}catch{window.prompt('請複製邀請連結：',server.inviteUrl)}});
       document.querySelector('#shareButton').addEventListener('click',async event=>{const data={title:`${server.name}｜ServerBloom`,text:server.shortDescription||server.description,url:location.href};try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(location.href);event.currentTarget.textContent='已複製分享連結'}}catch{window.prompt('請複製分享連結：',location.href)}})
     }
     function showError(message){app.innerHTML=`<div class="error-page"><div><h1>找不到 Server</h1><p>${esc(message)}</p><a class="back" href="index.html">返回探索</a></div></div>`}
-    async function start(){const id=new URLSearchParams(location.search).get('id');if(!id){showError('網址缺少 id 參數。');return}try{const [servers]=await Promise.all([ServerBloomData.loadServers(),ServerBloomBanner.loadBannerPresets().catch(()=>[])]),requested=String(id).toLowerCase().replaceAll('-',''),source=servers.find(item=>identity(item).replaceAll('-','')===requested);if(!source){showError(`沒有找到 id 為「${id}」的 Server。`);return}const savedPreset=localStorage.getItem(`serverbloom:banner:${source.name}`),server={...source,bannerPreset:savedPreset||source.bannerPreset||''};render(server,servers)}catch(error){showError(`${error.message}。請透過本地伺服器預覽，不要直接使用 file:// 開啟。`)}}
+    async function start(){const id=new URLSearchParams(location.search).get('id');if(!id){showError('網址缺少 id 參數。');return}try{const [servers]=await Promise.all([ServerBloomData.loadServers(),ServerBloomBanner.loadBannerPresets().catch(()=>[])]),requested=String(id).toLowerCase().replaceAll('-',''),source=servers.find(item=>identity(item).replaceAll('-','')===requested);if(!source){showError(`沒有找到 id 為「${id}」的 Server。`);return}render({...source},servers)}catch(error){showError(`${error.message}。請透過本地伺服器預覽，不要直接使用 file:// 開啟。`)}}
     function closeLightbox(){lightbox.hidden=true;lightboxImage.src='';document.body.style.overflow=''}
     document.querySelector('#lightboxClose').addEventListener('click',closeLightbox);lightbox.addEventListener('click',event=>{if(event.target===lightbox)closeLightbox()});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeLightbox()});start();
   })();
