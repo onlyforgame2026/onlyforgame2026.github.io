@@ -42,11 +42,19 @@
       memberCount: null,
       onlineCount: null,
       countsUnknown: true,
-      isNew: true,
+      isNew: server.isNew === true,
       banner: String(server.banner || '').trim(),
       customBanner: String(server.customBanner || '').trim(),
       bannerPreset: String(server.bannerPreset || '').trim(),
       icon: String(server.icon || '').trim()
+    };
+  }
+
+  function identity(server) {
+    return {
+      id: String(server.id || server.slug || '').replace(/[^a-z0-9]/gi, '').toLowerCase(),
+      invite: String(server.inviteUrl || '').trim().toLowerCase(),
+      name: String(server.name || '').replace(/[^a-z0-9\u4e00-\u9fff]/gi, '').toLowerCase()
     };
   }
 
@@ -58,21 +66,25 @@
   }
 
   async function getRemoteServerById(id) {
-    const requestedId = String(id || '').trim();
-    if (!requestedId) return null;
+    const requested = String(id || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+    if (!requested) return null;
     const servers = await loadRemoteServers();
-    return servers.find(server => server.id === requestedId) || null;
+    return servers.find(server => identity(server).id === requested) || null;
   }
 
   async function loadServers() {
     const localResponse = await fetch('data/servers.json', { cache: 'no-store' });
-    if (!localResponse.ok) throw new Error('servers.json 暫時無法讀取');
+    if (!localResponse.ok) throw new Error('servers.json 載入失敗');
     const localPayload = await localResponse.json();
     const localServers = Array.isArray(localPayload) ? localPayload : (localPayload.servers || []);
-    const official = localServers.filter(server =>
-      String(server.id || '').replaceAll('-', '').toLowerCase() === 'onlyforgame' ||
-      String(server.name || '').trim().toLowerCase() === 'only for game'
-    ).map(server => ({ ...server, members: null, online: null, memberCount: null, onlineCount: null, countsUnknown: true }));
+    const official = localServers.map(server => ({
+      ...server,
+      members: null,
+      online: null,
+      memberCount: null,
+      onlineCount: null,
+      countsUnknown: true
+    }));
 
     let submitted = [];
     try {
@@ -81,23 +93,40 @@
       console.warn(error.message);
     }
 
-    const submittedById = new Map(submitted.map(server => [server.id, server]));
+    const remoteIndex = new Map();
+    submitted.forEach(server => {
+      const key = identity(server);
+      if (key.id) remoteIndex.set(`id:${key.id}`, server);
+      if (key.invite) remoteIndex.set(`invite:${key.invite}`, server);
+      if (key.name) remoteIndex.set(`name:${key.name}`, server);
+    });
+
     const mergedOfficial = official.map(server => {
-      const remote = submittedById.get(String(server.id || '').trim());
+      const key = identity(server);
+      const remote = remoteIndex.get(`id:${key.id}`) ||
+        remoteIndex.get(`invite:${key.invite}`) ||
+        remoteIndex.get(`name:${key.name}`);
       if (!remote) return server;
-      submittedById.delete(remote.id);
+
+      const remoteKey = identity(remote);
+      remoteIndex.delete(`id:${remoteKey.id}`);
+      remoteIndex.delete(`invite:${remoteKey.invite}`);
+      remoteIndex.delete(`name:${remoteKey.name}`);
+
       return {
         ...server,
         ...remote,
+        id: server.id || remote.id,
         banner: remote.banner || server.banner || '',
-        customBanner: remote.customBanner || '',
-        bannerPreset: remote.bannerPreset || '',
+        customBanner: remote.customBanner || server.customBanner || '',
+        bannerPreset: remote.bannerPreset || server.bannerPreset || '',
         icon: remote.icon || server.icon || ''
       };
     });
 
+    const remainingSubmitted = [...new Set(remoteIndex.values())];
     const seen = new Set();
-    return [...mergedOfficial, ...submittedById.values()].filter(server => {
+    return [...mergedOfficial, ...remainingSubmitted].filter(server => {
       const key = String(server.inviteUrl || server.id || server.name).toLowerCase();
       if (!key || seen.has(key)) return false;
       seen.add(key);
