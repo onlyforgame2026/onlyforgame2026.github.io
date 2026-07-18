@@ -43,9 +43,25 @@
       onlineCount: null,
       countsUnknown: true,
       isNew: true,
-      banner: '',
-      icon: ''
+      banner: String(server.banner || '').trim(),
+      customBanner: String(server.customBanner || '').trim(),
+      bannerPreset: String(server.bannerPreset || '').trim(),
+      icon: String(server.icon || '').trim()
     };
+  }
+
+  async function loadRemoteServers() {
+    const payload = await jsonp(API_URL);
+    return (Array.isArray(payload?.servers) ? payload.servers : [])
+      .map(normalizeRemote)
+      .filter(server => server.id && server.name && server.inviteUrl);
+  }
+
+  async function getRemoteServerById(id) {
+    const requestedId = String(id || '').trim();
+    if (!requestedId) return null;
+    const servers = await loadRemoteServers();
+    return servers.find(server => server.id === requestedId) || null;
   }
 
   async function loadServers() {
@@ -60,16 +76,28 @@
 
     let submitted = [];
     try {
-      const payload = await jsonp(API_URL);
-      submitted = (Array.isArray(payload?.servers) ? payload.servers : [])
-        .map(normalizeRemote)
-        .filter(server => server.name && server.inviteUrl);
+      submitted = await loadRemoteServers();
     } catch (error) {
       console.warn(error.message);
     }
 
+    const submittedById = new Map(submitted.map(server => [server.id, server]));
+    const mergedOfficial = official.map(server => {
+      const remote = submittedById.get(String(server.id || '').trim());
+      if (!remote) return server;
+      submittedById.delete(remote.id);
+      return {
+        ...server,
+        ...remote,
+        banner: remote.banner || server.banner || '',
+        customBanner: remote.customBanner || '',
+        bannerPreset: remote.bannerPreset || '',
+        icon: remote.icon || server.icon || ''
+      };
+    });
+
     const seen = new Set();
-    return [...official, ...submitted].filter(server => {
+    return [...mergedOfficial, ...submittedById.values()].filter(server => {
       const key = String(server.inviteUrl || server.id || server.name).toLowerCase();
       if (!key || seen.has(key)) return false;
       seen.add(key);
@@ -77,5 +105,10 @@
     });
   }
 
-  window.ServerBloomData = Object.freeze({ loadServers });
+  window.ServerBloomData = Object.freeze({
+    API_URL,
+    loadServers,
+    loadRemoteServers,
+    getRemoteServerById
+  });
 })();
