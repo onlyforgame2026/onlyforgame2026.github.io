@@ -65,6 +65,7 @@
 
   function cardName(card){return card?.querySelector('h3')?.textContent.replace('◆','').trim()||'server'}
   function cardId(card){return String(card?.dataset.serverId||'').trim()}
+  function cardInvite(card){return String(card?.querySelector('a[href*="discord.gg"],a[href*="discord.com/invite"]')?.href||'').trim()}
   function label(card,type){let node=card.querySelector('.banner-label');if(!node){node=document.createElement('span');node.className='banner-label';card.querySelector('.banner').appendChild(node)}node.textContent=type}
   function setPreview(card,id){if(!card)return false;const src=ServerBloomBanner.resolveBannerPreset(id),image=card.querySelector('.card-banner-image');if(!src||!image)return false;image.dataset.bannerManualSource='Official Banner';image.dataset.bannerSource='Official Banner';image.src=src;label(card,'Official Banner');card.querySelector('.bookmark').textContent='★';return true}
   function applyPreset(id){if(!activeCard||!setPreview(activeCard,id))return false;activeCard.dataset.bannerPreset=id;activeCard.dispatchEvent(new CustomEvent('serverbloom:bannerpresetchange',{bubbles:true,detail:{bannerPreset:id}}));return true}
@@ -85,14 +86,16 @@
   async function saveBanner(card,bannerPreset){
     const serverId=cardId(card);
     if(!serverId)throw new Error('找不到社群 ID');
-    const existing=await ServerBloomData.getRemoteServerById(serverId);
+    const existing=await ServerBloomData.getRemoteServer({id:serverId,name:cardName(card),inviteUrl:cardInvite(card)});
     if(!existing)throw new Error('Google Sheet 找不到指定社群');
-    const body=new URLSearchParams({action:'updateBanner',id:serverId,bannerPreset,customBanner:''});
-    console.info('[ServerBloom] 正在同步 Banner',{serverId,bannerPreset});
+    const canonicalId=String(existing.id||'').trim();
+    if(!canonicalId)throw new Error('Google Sheet 社群缺少 ID');
+    const body=new URLSearchParams({action:'updateBanner',id:canonicalId,bannerPreset,customBanner:''});
+    console.info('[ServerBloom] 正在同步 Banner',{serverId:canonicalId,bannerPreset});
     await fetch(ServerBloomData.API_URL,{method:'POST',mode:'no-cors',body});
-    const verified=await verifyBanner(serverId,bannerPreset);
+    const verified=await verifyBanner(canonicalId,bannerPreset);
     if(!verified)throw new Error('API 沒有確認寫入');
-    console.info('[ServerBloom] Banner 同步完成',{serverId,bannerPreset});
+    console.info('[ServerBloom] Banner 同步完成',{serverId:canonicalId,bannerPreset});
     return verified;
   }
 
