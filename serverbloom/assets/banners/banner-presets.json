@@ -346,5 +346,11 @@
     "name": "Eclipse Duel",
     "file": "58-eclipse-duel.webp",
     "category": "fantasy"
+  },
+  {
+    "id": "lantern-banquet",
+    "name": "Lantern Banquet",
+    "file": "59-lantern-banquet.png",
+    "category": "chat"
   }
 ]
