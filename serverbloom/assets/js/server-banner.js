@@ -38,7 +38,7 @@
 
   function safePresetFile(file) {
     const value = clean(file);
-    return /^[a-z0-9][a-z0-9._-]*\.(?:webp|svg)$/i.test(value) ? value : '';
+    return /^[a-z0-9][a-z0-9._-]*\.(?:webp|svg|png|jpe?g)$/i.test(value) ? value : '';
   }
 
   function normalizePreset(entry) {
