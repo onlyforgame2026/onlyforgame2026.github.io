@@ -1,0 +1,65 @@
+[
+  {
+    "postId": "post-0003",
+    "nickname": "匿名玩家",
+    "category": "遊戲",
+    "interactionMode": "建議模式",
+    "theme": "lavender",
+    "title": "要怎麼找到願意長期一起玩的固定夥伴？",
+    "content": "我加入過不少群組，也和很多人打過遊戲，但通常玩幾次就沒有聯絡了。想知道大家都是怎麼找到能夠長期組隊，又不容易因為輸贏吵架的朋友。",
+    "status": "published",
+    "createdAt": "2026-07-20T20:30:00+08:00",
+    "publishedAt": "2026-07-20T20:35:00+08:00",
+    "commentCount": 0,
+    "reactions": {
+      "cool": 0,
+      "smile": 0,
+      "love": 0,
+      "angry": 0,
+      "hug": 0,
+      "skull": 0
+    }
+  },
+  {
+    "postId": "post-0002",
+    "nickname": "路過的櫻花",
+    "category": "Discord 社群",
+    "interactionMode": "陪伴模式",
+    "theme": "sakura-pink",
+    "title": "離開待了很久的群組後，心裡有點空",
+    "content": "明明只是離開一個網路社群，卻像失去了一個生活圈。曾經每天聊天、玩遊戲的人，突然就不會再遇到了。我知道這很普通，但還是有一點難過。",
+    "status": "published",
+    "createdAt": "2026-07-20T20:10:00+08:00",
+    "publishedAt": "2026-07-20T20:15:00+08:00",
+    "commentCount": 0,
+    "reactions": {
+      "cool": 0,
+      "smile": 0,
+      "love": 0,
+      "angry": 0,
+      "hug": 0,
+      "skull": 0
+    }
+  },
+  {
+    "postId": "post-0001",
+    "nickname": "匿名使用者",
+    "category": "心情",
+    "interactionMode": "呵護模式",
+    "theme": "pink-lavender",
+    "title": "今天其實有點累，只是不知道能和誰說",
+    "content": "最近發生了很多事情，表面上看起來沒有問題，但心裡一直覺得很疲倦。我沒有想要立刻得到答案，只是希望有人願意安靜地聽完。",
+    "status": "published",
+    "createdAt": "2026-07-20T19:50:00+08:00",
+    "publishedAt": "2026-07-20T20:00:00+08:00",
+    "commentCount": 0,
+    "reactions": {
+      "cool": 0,
+      "smile": 0,
+      "love": 0,
+      "angry": 0,
+      "hug": 0,
+      "skull": 0
+    }
+  }
+]
