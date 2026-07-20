@@ -1,206 +1,98 @@
 (() => {
   "use strict";
 
-  const ONLY_FOR_GAME_IDS = new Set([
-    "onlyforgame",
-    "only-for-game"
-  ]);
-
-  const ONLY_FOR_GAME_NAMES = new Set([
-    "only for game"
-  ]);
-
-  const RED_INN_NAMES = new Set([
-    "紅塵客棧"
-  ]);
-
-  function normalize(value) {
+  function cleanText(value) {
     return String(value || "")
       .replace(/◆/g, "")
       .trim()
       .toLowerCase();
   }
 
-  function getServerId(card) {
-    return normalize(
-      card?.dataset?.serverId
-    );
+  function getCardName(card) {
+    const heading = card.querySelector(".identity h3");
+    return cleanText(heading?.textContent);
   }
 
-  function getServerName(card) {
-    const title =
-      card?.querySelector(".identity h3");
+  function reorderCards() {
+    const grid = document.querySelector("#serverGrid");
 
-    return normalize(
-      title?.textContent
-    );
-  }
+    if (!grid) {
+      return;
+    }
 
-  function isOnlyForGame(card) {
-    const id = getServerId(card);
-    const name = getServerName(card);
-
-    return (
-      ONLY_FOR_GAME_IDS.has(id) ||
-      ONLY_FOR_GAME_NAMES.has(name)
-    );
-  }
-
-  function isRedInn(card) {
-    const name = getServerName(card);
-
-    return RED_INN_NAMES.has(name);
-  }
-
-  function createOrderedCards(cards) {
-    const onlyForGame =
-      cards.find(isOnlyForGame);
-
-    const redInn =
-      cards.find(isRedInn);
-
-    const remaining = cards.filter(
-      card =>
-        card !== onlyForGame &&
-        card !== redInn
-    );
-
-    return [
-      ...(onlyForGame
-        ? [onlyForGame]
-        : []),
-
-      ...(redInn
-        ? [redInn]
-        : []),
-
-      ...remaining
-    ];
-  }
-
-  function reorderServerCards(grid) {
     const cards = Array.from(
-      grid.querySelectorAll(
-        ":scope > .card"
-      )
+      grid.querySelectorAll(":scope > .card")
     );
 
-    if (cards.length < 2) {
+    if (!cards.length) {
       return;
     }
 
-    const orderedCards =
-      createOrderedCards(cards);
+    const onlyForGame = cards.find(card => {
+      const name = getCardName(card);
 
-    const needsReorder =
-      orderedCards.some(
-        (card, index) =>
-          grid.children[index] !== card
+      return (
+        name === "only for game" ||
+        cleanText(card.dataset.serverId) === "onlyforgame" ||
+        cleanText(card.dataset.serverId) === "only-for-game"
       );
+    });
 
-    if (!needsReorder) {
-      return;
-    }
+    const redInn = cards.find(card => {
+      return getCardName(card) === "紅塵客棧";
+    });
 
-    orderedCards.forEach(card => {
-      /*
-        移動的是完整 article.card 節點。
+    const others = cards.filter(card => {
+      return card !== onlyForGame && card !== redInn;
+    });
 
-        因此以下內容全部會一起移動：
-        - Server Name
-        - Tags
-        - Introduction / Description
-        - Banner
-        - Avatar / Icon
-        - Category
-        - Member Count
-        - Online Count
-        - Invite URL
-        - Share Button
-        - Details Button
-        - Server Colors
+    const ordered = [
+      ...(onlyForGame ? [onlyForGame] : []),
+      ...(redInn ? [redInn] : []),
+      ...others
+    ];
 
-        不會拆開資料，也不會和其他伺服器混在一起。
-      */
+    ordered.forEach(card => {
       grid.appendChild(card);
     });
   }
 
-  function startPinnedServerOrder() {
-    const grid =
-      document.querySelector(
-        "#serverGrid"
-      );
+  function start() {
+    const grid = document.querySelector("#serverGrid");
 
     if (!grid) {
-      console.warn(
-        "ServerBloom：找不到 #serverGrid，固定排序未啟動。"
-      );
-
+      setTimeout(start, 300);
       return;
     }
 
-    let scheduled = false;
+    let timer = null;
 
-    function scheduleReorder() {
-      if (scheduled) {
-        return;
-      }
+    const schedule = () => {
+      clearTimeout(timer);
 
-      scheduled = true;
+      timer = setTimeout(() => {
+        reorderCards();
+      }, 50);
+    };
 
-      requestAnimationFrame(() => {
-        scheduled = false;
-        reorderServerCards(grid);
-      });
-    }
-
-    const observer =
-      new MutationObserver(
-        mutations => {
-          const hasCardChanges =
-            mutations.some(
-              mutation =>
-                mutation.type ===
-                  "childList" &&
-                (
-                  mutation.addedNodes
-                    .length > 0 ||
-                  mutation.removedNodes
-                    .length > 0
-                )
-            );
-
-          if (hasCardChanges) {
-            scheduleReorder();
-          }
-        }
-      );
+    const observer = new MutationObserver(schedule);
 
     observer.observe(grid, {
       childList: true
     });
 
-    scheduleReorder();
+    schedule();
 
-    window.addEventListener(
-      "serverbloom:servers-rendered",
-      scheduleReorder
-    );
+    setTimeout(reorderCards, 500);
+    setTimeout(reorderCards, 1500);
+    setTimeout(reorderCards, 3000);
   }
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      startPinnedServerOrder,
-      {
-        once: true
-      }
-    );
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, {
+      once: true
+    });
   } else {
-    startPinnedServerOrder();
+    start();
   }
 })();
