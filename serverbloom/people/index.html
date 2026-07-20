@@ -26,13 +26,62 @@
     </header>
 
     <main class="people-layout">
-      <aside class="people-sidebar">
-        <h2>個人篩選</h2>
+     <aside class="people-sidebar">
+  <h2>個人篩選</h2>
 
-        <p>
-          下一步會在這裡加入性別、推廣項目與熱門標籤。
-        </p>
-      </aside>
+  <label class="filter-field">
+    <span>搜尋</span>
+    <input
+      id="peopleSearch"
+      type="search"
+      placeholder="暱稱、帳號、標籤…"
+    >
+  </label>
+
+  <label class="filter-field">
+    <span>性別</span>
+    <select id="genderFilter">
+      <option value="">全部</option>
+      <option value="男">男</option>
+      <option value="女">女</option>
+    </select>
+  </label>
+
+  <label class="filter-field">
+    <span>推廣項目</span>
+    <select id="promotionFilter">
+      <option value="">全部</option>
+      <option>YouTube 經營</option>
+      <option>Twitch 經營</option>
+      <option>Instagram 經營</option>
+      <option>TikTok 經營</option>
+      <option>Discord 社群經營</option>
+      <option>實況／直播</option>
+      <option>短影音創作</option>
+      <option>音樂／翻唱</option>
+      <option>繪圖／設計</option>
+      <option>Cosplay</option>
+      <option>攝影</option>
+      <option>遊戲攻略</option>
+      <option>陪玩服務</option>
+      <option>上分服務</option>
+      <option>遊戲教學</option>
+      <option>語言交換</option>
+      <option>找固定夥伴</option>
+      <option>找雙排</option>
+      <option>找五排</option>
+      <option>找合作夥伴</option>
+      <option>接委託</option>
+      <option>個人品牌</option>
+      <option>聊天交友</option>
+      <option>其他</option>
+    </select>
+  </label>
+
+  <button id="clearPeopleFilters" type="button">
+    清除篩選
+  </button>
+</aside>
 
       <section class="people-content">
         <div id="peopleStatus" aria-live="polite">
