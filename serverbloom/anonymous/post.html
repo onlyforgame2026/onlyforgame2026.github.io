@@ -2,11 +2,18 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
   <title>匿名文章全文｜ServerBloom</title>
 
-  <link rel="stylesheet" href="assets/anonymous.css">
+  <link
+    rel="stylesheet"
+    href="assets/anonymous.css"
+  >
 
   <style>
     .post-layout {
@@ -28,20 +35,23 @@
           rgba(185, 156, 255, 0.07)
         ),
         var(--panel);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+      box-shadow:
+        0 16px 36px rgba(0, 0, 0, 0.3);
     }
 
     .post-main {
+      min-width: 0;
       overflow: hidden;
     }
 
     .post-accent {
       height: 9px;
-      background: linear-gradient(
-        90deg,
-        var(--sakura),
-        var(--lavender)
-      );
+      background:
+        linear-gradient(
+          90deg,
+          var(--sakura),
+          var(--lavender)
+        );
     }
 
     .post-body {
@@ -57,6 +67,7 @@
 
     .post-title {
       margin: 0;
+      overflow-wrap: anywhere;
       font-size: clamp(28px, 4vw, 44px);
       line-height: 1.3;
     }
@@ -68,6 +79,7 @@
 
     .post-content {
       margin-top: 28px;
+      overflow-wrap: anywhere;
       color: #ddd5ea;
       font-size: 17px;
       line-height: 2;
@@ -90,6 +102,21 @@
       border-radius: 10px;
       color: var(--lavender-soft);
       background: var(--panel-soft);
+      transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
+    }
+
+    .post-action:hover {
+      transform: translateY(-2px);
+      border-color: var(--lavender);
+      background: rgba(185, 156, 255, 0.12);
+    }
+
+    .reaction-button {
+      min-width: 48px;
+      font-size: 20px;
     }
 
     .related-panel {
@@ -110,13 +137,23 @@
 
     .related-item {
       padding: 13px;
+      display: block;
       border: 1px solid var(--line);
       border-radius: 12px;
       background: rgba(7, 7, 19, 0.58);
+      transition:
+        transform 0.18s ease,
+        border-color 0.18s ease;
+    }
+
+    .related-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--lavender);
     }
 
     .related-item strong {
       display: block;
+      overflow-wrap: anywhere;
       line-height: 1.5;
     }
 
@@ -151,6 +188,12 @@
       background: #090819;
     }
 
+    .comment-field:focus {
+      border-color: var(--lavender);
+      box-shadow:
+        0 0 0 3px rgba(185, 156, 255, 0.12);
+    }
+
     textarea.comment-field {
       min-height: 110px;
       resize: vertical;
@@ -161,11 +204,12 @@
       border: 0;
       border-radius: 10px;
       color: white;
-      background: linear-gradient(
-        135deg,
-        var(--sakura),
-        var(--purple)
-      );
+      background:
+        linear-gradient(
+          135deg,
+          var(--sakura),
+          var(--purple)
+        );
       font-weight: 850;
     }
 
@@ -174,6 +218,14 @@
       padding: 18px 0 0;
       border-top: 1px solid var(--line);
       color: var(--muted);
+    }
+
+    .loading-message {
+      padding: 14px;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      text-align: center;
     }
 
     @media (max-width: 900px) {
@@ -191,66 +243,170 @@
       .comments-section {
         padding: 19px;
       }
+
+      .post-actions {
+        gap: 8px;
+      }
+
+      .post-action {
+        min-height: 44px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .post-action,
+      .related-item {
+        transition: none;
+      }
     }
   </style>
 </head>
 
-<body>
+<body id="postPage">
+
   <header class="anonymous-header">
     <nav class="anonymous-nav">
-      <a class="anonymous-brand" href="./">
+
+      <a
+        class="anonymous-brand"
+        href="./"
+      >
         Server<span>Bloom</span> 匿名文章
       </a>
 
-      <a class="back-link" href="./">
+      <a
+        class="back-link"
+        href="./"
+      >
         ← 返回文章列表
       </a>
+
     </nav>
   </header>
 
   <main class="anonymous-main">
+
     <div class="post-layout">
 
-      <article class="post-main">
-        <div class="post-accent"></div>
+      <article
+        class="post-main"
+        id="postMain"
+      >
+        <div
+          class="post-accent"
+          id="postAccent"
+        ></div>
 
         <div class="post-body">
-          <div class="post-meta">
-            <span class="card-label">🟡 呵護模式</span>
-            <span class="card-label">心情</span>
+
+          <div
+            class="post-meta"
+            id="postMeta"
+          >
+            <span class="card-label">
+              正在載入文章資料……
+            </span>
           </div>
 
-          <h1 class="post-title">
-            今天其實有點累，只是不知道能和誰說
+          <h1
+            class="post-title"
+            id="postTitle"
+          >
+            正在載入匿名文章……
           </h1>
 
-          <div class="post-author">
-            匿名使用者・2026/07/20
+          <div
+            class="post-author"
+            id="postAuthor"
+          >
+            請稍候
           </div>
 
-          <div class="post-content">
-最近發生了很多事情，表面上看起來沒有問題，但心裡一直覺得很疲倦。
-
-我沒有想要立刻得到答案，只是希望有人願意安靜地聽完。
-
-這篇文章目前是文章全文頁的版面預覽。之後會依照網址中的文章 ID，自動讀取對應的文章資料。
+          <div
+            class="post-content"
+            id="postContent"
+          >
+文章內容載入中……
           </div>
 
           <div class="post-actions">
-            <button class="post-action" type="button">😎</button>
-            <button class="post-action" type="button">😊</button>
-            <button class="post-action" type="button">❤️</button>
-            <button class="post-action" type="button">🤬</button>
-            <button class="post-action" type="button">💕</button>
-            <button class="post-action" type="button">💀</button>
 
-            <button class="post-action" type="button">
+            <button
+              class="post-action reaction-button"
+              type="button"
+              data-reaction="cool"
+              aria-label="覺得很酷"
+              title="覺得很酷"
+            >
+              😎
+            </button>
+
+            <button
+              class="post-action reaction-button"
+              type="button"
+              data-reaction="smile"
+              aria-label="溫暖支持"
+              title="溫暖支持"
+            >
+              😊
+            </button>
+
+            <button
+              class="post-action reaction-button"
+              type="button"
+              data-reaction="love"
+              aria-label="喜歡"
+              title="喜歡"
+            >
+              ❤️
+            </button>
+
+            <button
+              class="post-action reaction-button"
+              type="button"
+              data-reaction="angry"
+              aria-label="替作者生氣"
+              title="替作者生氣"
+            >
+              🤬
+            </button>
+
+            <button
+              class="post-action reaction-button"
+              type="button"
+              data-reaction="hug"
+              aria-label="陪伴與抱抱"
+              title="陪伴與抱抱"
+            >
+              💕
+            </button>
+
+            <button
+              class="post-action reaction-button"
+              type="button"
+              data-reaction="skull"
+              aria-label="太真實或傻眼"
+              title="太真實或傻眼"
+            >
+              💀
+            </button>
+
+            <button
+              class="post-action"
+              id="shareButton"
+              type="button"
+            >
               分享
             </button>
 
-            <button class="post-action" type="button">
+            <button
+              class="post-action"
+              id="reportButton"
+              type="button"
+            >
               檢舉
             </button>
+
           </div>
         </div>
       </article>
@@ -258,49 +414,60 @@
       <aside class="related-panel">
         <h2>其他匿名文章</h2>
 
-        <div class="related-list">
-          <a class="related-item" href="#">
-            <strong>
-              離開待了很久的群組後，心裡有點空
-            </strong>
-            <small>🌸 陪伴模式・Discord 社群</small>
-          </a>
-
-          <a class="related-item" href="#">
-            <strong>
-              要怎麼找到願意長期一起玩的固定夥伴？
-            </strong>
-            <small>💜 建議模式・遊戲</small>
-          </a>
+        <div
+          class="related-list"
+          id="relatedList"
+        >
+          <div class="loading-message">
+            正在載入其他文章……
+          </div>
         </div>
       </aside>
+
     </div>
 
-    <section class="comments-section">
+    <section
+      class="comments-section"
+      id="commentsSection"
+    >
       <h2>匿名留言</h2>
 
-      <form class="comment-form">
+      <form
+        class="comment-form"
+        id="commentForm"
+      >
         <input
           class="comment-field"
+          id="commentNickname"
           maxlength="20"
           placeholder="匿名暱稱（可不填）"
         >
 
         <textarea
           class="comment-field"
+          id="commentContent"
           maxlength="500"
           placeholder="留下匿名留言……"
         ></textarea>
 
-        <button class="comment-button" type="button">
+        <button
+          class="comment-button"
+          id="commentButton"
+          type="button"
+        >
           匿名留言・尚未開放
         </button>
       </form>
 
-      <div class="comment-preview">
+      <div
+        class="comment-preview"
+        id="commentList"
+      >
         目前還沒有公開留言。
       </div>
     </section>
+
   </main>
+
 </body>
 </html>
