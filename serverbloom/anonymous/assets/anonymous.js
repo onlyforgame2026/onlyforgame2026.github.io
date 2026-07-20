@@ -57,53 +57,55 @@
   }
 
   function createPostCard(post) {
-    const mode = String(
-      post.interactionMode || "討論模式"
-    );
+  const mode = String(
+    post.interactionMode || "討論模式"
+  );
 
-    const icon = modeIcons[mode] || "🌸";
-    const theme = normalizeTheme(post.theme);
+  const icon = modeIcons[mode] || "🌸";
+  const theme = normalizeTheme(post.theme);
+  const postId = String(post.postId || "");
 
-    return `
-      <article
-        class="anonymous-card theme-${escapeHtml(theme)}"
-        data-post-id="${escapeHtml(post.postId)}"
-      >
-        <div class="card-accent"></div>
+  return `
+    <a
+      class="anonymous-card theme-${escapeHtml(theme)}"
+      data-post-id="${escapeHtml(postId)}"
+      href="post.html?id=${encodeURIComponent(postId)}"
+      aria-label="閱讀文章：${escapeHtml(post.title || "未命名匿名文章")}"
+    >
+      <div class="card-accent"></div>
 
-        <div class="card-content">
-          <div class="card-meta">
-            <span class="card-label">
-              ${icon} ${escapeHtml(mode)}
-            </span>
+      <div class="card-content">
+        <div class="card-meta">
+          <span class="card-label">
+            ${icon} ${escapeHtml(mode)}
+          </span>
 
-            <span class="card-label">
-              ${escapeHtml(post.category || "其他")}
-            </span>
-          </div>
-
-          <h3 class="card-title">
-            ${escapeHtml(post.title || "未命名匿名文章")}
-          </h3>
-
-          <p class="card-preview">
-            ${escapeHtml(post.content || "")}
-          </p>
-
-          <div class="card-footer">
-            <span>
-              ${escapeHtml(post.nickname || "匿名使用者")}
-            </span>
-
-            <span>
-              ${escapeHtml(formatDate(post.publishedAt))}
-            </span>
-          </div>
+          <span class="card-label">
+            ${escapeHtml(post.category || "其他")}
+          </span>
         </div>
-      </article>
-    `;
-  }
 
+        <h3 class="card-title">
+          ${escapeHtml(post.title || "未命名匿名文章")}
+        </h3>
+
+        <p class="card-preview">
+          ${escapeHtml(post.content || "")}
+        </p>
+
+        <div class="card-footer">
+          <span>
+            ${escapeHtml(post.nickname || "匿名使用者")}
+          </span>
+
+          <span>
+            ${escapeHtml(formatDate(post.publishedAt))}
+          </span>
+        </div>
+      </div>
+    </a>
+  `;
+}
   async function loadPosts() {
     grid.innerHTML = `
       <div class="empty-state">
