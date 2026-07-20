@@ -45,11 +45,15 @@
     const id = clean(entry && entry.id);
     const file = safePresetFile(entry && entry.file);
     if (!id || !file) return null;
+    const tags = Array.isArray(entry.tags) ? entry.tags.map(clean).filter(Boolean) : [];
+    const color = clean(entry.color);
     return Object.freeze({
       id,
       name: clean(entry.name) || id,
       file,
       category: clean(entry.category) || 'other',
+      color: color || 'dark',
+      tags: Object.freeze(tags),
       src: `${PRESET_ASSET_BASE}${file}`
     });
   }
