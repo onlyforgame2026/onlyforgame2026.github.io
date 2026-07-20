@@ -3,354 +3,785 @@
     "id": "cyberpunk-purple",
     "name": "Cyberpunk Purple",
     "file": "01-cyberpunk-purple.svg",
-    "category": "cyber"
+    "category": "default",
+    "color": "purple",
+    "tags": [
+      "預設背景",
+      "Cyberpunk",
+      "紫色",
+      "城市"
+    ]
   },
   {
     "id": "gaming-purple",
     "name": "Gaming Purple",
     "file": "02-gaming-purple.svg",
-    "category": "game"
+    "category": "default",
+    "color": "purple",
+    "tags": [
+      "預設背景",
+      "遊戲",
+      "電競",
+      "紫色"
+    ]
   },
   {
     "id": "anime-pink",
     "name": "Anime Pink",
     "file": "03-anime-pink.svg",
-    "category": "anime"
+    "category": "default",
+    "color": "pink",
+    "tags": [
+      "預設背景",
+      "動漫",
+      "人物",
+      "粉色"
+    ]
   },
   {
     "id": "sakura-pink",
     "name": "Sakura Pink",
     "file": "04-sakura-pink.svg",
-    "category": "anime"
+    "category": "default",
+    "color": "pink",
+    "tags": [
+      "預設背景",
+      "日系",
+      "櫻花",
+      "粉色"
+    ]
   },
   {
     "id": "steam-style",
     "name": "Steam Style",
     "file": "05-steam-style.svg",
-    "category": "steam"
+    "category": "default",
+    "color": "blue",
+    "tags": [
+      "預設背景",
+      "遊戲",
+      "科技",
+      "藍色"
+    ]
   },
   {
     "id": "chat-night",
     "name": "Chat Night",
     "file": "06-chat-night.svg",
-    "category": "chat"
+    "category": "default",
+    "color": "dark",
+    "tags": [
+      "預設背景",
+      "聊天",
+      "夜晚",
+      "暗色"
+    ]
   },
   {
     "id": "chat-neon",
     "name": "Chat Neon",
     "file": "07-chat-neon.svg",
-    "category": "chat"
+    "category": "default",
+    "color": "purple",
+    "tags": [
+      "預設背景",
+      "聊天",
+      "霓虹",
+      "紫色"
+    ]
   },
   {
     "id": "tech-blue",
     "name": "Tech Blue",
     "file": "08-tech-blue.svg",
-    "category": "cyber"
+    "category": "default",
+    "color": "blue",
+    "tags": [
+      "預設背景",
+      "科技",
+      "程式",
+      "藍色"
+    ]
   },
   {
     "id": "music-orange",
     "name": "Music Orange",
     "file": "09-music-orange.svg",
-    "category": "music"
+    "category": "default",
+    "color": "warm",
+    "tags": [
+      "預設背景",
+      "音樂",
+      "派對",
+      "暖橘色"
+    ]
   },
   {
     "id": "fantasy-classic",
     "name": "Fantasy Classic",
     "file": "10-fantasy.svg",
-    "category": "fantasy"
+    "category": "default",
+    "color": "purple",
+    "tags": [
+      "預設背景",
+      "奇幻",
+      "魔法",
+      "紫色"
+    ]
   },
   {
     "id": "anime",
     "name": "Anime",
     "file": "01-anime.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "pink",
+    "tags": [
+      "人物",
+      "動漫",
+      "可愛",
+      "粉色"
+    ]
   },
   {
     "id": "sakura",
     "name": "Sakura",
     "file": "02-sakura.webp",
-    "category": "nature"
+    "category": "japanese-sakura",
+    "color": "pink",
+    "tags": [
+      "日系",
+      "櫻花",
+      "街景",
+      "粉色"
+    ]
   },
   {
     "id": "cyber",
     "name": "Cyberpunk",
     "file": "03-cyber.webp",
-    "category": "cyber"
+    "category": "cyberpunk",
+    "color": "purple",
+    "tags": [
+      "Cyberpunk",
+      "城市",
+      "霓虹",
+      "紫色"
+    ]
   },
   {
     "id": "game",
     "name": "Game",
     "file": "04-game.webp",
-    "category": "game"
+    "category": "gaming",
+    "color": "purple",
+    "tags": [
+      "遊戲",
+      "電競",
+      "舞台",
+      "紫色"
+    ]
   },
   {
     "id": "chat01",
     "name": "Chat 01",
     "file": "05-chat-01.webp",
-    "category": "chat"
+    "category": "cozy",
+    "color": "purple",
+    "tags": [
+      "聊天",
+      "社交",
+      "氣泡",
+      "紫色"
+    ]
   },
   {
     "id": "chat02",
     "name": "Chat 02",
     "file": "06-chat-02.webp",
-    "category": "chat"
+    "category": "cozy",
+    "color": "cyan",
+    "tags": [
+      "聊天",
+      "社交",
+      "清新",
+      "青色"
+    ]
   },
   {
     "id": "steam",
     "name": "Steam",
     "file": "07-steam.webp",
-    "category": "steam"
+    "category": "gaming",
+    "color": "blue",
+    "tags": [
+      "遊戲",
+      "平台",
+      "科技",
+      "藍色"
+    ]
   },
   {
     "id": "fantasy",
     "name": "Fantasy",
     "file": "08-fantasy.webp",
-    "category": "fantasy"
+    "category": "fantasy-sci-fi",
+    "color": "blue",
+    "tags": [
+      "奇幻",
+      "RPG",
+      "冒險",
+      "藍色"
+    ]
   },
   {
     "id": "music",
     "name": "Music",
     "file": "09-music.webp",
-    "category": "music"
+    "category": "music-party",
+    "color": "purple",
+    "tags": [
+      "音樂",
+      "演唱會",
+      "派對",
+      "紫色"
+    ]
   },
   {
     "id": "minimal",
     "name": "Minimal",
     "file": "10-minimal.webp",
-    "category": "minimal"
+    "category": "nature-landscape",
+    "color": "warm",
+    "tags": [
+      "極簡",
+      "抽象",
+      "設計",
+      "暖色"
+    ]
   },
   {
     "id": "sakura-kimono",
     "name": "Sakura Kimono",
     "file": "21-sakura-kimono.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "pink",
+    "tags": [
+      "人物",
+      "日系",
+      "和服",
+      "櫻花",
+      "粉色"
+    ]
   },
   {
     "id": "moon-butterfly",
     "name": "Moon Butterfly",
     "file": "22-moon-butterfly.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "purple",
+    "tags": [
+      "人物",
+      "蝴蝶",
+      "月夜",
+      "紫色"
+    ]
   },
   {
     "id": "sky-schoolgirl",
     "name": "Sky Schoolgirl",
     "file": "23-sky-schoolgirl.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "blue",
+    "tags": [
+      "人物",
+      "校園",
+      "天空",
+      "藍色"
+    ]
   },
   {
     "id": "cyber-goth",
     "name": "Cyber Goth",
     "file": "24-cyber-goth.webp",
-    "category": "cyber"
+    "category": "cyberpunk",
+    "color": "purple",
+    "tags": [
+      "人物",
+      "Cyberpunk",
+      "城市",
+      "紫色"
+    ]
   },
   {
     "id": "ocean-princess",
     "name": "Ocean Princess",
     "file": "25-ocean-princess.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "cyan",
+    "tags": [
+      "人物",
+      "海洋",
+      "公主",
+      "青色"
+    ]
   },
   {
     "id": "rose-goth",
     "name": "Rose Goth",
     "file": "26-rose-goth.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "dark",
+    "tags": [
+      "人物",
+      "玫瑰",
+      "哥德",
+      "暗黑"
+    ]
   },
   {
     "id": "neon-gamer",
     "name": "Neon Gamer",
     "file": "27-neon-gamer.webp",
-    "category": "game"
+    "category": "gaming",
+    "color": "purple",
+    "tags": [
+      "人物",
+      "遊戲",
+      "電競",
+      "霓虹",
+      "紫色"
+    ]
   },
   {
     "id": "witch-sunset",
     "name": "Witch Sunset",
     "file": "28-witch-sunset.webp",
-    "category": "fantasy"
+    "category": "fantasy-sci-fi",
+    "color": "red",
+    "tags": [
+      "人物",
+      "魔女",
+      "奇幻",
+      "夕陽",
+      "紅色"
+    ]
   },
   {
     "id": "white-flower",
     "name": "White Flower",
     "file": "29-white-flower.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "blue",
+    "tags": [
+      "人物",
+      "花朵",
+      "清冷",
+      "藍色"
+    ]
   },
   {
     "id": "moon-warrior",
     "name": "Moon Warrior",
     "file": "30-moon-warrior.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "blue",
+    "tags": [
+      "人物",
+      "戰士",
+      "月夜",
+      "武器",
+      "藍色"
+    ]
   },
   {
     "id": "sakura-shrine",
     "name": "Sakura Shrine",
     "file": "31-sakura-shrine.webp",
-    "category": "nature"
+    "category": "japanese-sakura",
+    "color": "pink",
+    "tags": [
+      "日系",
+      "櫻花",
+      "神社",
+      "粉色"
+    ]
   },
   {
     "id": "sakura-city",
     "name": "Sakura City",
     "file": "32-sakura-city.webp",
-    "category": "nature"
+    "category": "japanese-sakura",
+    "color": "pink",
+    "tags": [
+      "日系",
+      "櫻花",
+      "城市",
+      "粉色"
+    ]
   },
   {
     "id": "sakura-girl",
     "name": "Sakura Girl",
     "file": "33-sakura-girl.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "pink",
+    "tags": [
+      "人物",
+      "日系",
+      "櫻花",
+      "粉色"
+    ]
   },
   {
     "id": "pink-sky",
     "name": "Pink Sky",
     "file": "34-pink-sky.webp",
-    "category": "nature"
+    "category": "nature-landscape",
+    "color": "pink",
+    "tags": [
+      "自然",
+      "天空",
+      "雲朵",
+      "粉色"
+    ]
   },
   {
     "id": "sakura-street",
     "name": "Sakura Street",
     "file": "35-sakura-street.webp",
-    "category": "nature"
+    "category": "japanese-sakura",
+    "color": "pink",
+    "tags": [
+      "日系",
+      "櫻花",
+      "街道",
+      "粉色"
+    ]
   },
   {
     "id": "pink-gaming-room",
     "name": "Pink Gaming Room",
     "file": "36-pink-gaming-room.webp",
-    "category": "game"
+    "category": "gaming",
+    "color": "pink",
+    "tags": [
+      "遊戲",
+      "電競",
+      "室內",
+      "粉色"
+    ]
   },
   {
     "id": "sakura-train",
     "name": "Sakura Train",
     "file": "37-sakura-train.webp",
-    "category": "nature"
+    "category": "japanese-sakura",
+    "color": "pink",
+    "tags": [
+      "日系",
+      "櫻花",
+      "電車",
+      "粉色"
+    ]
   },
   {
     "id": "sakura-castle",
     "name": "Sakura Castle",
     "file": "38-sakura-castle.webp",
-    "category": "fantasy"
+    "category": "fantasy-sci-fi",
+    "color": "pink",
+    "tags": [
+      "奇幻",
+      "城堡",
+      "櫻花",
+      "粉色"
+    ]
   },
   {
     "id": "sakura-cafe",
     "name": "Sakura Cafe",
     "file": "39-sakura-cafe.webp",
-    "category": "chat"
+    "category": "cozy",
+    "color": "pink",
+    "tags": [
+      "日系",
+      "咖啡廳",
+      "櫻花",
+      "粉色",
+      "溫馨"
+    ]
   },
   {
     "id": "sakura-moon",
     "name": "Sakura Moon",
     "file": "40-sakura-moon.webp",
-    "category": "nature"
+    "category": "japanese-sakura",
+    "color": "purple",
+    "tags": [
+      "日系",
+      "櫻花",
+      "月夜",
+      "紫色"
+    ]
   },
   {
     "id": "pastel-clouds",
     "name": "Pastel Clouds",
     "file": "41-pastel-clouds.webp",
-    "category": "fantasy"
+    "category": "nature-landscape",
+    "color": "pink",
+    "tags": [
+      "自然",
+      "天空",
+      "雲海",
+      "粉色"
+    ]
   },
   {
     "id": "floral-library",
     "name": "Floral Library",
     "file": "42-floral-library.webp",
-    "category": "nature"
+    "category": "cozy",
+    "color": "warm",
+    "tags": [
+      "圖書館",
+      "花朵",
+      "室內",
+      "暖色",
+      "溫馨"
+    ]
   },
   {
     "id": "moon-princess",
     "name": "Moon Princess",
     "file": "43-moon-princess.webp",
-    "category": "anime"
+    "category": "character",
+    "color": "blue",
+    "tags": [
+      "人物",
+      "月夜",
+      "公主",
+      "藍色"
+    ]
   },
   {
     "id": "shadow-swordsman",
     "name": "Shadow Swordsman",
     "file": "44-shadow-swordsman.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "dark",
+    "tags": [
+      "人物",
+      "劍士",
+      "戰場",
+      "暗黑"
+    ]
   },
   {
     "id": "crimson-warrior",
     "name": "Crimson Warrior",
     "file": "45-crimson-warrior.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "red",
+    "tags": [
+      "人物",
+      "戰士",
+      "戰場",
+      "暗黑",
+      "紅色"
+    ]
   },
   {
     "id": "spring-cafe",
     "name": "Spring Cafe",
     "file": "46-spring-cafe.webp",
-    "category": "chat"
+    "category": "cozy",
+    "color": "warm",
+    "tags": [
+      "人物",
+      "咖啡廳",
+      "室內",
+      "暖色",
+      "溫馨"
+    ]
   },
   {
     "id": "sakura-cyber-city",
     "name": "Sakura Cyber City",
     "file": "47-sakura-cyber-city.webp",
-    "category": "cyber"
+    "category": "cyberpunk",
+    "color": "pink",
+    "tags": [
+      "日系",
+      "櫻花",
+      "Cyberpunk",
+      "城市",
+      "粉色"
+    ]
   },
   {
     "id": "cozy-pets",
     "name": "Cozy Pets",
     "file": "48-cozy-pets.webp",
-    "category": "chat"
+    "category": "pets",
+    "color": "pink",
+    "tags": [
+      "貓",
+      "狗",
+      "室內",
+      "粉色",
+      "溫馨"
+    ]
   },
   {
     "id": "sakura-rain-couple",
     "name": "Sakura Rain Couple",
     "file": "49-sakura-rain-couple.webp",
-    "category": "anime"
+    "category": "japanese-sakura",
+    "color": "pink",
+    "tags": [
+      "人物",
+      "情侶",
+      "櫻花",
+      "雨景",
+      "粉色"
+    ]
   },
   {
     "id": "midnight-skyline",
     "name": "Midnight Skyline",
     "file": "50-midnight-skyline.webp",
-    "category": "chat"
+    "category": "city-night",
+    "color": "blue",
+    "tags": [
+      "城市",
+      "夜景",
+      "天台",
+      "藍色"
+    ]
   },
   {
     "id": "cozy-friends",
     "name": "Cozy Friends",
     "file": "51-cozy-friends.webp",
-    "category": "chat"
+    "category": "cozy",
+    "color": "pink",
+    "tags": [
+      "人物",
+      "朋友合照",
+      "室內",
+      "粉色",
+      "溫馨"
+    ]
   },
   {
     "id": "taipei-night",
     "name": "Taipei Night",
     "file": "52-taipei-night.webp",
-    "category": "cyber"
+    "category": "city-night",
+    "color": "dark",
+    "tags": [
+      "城市",
+      "夜景",
+      "台北",
+      "街道",
+      "暗色"
+    ]
   },
   {
     "id": "crimson-lord",
     "name": "Crimson Lord",
     "file": "53-crimson-lord.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "dark",
+    "tags": [
+      "人物",
+      "戰士",
+      "戰場",
+      "暗黑",
+      "紅色"
+    ]
   },
   {
     "id": "crimson-battlefield",
     "name": "Crimson Battlefield",
     "file": "54-crimson-battlefield.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "dark",
+    "tags": [
+      "人物",
+      "戰場",
+      "暗黑",
+      "紅色"
+    ]
   },
   {
     "id": "golden-bakery",
     "name": "Golden Bakery",
     "file": "55-golden-bakery.webp",
-    "category": "chat"
+    "category": "cozy",
+    "color": "warm",
+    "tags": [
+      "人物",
+      "烘焙",
+      "室內",
+      "暖橘色",
+      "溫馨"
+    ]
   },
   {
     "id": "dark-king",
     "name": "Dark King",
     "file": "56-dark-king.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "dark",
+    "tags": [
+      "人物",
+      "國王",
+      "王座",
+      "暗黑"
+    ]
   },
   {
     "id": "crimson-warrior-ii",
     "name": "Crimson Warrior II",
     "file": "57-crimson-warrior-ii.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "red",
+    "tags": [
+      "人物",
+      "戰士",
+      "戰場",
+      "暗黑",
+      "紅色"
+    ]
   },
   {
     "id": "eclipse-duel",
     "name": "Eclipse Duel",
     "file": "58-eclipse-duel.webp",
-    "category": "fantasy"
+    "category": "war-epic",
+    "color": "dark",
+    "tags": [
+      "人物",
+      "決鬥",
+      "戰場",
+      "暗黑",
+      "紅色"
+    ]
   },
   {
     "id": "lantern-banquet",
     "name": "Lantern Banquet",
     "file": "59-lantern-banquet.png",
-    "category": "chat"
+    "category": "cozy",
+    "color": "red",
+    "tags": [
+      "聚會",
+      "宴會",
+      "燈籠",
+      "櫻花",
+      "暖紅色"
+    ]
   }
 ]
