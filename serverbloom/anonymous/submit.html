@@ -223,32 +223,283 @@
   </main>
 
   <script>
-    (() => {
-      "use strict";
+(() => {
+  "use strict";
 
-      const form = document.getElementById("anonymousSubmitForm");
+  const API_URL =
+    "https://script.google.com/macros/s/AKfycbz1xFVctSyveh82R-qMZSKwD78H9RYsoDU7l_XP3avBBiEVOOqOeM3d9D5XKkFLrlLZ/exec";
 
-      if (!form) return;
+  const form =
+    document.getElementById("anonymousSubmitForm");
 
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
+  const submitButton =
+    form?.querySelector(".submit-btn");
 
-        const data = {
-          title: document.getElementById("postTitle").value.trim(),
-          mode: document.getElementById("postMode").value.trim(),
-          category: document.getElementById("postCategory").value.trim(),
-          nickname: document.getElementById("postNickname").value.trim() || "匿名使用者",
-          content: document.getElementById("postContent").value.trim()
-        };
+  if (!form || !submitButton) {
+    return;
+  }
 
-        if (!data.title || !data.mode || !data.category || !data.content) {
-          alert("請先把標題、模式、分類與內容填完整。");
-          return;
+  function getVisitorId() {
+    const key =
+      "serverbloomAnonymousVisitorId";
+
+    let visitorId =
+      localStorage.getItem(key);
+
+    if (!visitorId) {
+      visitorId =
+        "visitor-" +
+        Date.now() +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2, 12);
+
+      localStorage.setItem(
+        key,
+        visitorId
+      );
+    }
+
+    return visitorId;
+  }
+
+  function wait(milliseconds) {
+    return new Promise(resolve => {
+      window.setTimeout(
+        resolve,
+        milliseconds
+      );
+    });
+  }
+
+  function loadJsonp(url) {
+    return new Promise(
+      (resolve, reject) => {
+        const callbackName =
+          "serverbloomCallback_" +
+          Date.now() +
+          "_" +
+          Math.random()
+            .toString(36)
+            .slice(2);
+
+        const script =
+          document.createElement(
+            "script"
+          );
+
+        const timeout =
+          window.setTimeout(() => {
+            cleanup();
+
+            reject(
+              new Error(
+                "確認投稿逾時"
+              )
+            );
+          }, 12000);
+
+        function cleanup() {
+          window.clearTimeout(
+            timeout
+          );
+
+          delete window[
+            callbackName
+          ];
+
+          script.remove();
         }
 
-        alert("匿名投稿頁已開啟完成。下一步我可以幫你把它串接成真正可送出到資料庫的版本。");
-      });
-    })();
-  </script>
+        window[callbackName] =
+          data => {
+            cleanup();
+            resolve(data);
+          };
+
+        const separator =
+          url.includes("?")
+            ? "&"
+            : "?";
+
+        script.src =
+          url +
+          separator +
+          "callback=" +
+          encodeURIComponent(
+            callbackName
+          );
+
+        script.onerror = () => {
+          cleanup();
+
+          reject(
+            new Error(
+              "無法確認投稿結果"
+            )
+          );
+        };
+
+        document.body.appendChild(
+          script
+        );
+      }
+    );
+  }
+
+  form.addEventListener(
+    "submit",
+    async event => {
+      event.preventDefault();
+
+      const title =
+        document
+          .getElementById(
+            "postTitle"
+          )
+          .value
+          .trim();
+
+      const interactionMode =
+        document
+          .getElementById(
+            "postMode"
+          )
+          .value
+          .trim();
+
+      const category =
+        document
+          .getElementById(
+            "postCategory"
+          )
+          .value
+          .trim();
+
+      const nickname =
+        document
+          .getElementById(
+            "postNickname"
+          )
+          .value
+          .trim() ||
+        "匿名使用者";
+
+      const content =
+        document
+          .getElementById(
+            "postContent"
+          )
+          .value
+          .trim();
+
+      if (
+        !title ||
+        !interactionMode ||
+        !category ||
+        !content
+      ) {
+        window.alert(
+          "請先填寫標題、互動模式、分類與文章內容。"
+        );
+
+        return;
+      }
+
+      submitButton.disabled = true;
+      submitButton.textContent =
+        "正在送出匿名投稿……";
+
+      const postData =
+        new URLSearchParams({
+          action: "createPost",
+          title,
+          interactionMode,
+          category,
+          nickname,
+          content,
+          theme: "pink-lavender",
+          visitorId:
+            getVisitorId()
+        });
+
+      try {
+        await fetch(
+          API_URL,
+          {
+            method: "POST",
+            mode: "no-cors",
+            body: postData
+          }
+        );
+
+        submitButton.textContent =
+          "正在確認投稿……";
+
+        await wait(1800);
+
+        const result =
+          await loadJsonp(
+            API_URL +
+            "?action=listPosts&limit=30"
+          );
+
+        const posts =
+          Array.isArray(
+            result?.posts
+          )
+            ? result.posts
+            : [];
+
+        const createdPost =
+          posts.find(post => {
+            return (
+              post.title === title &&
+              post.content === content &&
+              post.nickname === nickname
+            );
+          });
+
+        if (!createdPost) {
+          throw new Error(
+            "投稿已送出，但暫時無法確認資料。"
+          );
+        }
+
+        submitButton.textContent =
+          "投稿成功 ✓";
+
+        window.alert(
+          "匿名文章已成功發布。"
+        );
+
+        window.location.href =
+          "post.html?id=" +
+          encodeURIComponent(
+            createdPost.postId
+          );
+
+      } catch (error) {
+        console.error(
+          "匿名投稿失敗：",
+          error
+        );
+
+        submitButton.disabled =
+          false;
+
+        submitButton.textContent =
+          "重新送出匿名投稿";
+
+        window.alert(
+          error.message ||
+          "匿名投稿失敗，請稍後再試。"
+        );
+      }
+    }
+  );
+})();
+</script>
 </body>
 </html>
