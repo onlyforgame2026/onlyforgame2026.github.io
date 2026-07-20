@@ -7,7 +7,7 @@
     return;
   }
 
-  onst modeIcons = {
+  const modeIcons = {
     "呵護模式": "🟡",
     "陪伴模式": "🌸",
     "建議模式": "💜",
