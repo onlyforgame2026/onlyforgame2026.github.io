@@ -3,10 +3,47 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Discord 個人頁面｜ServerBloom</title>
+  <meta
+    name="description"
+    content="探索公開的 Discord 個人介紹、興趣、創作與合作資訊。"
+  >
+
+  <link rel="stylesheet" href="../assets/css/people.css">
 </head>
+
 <body>
-  <h1>Discord 個人頁面</h1>
-  <p>這裡將展示公開的 Discord 個人介紹。</p>
+  <div class="people-shell">
+    <header class="people-header">
+      <a href="../index.html">← 返回 ServerBloom</a>
+
+      <h1>Discord 個人頁面</h1>
+
+      <p>
+        探索 Discord 使用者、創作者、陪玩、實況主與固定遊戲夥伴。
+      </p>
+    </header>
+
+    <main class="people-layout">
+      <aside class="people-sidebar">
+        <h2>個人篩選</h2>
+
+        <p>
+          下一步會在這裡加入性別、推廣項目與熱門標籤。
+        </p>
+      </aside>
+
+      <section class="people-content">
+        <div id="peopleStatus" aria-live="polite">
+          準備載入個人資料…
+        </div>
+
+        <div id="peopleGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../assets/js/people.js"></script>
 </body>
-</html>
+</html> 
