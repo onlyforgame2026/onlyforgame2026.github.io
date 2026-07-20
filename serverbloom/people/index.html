@@ -8,7 +8,7 @@
 
   <meta
     name="description"
-    content="探索與公開 Discord 個人介紹、頭像、Banner、暱稱與自我介紹。"
+    content="公開與探索 Discord 個人頁面，展示 Banner、Avatar、Nickname、Discord Username 與個人介紹。"
   >
 
   <style>
@@ -20,7 +20,6 @@
       --muted: #9aa7bc;
       --line: #20304b;
       --brand: #755cff;
-      --brand-2: #9b5cff;
       --danger: #fb7185;
       --success: #34d399;
     }
@@ -39,7 +38,7 @@
       color: var(--text);
       background:
         radial-gradient(circle at 20% 0%, #39207a24, transparent 32%),
-        #050914;
+        var(--bg);
       font-family:
         Inter,
         "Noto Sans TC",
@@ -77,7 +76,11 @@
       display: inline-block;
       margin-bottom: 14px;
       color: #c4b5fd;
-      font-weight: 700;
+      font-weight: 800;
+    }
+
+    .back-link:hover {
+      color: #ffffff;
     }
 
     .page-header h1 {
@@ -166,10 +169,10 @@
       overflow: hidden;
       border: 5px solid #0b1525;
       border-radius: 50%;
-      color: #fff;
+      color: #ffffff;
       background: linear-gradient(135deg, #755cff, #d946ef);
       box-shadow: 0 12px 30px #0008;
-      font-size: 38px;
+      font-size: 34px;
       font-weight: 900;
     }
 
@@ -210,7 +213,7 @@
       border-radius: 18px;
       color: var(--muted);
       text-align: center;
-      background: #091221;
+      background: var(--panel);
     }
 
     .submit-section {
@@ -254,10 +257,11 @@
 
     .people-form {
       display: grid;
-      gap: 13px;
+      gap: 14px;
     }
 
-    .form-row {
+    .form-row,
+    .image-upload-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
@@ -295,9 +299,73 @@
     }
 
     textarea.field {
-      min-height: 130px;
+      min-height: 145px;
       resize: vertical;
       line-height: 1.7;
+    }
+
+    .upload-box {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid #273754;
+      border-radius: 13px;
+      background: #07111f;
+    }
+
+    .upload-box strong {
+      color: #dce4f3;
+      font-size: 14px;
+    }
+
+    .file-field {
+      padding: 8px 10px;
+    }
+
+    .file-field::file-selector-button {
+      margin-right: 12px;
+      padding: 9px 14px;
+      border: 0;
+      border-radius: 8px;
+      color: #ffffff;
+      background: var(--brand);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .field-help {
+      color: #7f8ca3;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .upload-status {
+      min-height: 18px;
+      margin: 0;
+      color: #8fa0ba;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .upload-status.success {
+      color: var(--success);
+    }
+
+    .upload-status.error {
+      color: var(--danger);
+    }
+
+    .remove-image-button {
+      justify-self: start;
+      padding: 7px 11px;
+      border: 1px solid #354764;
+      border-radius: 8px;
+      color: #cbd5e1;
+      background: #101b2d;
+      font-size: 12px;
+      font-weight: 700;
     }
 
     .color-row {
@@ -317,12 +385,12 @@
     }
 
     .color-control input[type="color"] {
-      width: 48px;
-      height: 34px;
+      width: 50px;
+      height: 36px;
       padding: 2px;
       border: 1px solid #52617a;
       border-radius: 7px;
-      background: #fff;
+      background: #ffffff;
       cursor: pointer;
     }
 
@@ -344,27 +412,21 @@
     }
 
     .submit-button {
-      min-height: 48px;
+      min-height: 50px;
       border: 0;
       border-radius: 11px;
-      color: #fff;
+      color: #ffffff;
       background: linear-gradient(90deg, #755cff, #6322db);
       font-weight: 900;
-      transition:
-        transform 0.18s ease,
-        filter 0.18s ease;
     }
 
     .submit-button:hover {
       filter: brightness(1.08);
-      transform: translateY(-1px);
     }
 
     .submit-button:disabled {
       cursor: not-allowed;
-      filter: grayscale(0.3);
       opacity: 0.65;
-      transform: none;
     }
 
     .form-status {
@@ -401,7 +463,8 @@
         grid-template-columns: 1fr;
       }
 
-      .form-row {
+      .form-row,
+      .image-upload-row {
         grid-template-columns: 1fr;
       }
 
@@ -432,7 +495,7 @@
 
       <p>
         展示你的 Banner、Avatar、Nickname、Discord Username
-        與個人介紹。
+        與 Introduction。
       </p>
     </header>
 
@@ -440,10 +503,7 @@
       <section aria-labelledby="peopleTitle">
         <div class="section-head">
           <h2 id="peopleTitle">公開個人頁面</h2>
-
-          <span id="peopleCount">
-            正在載入…
-          </span>
+          <span id="peopleCount">正在載入…</span>
         </div>
 
         <div id="peopleGrid">
@@ -460,16 +520,22 @@
 
             <p>
               填寫 Nickname、Discord Username、Avatar、
-              Banner 與 Introduction，即可建立自己的公開展示卡片。
+              Banner 與 Introduction，即可建立自己的個人展示卡片。
             </p>
 
             <div class="notice">
-              每個 Discord Username 只能投稿一次。
-              請勿提交真實姓名、電話、住址、密碼、
-              Discord Token 或其他私人資料。
+              Nickname 範例：Elon Musk<br>
+              Discord Username 範例：elonmusk
               <br><br>
-              目前這個版本會先把資料保存於你的瀏覽器並顯示預覽；
-              之後接上 Google Sheet 後，才會變成全站真正的一次性投稿。
+              範例只用來說明 Nickname 與 Username 的差異，
+              請使用你自己的 Discord 資料。
+              <br><br>
+              每個 Discord Username 在同一台瀏覽器中只能建立一次。
+              請勿提交密碼、Discord Token、電話、住址或其他私人資料。
+              <br><br>
+              目前資料保存在使用者自己的瀏覽器。
+              後續接上 Google Sheet 與 Google Drive 後，
+              才會成為所有訪客共用的正式投稿系統。
             </div>
           </div>
 
@@ -483,7 +549,7 @@
                   id="personNickname"
                   type="text"
                   maxlength="40"
-                  placeholder="例如：Yui-Bishop"
+                  placeholder="例如：Elon Musk"
                   required
                 >
               </label>
@@ -496,33 +562,69 @@
                   id="personUsername"
                   type="text"
                   maxlength="40"
-                  placeholder="例如：say_hi_2002"
+                  placeholder="例如：elonmusk"
                   required
                 >
               </label>
             </div>
 
-            <label class="field-label">
-              Avatar 外部圖片網址
+            <div class="image-upload-row">
+              <div class="upload-box">
+                <strong>Avatar 頭像圖片</strong>
 
-              <input
-                class="field"
-                id="personAvatar"
-                type="url"
-                placeholder="https://example.com/avatar.webp"
-              >
-            </label>
+                <input
+                  class="field file-field"
+                  id="personAvatarFile"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                >
 
-            <label class="field-label">
-              Banner 外部圖片網址
+                <small class="field-help">
+                  支援 JPG、PNG、WebP。建議使用正方形圖片，最大 5MB。
+                </small>
 
-              <input
-                class="field"
-                id="personBanner"
-                type="url"
-                placeholder="https://example.com/banner.webp"
-              >
-            </label>
+                <p
+                  class="upload-status"
+                  id="avatarUploadStatus"
+                ></p>
+
+                <button
+                  class="remove-image-button"
+                  id="removeAvatarButton"
+                  type="button"
+                >
+                  移除 Avatar
+                </button>
+              </div>
+
+              <div class="upload-box">
+                <strong>Banner 背景圖片</strong>
+
+                <input
+                  class="field file-field"
+                  id="personBannerFile"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                >
+
+                <small class="field-help">
+                  支援 JPG、PNG、WebP。建議使用橫向圖片，最大 8MB。
+                </small>
+
+                <p
+                  class="upload-status"
+                  id="bannerUploadStatus"
+                ></p>
+
+                <button
+                  class="remove-image-button"
+                  id="removeBannerButton"
+                  type="button"
+                >
+                  移除 Banner
+                </button>
+              </div>
+            </div>
 
             <label class="field-label">
               Introduction（必填）
@@ -531,7 +633,7 @@
                 class="field"
                 id="personIntroduction"
                 maxlength="500"
-                placeholder="介紹你自己、主要遊戲、直播內容、個人服務或想找的夥伴。"
+                placeholder="例如：我喜歡科技、遊戲、直播與認識新朋友。"
                 required
               ></textarea>
             </label>
@@ -547,23 +649,15 @@
                   aria-label="選擇卡片邊框顏色"
                 >
 
-                <span
-                  class="color-code"
-                  id="colorCode"
-                >
+                <span class="color-code" id="colorCode">
                   #755cff
                 </span>
               </div>
             </div>
 
-            <p class="preview-title">
-              即時預覽
-            </p>
+            <p class="preview-title">即時預覽</p>
 
-            <div
-              class="preview-wrap"
-              id="profilePreview"
-            ></div>
+            <div class="preview-wrap" id="profilePreview"></div>
 
             <button
               class="submit-button"
@@ -590,30 +684,69 @@
       "use strict";
 
       const DATA_URL = "../data/people.json";
-      const LOCAL_PEOPLE_KEY = "serverbloom-local-people-v1";
-      const SUBMITTED_USERS_KEY = "serverbloom-submitted-usernames-v1";
 
-      const grid = document.querySelector("#peopleGrid");
-      const count = document.querySelector("#peopleCount");
+      const LOCAL_PEOPLE_KEY =
+        "serverbloom-local-people-v3";
 
-      const form = document.querySelector("#peopleForm");
-      const nicknameInput = document.querySelector("#personNickname");
-      const usernameInput = document.querySelector("#personUsername");
-      const avatarInput = document.querySelector("#personAvatar");
-      const bannerInput = document.querySelector("#personBanner");
+      const SUBMITTED_USERS_KEY =
+        "serverbloom-submitted-usernames-v3";
+
+      const grid =
+        document.querySelector("#peopleGrid");
+
+      const count =
+        document.querySelector("#peopleCount");
+
+      const form =
+        document.querySelector("#peopleForm");
+
+      const nicknameInput =
+        document.querySelector("#personNickname");
+
+      const usernameInput =
+        document.querySelector("#personUsername");
+
       const introductionInput =
         document.querySelector("#personIntroduction");
+
+      const avatarFileInput =
+        document.querySelector("#personAvatarFile");
+
+      const bannerFileInput =
+        document.querySelector("#personBannerFile");
+
       const borderColorInput =
         document.querySelector("#personBorderColor");
 
-      const colorCode = document.querySelector("#colorCode");
-      const preview = document.querySelector("#profilePreview");
-      const formStatus = document.querySelector("#peopleFormStatus");
+      const avatarUploadStatus =
+        document.querySelector("#avatarUploadStatus");
+
+      const bannerUploadStatus =
+        document.querySelector("#bannerUploadStatus");
+
+      const removeAvatarButton =
+        document.querySelector("#removeAvatarButton");
+
+      const removeBannerButton =
+        document.querySelector("#removeBannerButton");
+
+      const colorCode =
+        document.querySelector("#colorCode");
+
+      const preview =
+        document.querySelector("#profilePreview");
+
+      const formStatus =
+        document.querySelector("#peopleFormStatus");
+
       const submitButton =
         document.querySelector("#peopleSubmitButton");
 
       let publicPeople = [];
       let localPeople = readLocalPeople();
+
+      let avatarDataUrl = "";
+      let bannerDataUrl = "";
 
       function escapeHtml(value) {
         return String(value ?? "").replace(
@@ -634,6 +767,14 @@
 
         if (!text) {
           return "";
+        }
+
+        if (
+          text.startsWith("data:image/jpeg;base64,") ||
+          text.startsWith("data:image/png;base64,") ||
+          text.startsWith("data:image/webp;base64,")
+        ) {
+          return text;
         }
 
         try {
@@ -680,11 +821,25 @@
         );
       }
 
+      function makeId() {
+        if (
+          typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
+        ) {
+          return crypto.randomUUID();
+        }
+
+        return (
+          Date.now().toString(36) +
+          Math.random().toString(36).slice(2)
+        );
+      }
+
       function normalizePerson(person) {
         return {
           id:
             String(person.id || "").trim() ||
-            crypto.randomUUID(),
+            makeId(),
 
           nickname:
             String(person.nickname || "未命名")
@@ -734,6 +889,7 @@
                 alt="${escapeHtml(person.nickname)} 的 Avatar"
                 loading="lazy"
                 referrerpolicy="no-referrer"
+                onerror="this.remove()"
               >
             </div>
           `;
@@ -755,14 +911,13 @@
                 alt="${escapeHtml(person.nickname)} 的 Banner"
                 loading="lazy"
                 referrerpolicy="no-referrer"
+                onerror="this.remove()"
               >
             </div>
           `;
         }
 
-        return `
-          <div class="person-banner"></div>
-        `;
+        return `<div class="person-banner"></div>`;
       }
 
       function renderPersonCard(rawPerson) {
@@ -819,7 +974,9 @@
             </div>
           `;
 
-          count.textContent = "顯示 0 位使用者";
+          count.textContent =
+            "顯示 0 位使用者";
+
           return;
         }
 
@@ -832,10 +989,9 @@
 
       function readLocalPeople() {
         try {
-          const value =
-            JSON.parse(
-              localStorage.getItem(LOCAL_PEOPLE_KEY) || "[]"
-            );
+          const value = JSON.parse(
+            localStorage.getItem(LOCAL_PEOPLE_KEY) || "[]"
+          );
 
           return Array.isArray(value)
             ? value.map(normalizePerson)
@@ -854,10 +1010,9 @@
 
       function readSubmittedUsernames() {
         try {
-          const value =
-            JSON.parse(
-              localStorage.getItem(SUBMITTED_USERS_KEY) || "[]"
-            );
+          const value = JSON.parse(
+            localStorage.getItem(SUBMITTED_USERS_KEY) || "[]"
+          );
 
           return Array.isArray(value)
             ? value.map(normalizeUsername)
@@ -871,7 +1026,9 @@
         const usernames =
           new Set(readSubmittedUsernames());
 
-        usernames.add(normalizeUsername(username));
+        usernames.add(
+          normalizeUsername(username)
+        );
 
         localStorage.setItem(
           SUBMITTED_USERS_KEY,
@@ -880,21 +1037,24 @@
       }
 
       function usernameAlreadyExists(username) {
-        const target = normalizeUsername(username);
+        const target =
+          normalizeUsername(username);
 
         if (!target) {
           return false;
         }
 
-        const inPublic = publicPeople.some(
-          person =>
-            normalizeUsername(person.username) === target
-        );
+        const inPublic =
+          publicPeople.some(
+            person =>
+              normalizeUsername(person.username) === target
+          );
 
-        const inLocal = localPeople.some(
-          person =>
-            normalizeUsername(person.username) === target
-        );
+        const inLocal =
+          localPeople.some(
+            person =>
+              normalizeUsername(person.username) === target
+          );
 
         const submitted =
           readSubmittedUsernames().includes(target);
@@ -902,23 +1062,145 @@
         return inPublic || inLocal || submitted;
       }
 
+      function showFormStatus(message, type = "") {
+        formStatus.textContent = message;
+        formStatus.className =
+          `form-status ${type}`.trim();
+      }
+
+      function showUploadStatus(
+        element,
+        message,
+        type = ""
+      ) {
+        element.textContent = message;
+        element.className =
+          `upload-status ${type}`.trim();
+      }
+
+      function loadImageElement(file) {
+        return new Promise(
+          (resolve, reject) => {
+            const objectUrl =
+              URL.createObjectURL(file);
+
+            const image = new Image();
+
+            image.onload = () => {
+              URL.revokeObjectURL(objectUrl);
+              resolve(image);
+            };
+
+            image.onerror = () => {
+              URL.revokeObjectURL(objectUrl);
+
+              reject(
+                new Error("無法讀取這張圖片。")
+              );
+            };
+
+            image.src = objectUrl;
+          }
+        );
+      }
+
+      async function compressImage(file, options) {
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/webp"
+        ];
+
+        if (!file) {
+          return "";
+        }
+
+        if (!allowedTypes.includes(file.type)) {
+          throw new Error(
+            "只支援 JPG、PNG、WebP 圖片。"
+          );
+        }
+
+        if (file.size > options.maxFileBytes) {
+          throw new Error(
+            `原始圖片不可超過 ${
+              Math.round(
+                options.maxFileBytes / 1024 / 1024
+              )
+            }MB。`
+          );
+        }
+
+        const image =
+          await loadImageElement(file);
+
+        const scale = Math.min(
+          1,
+          options.maxWidth / image.width,
+          options.maxHeight / image.height
+        );
+
+        const width = Math.max(
+          1,
+          Math.round(image.width * scale)
+        );
+
+        const height = Math.max(
+          1,
+          Math.round(image.height * scale)
+        );
+
+        const canvas =
+          document.createElement("canvas");
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const context =
+          canvas.getContext("2d");
+
+        if (!context) {
+          throw new Error(
+            "瀏覽器無法處理圖片。"
+          );
+        }
+
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+
+        context.drawImage(
+          image,
+          0,
+          0,
+          width,
+          height
+        );
+
+        return canvas.toDataURL(
+          "image/webp",
+          options.quality
+        );
+      }
+
       function getPreviewPerson() {
         return normalizePerson({
           nickname:
-            nicknameInput.value || "你的 Nickname",
+            nicknameInput.value ||
+            "Elon Musk",
 
           username:
-            usernameInput.value || "discord_username",
+            usernameInput.value ||
+            "elonmusk",
 
           avatar:
-            avatarInput.value,
+            avatarDataUrl,
 
           banner:
-            bannerInput.value,
+            bannerDataUrl,
 
           introduction:
             introductionInput.value ||
-            "你的 Introduction 會顯示在這裡。",
+            "這裡會顯示你的 Discord 個人介紹。",
 
           borderColor:
             borderColorInput.value
@@ -935,17 +1217,14 @@
           person.borderColor;
       }
 
-      function showFormStatus(message, type = "") {
-        formStatus.textContent = message;
-        formStatus.className =
-          `form-status ${type}`.trim();
-      }
-
       async function loadPeople() {
         try {
-          const response = await fetch(DATA_URL, {
-            cache: "no-store"
-          });
+          const response = await fetch(
+            DATA_URL,
+            {
+              cache: "no-store"
+            }
+          );
 
           if (!response.ok) {
             throw new Error(
@@ -953,7 +1232,8 @@
             );
           }
 
-          const data = await response.json();
+          const data =
+            await response.json();
 
           publicPeople =
             Array.isArray(data)
@@ -974,8 +1254,6 @@
       [
         nicknameInput,
         usernameInput,
-        avatarInput,
-        bannerInput,
         introductionInput,
         borderColorInput
       ].forEach(element => {
@@ -984,6 +1262,142 @@
           updatePreview
         );
       });
+
+      avatarFileInput.addEventListener(
+        "change",
+        async () => {
+          const file =
+            avatarFileInput.files?.[0];
+
+          if (!file) {
+            avatarDataUrl = "";
+            updatePreview();
+            return;
+          }
+
+          showUploadStatus(
+            avatarUploadStatus,
+            "正在處理 Avatar…"
+          );
+
+          try {
+            avatarDataUrl =
+              await compressImage(
+                file,
+                {
+                  maxFileBytes:
+                    5 * 1024 * 1024,
+                  maxWidth: 512,
+                  maxHeight: 512,
+                  quality: 0.82
+                }
+              );
+
+            showUploadStatus(
+              avatarUploadStatus,
+              `已選擇：${file.name}`,
+              "success"
+            );
+
+            updatePreview();
+          } catch (error) {
+            avatarDataUrl = "";
+            avatarFileInput.value = "";
+
+            showUploadStatus(
+              avatarUploadStatus,
+              error.message ||
+              "Avatar 處理失敗。",
+              "error"
+            );
+
+            updatePreview();
+          }
+        }
+      );
+
+      bannerFileInput.addEventListener(
+        "change",
+        async () => {
+          const file =
+            bannerFileInput.files?.[0];
+
+          if (!file) {
+            bannerDataUrl = "";
+            updatePreview();
+            return;
+          }
+
+          showUploadStatus(
+            bannerUploadStatus,
+            "正在處理 Banner…"
+          );
+
+          try {
+            bannerDataUrl =
+              await compressImage(
+                file,
+                {
+                  maxFileBytes:
+                    8 * 1024 * 1024,
+                  maxWidth: 1280,
+                  maxHeight: 480,
+                  quality: 0.78
+                }
+              );
+
+            showUploadStatus(
+              bannerUploadStatus,
+              `已選擇：${file.name}`,
+              "success"
+            );
+
+            updatePreview();
+          } catch (error) {
+            bannerDataUrl = "";
+            bannerFileInput.value = "";
+
+            showUploadStatus(
+              bannerUploadStatus,
+              error.message ||
+              "Banner 處理失敗。",
+              "error"
+            );
+
+            updatePreview();
+          }
+        }
+      );
+
+      removeAvatarButton.addEventListener(
+        "click",
+        () => {
+          avatarDataUrl = "";
+          avatarFileInput.value = "";
+
+          showUploadStatus(
+            avatarUploadStatus,
+            "Avatar 已移除。"
+          );
+
+          updatePreview();
+        }
+      );
+
+      removeBannerButton.addEventListener(
+        "click",
+        () => {
+          bannerDataUrl = "";
+          bannerFileInput.value = "";
+
+          showUploadStatus(
+            bannerUploadStatus,
+            "Banner 已移除。"
+          );
+
+          updatePreview();
+        }
+      );
 
       form.addEventListener(
         "submit",
@@ -1035,7 +1449,7 @@
 
           if (usernameAlreadyExists(username)) {
             showFormStatus(
-              "這個 Discord Username 已經投稿過。",
+              "這個 Discord Username 已經建立過個人頁面。",
               "error"
             );
 
@@ -1044,11 +1458,11 @@
           }
 
           const person = normalizePerson({
-            id: crypto.randomUUID(),
+            id: makeId(),
             nickname,
             username,
-            avatar: avatarInput.value,
-            banner: bannerInput.value,
+            avatar: avatarDataUrl,
+            banner: bannerDataUrl,
             introduction,
             borderColor:
               borderColorInput.value
@@ -1056,31 +1470,57 @@
 
           submitButton.disabled = true;
 
-          localPeople.push(person);
+          try {
+            localPeople.push(person);
 
-          saveLocalPeople();
-          saveSubmittedUsername(username);
+            saveLocalPeople();
+            saveSubmittedUsername(username);
+            renderAllPeople();
 
-          renderAllPeople();
+            showFormStatus(
+              "個人頁面已成功保存於這台瀏覽器。",
+              "success"
+            );
 
-          showFormStatus(
-            "個人頁面已保存於這台瀏覽器。",
-            "success"
-          );
+            form.reset();
 
-          form.reset();
+            avatarDataUrl = "";
+            bannerDataUrl = "";
 
-          borderColorInput.value =
-            "#755cff";
+            borderColorInput.value =
+              "#755cff";
 
-          updatePreview();
+            showUploadStatus(
+              avatarUploadStatus,
+              ""
+            );
 
-          submitButton.disabled = false;
+            showUploadStatus(
+              bannerUploadStatus,
+              ""
+            );
 
-          window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-          });
+            updatePreview();
+
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth"
+            });
+          } catch (error) {
+            localPeople =
+              localPeople.filter(
+                item => item.id !== person.id
+              );
+
+            showFormStatus(
+              "儲存失敗。圖片可能太大，請使用較小圖片。",
+              "error"
+            );
+
+            console.error(error);
+          } finally {
+            submitButton.disabled = false;
+          }
         }
       );
 
