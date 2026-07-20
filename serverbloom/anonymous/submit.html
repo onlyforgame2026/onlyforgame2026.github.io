@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>匿名投稿｜ServerBloom</title>
+  <link rel="stylesheet" href="assets/anonymous.css">
+
+  <style>
+    .submit-shell{
+      width:min(1100px,calc(100% - 32px));
+      margin:32px auto 60px;
+    }
+
+    .submit-card{
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:28px;
+      background:
+        radial-gradient(circle at top right, rgba(197,148,255,.16), transparent 34%),
+        radial-gradient(circle at top left, rgba(255,145,204,.12), transparent 28%),
+        var(--panel);
+      box-shadow:0 16px 40px rgba(0,0,0,.34);
+    }
+
+    .submit-card h1{
+      margin:0 0 10px;
+      font-size:clamp(30px,4vw,48px);
+      line-height:1.15;
+    }
+
+    .submit-card h1 span{
+      color:var(--sakura);
+    }
+
+    .submit-desc{
+      margin:0 0 24px;
+      color:var(--muted);
+      line-height:1.85;
+      font-size:16px;
+    }
+
+    .submit-form{
+      display:grid;
+      gap:16px;
+    }
+
+    .submit-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    .submit-field,
+    .submit-select,
+    .submit-textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#090819;
+      color:#fff;
+      padding:14px 16px;
+      outline:none;
+      font-size:15px;
+    }
+
+    .submit-field::placeholder,
+    .submit-textarea::placeholder{
+      color:#8f87a6;
+    }
+
+    .submit-textarea{
+      min-height:420px;
+      resize:vertical;
+      line-height:1.85;
+    }
+
+    .submit-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:4px;
+    }
+
+    .submit-btn{
+      min-height:50px;
+      padding:0 22px;
+      border:0;
+      border-radius:14px;
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--sakura),var(--purple));
+      box-shadow:0 12px 28px rgba(125,87,255,.22);
+    }
+
+    .submit-secondary{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:50px;
+      padding:0 20px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      color:#ddd3f8;
+      text-decoration:none;
+      background:rgba(255,255,255,.02);
+    }
+
+    .submit-note{
+      margin-top:18px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      color:var(--muted);
+      background:rgba(255,255,255,.02);
+      line-height:1.8;
+      font-size:14px;
+    }
+
+    @media (max-width: 780px){
+      .submit-row{
+        grid-template-columns:1fr;
+      }
+
+      .submit-card{
+        padding:22px;
+      }
+
+      .submit-textarea{
+        min-height:320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="anonymous-header">
+    <nav class="anonymous-nav">
+      <a class="anonymous-brand" href="./">
+        Server<span>Bloom</span> 匿名文章
+      </a>
+
+      <a class="back-link" href="./">
+        ← 返回匿名文章
+      </a>
+    </nav>
+  </header>
+
+  <main class="submit-shell">
+    <section class="submit-card">
+      <h1>開始你的<span>匿名投稿</span></h1>
+
+      <p class="submit-desc">
+        你可以匿名分享心情、感情、遊戲、Discord 社群、生活或學業故事。
+        這一頁先是獨立投稿頁，不會影響前面的 Server 頁與個人廣告頁。
+      </p>
+
+      <form class="submit-form" id="anonymousSubmitForm">
+        <div class="submit-row">
+          <input
+            class="submit-field"
+            id="postTitle"
+            maxlength="80"
+            placeholder="文章標題"
+            required
+          >
+
+          <select class="submit-select" id="postMode" required>
+            <option value="">選擇互動模式</option>
+            <option value="呵護模式">🟡 呵護模式</option>
+            <option value="陪伴模式">🌸 陪伴模式</option>
+            <option value="建議模式">💜 建議模式</option>
+            <option value="討論模式">🟣 討論模式</option>
+            <option value="只想說說">⚫ 只想說說</option>
+          </select>
+        </div>
+
+        <div class="submit-row">
+          <select class="submit-select" id="postCategory" required>
+            <option value="">選擇文章分類</option>
+            <option value="心情">心情</option>
+            <option value="感情">感情</option>
+            <option value="遊戲">遊戲</option>
+            <option value="Discord 社群">Discord 社群</option>
+            <option value="生活">生活</option>
+            <option value="學業">學業</option>
+            <option value="工作">工作</option>
+            <option value="其他">其他</option>
+          </select>
+
+          <input
+            class="submit-field"
+            id="postNickname"
+            maxlength="20"
+            placeholder="匿名暱稱（可不填）"
+          >
+        </div>
+
+        <textarea
+          class="submit-textarea"
+          id="postContent"
+          maxlength="3000"
+          placeholder="在這裡匿名說出你的故事……"
+          required
+        ></textarea>
+
+        <div class="submit-actions">
+          <button class="submit-btn" type="submit">
+            送出匿名投稿
+          </button>
+
+          <a class="submit-secondary" href="./">
+            返回文章列表
+          </a>
+        </div>
+      </form>
+
+      <div class="submit-note">
+        目前這頁已經是「真實可打開的投稿頁」。
+        如果你要讓它真的把資料寫進資料庫，我下一步再幫你把這頁接到 Google Apps Script。
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const form = document.getElementById("anonymousSubmitForm");
+
+      if (!form) return;
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const data = {
+          title: document.getElementById("postTitle").value.trim(),
+          mode: document.getElementById("postMode").value.trim(),
+          category: document.getElementById("postCategory").value.trim(),
+          nickname: document.getElementById("postNickname").value.trim() || "匿名使用者",
+          content: document.getElementById("postContent").value.trim()
+        };
+
+        if (!data.title || !data.mode || !data.category || !data.content) {
+          alert("請先把標題、模式、分類與內容填完整。");
+          return;
+        }
+
+        alert("匿名投稿頁已開啟完成。下一步我可以幫你把它串接成真正可送出到資料庫的版本。");
+      });
+    })();
+  </script>
+</body>
+</html>
