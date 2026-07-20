@@ -179,18 +179,100 @@
       '31731950-952d-439b-9492-c59ba7cd31c8':'servers/just-a-server/',
       'e7493e44-4ce1-4543-93a6-22f5984a2093':'servers/lol-tw-hk/'
     });
-    const pinnedServerIds=Object.freeze(['onlyforgame','紅塵客棧']);
+    const pinnedServerRules=Object.freeze([
+      {ids:['onlyforgame','only-for-game'],names:['only for game']},
+      {ids:['紅塵客棧'],names:['紅塵客棧']}
+    ]);
     const categoryMeta=[['全部','▦'],['遊戲','🎮'],['聊天交友','💬'],['創作','🎨'],['技術','⌘'],['學習','▣'],['其他','•••']];let remote=[],active='全部';
     const $=s=>document.querySelector(s),grid=$('#serverGrid'),search=$('#search'),status=$('#status');
     const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const tags=v=>(Array.isArray(v)?v:String(v||'').split(/[、,，\s]+/)).map(x=>String(x).trim()).filter(Boolean).slice(0,4);
     const color=v=>/^#[0-9a-f]{6}$/i.test(v||'')?v:'#755cff';
+    const pinValue=v=>String(v||'').normalize('NFKC').trim().toLowerCase();
     function initials(n){return String(n||'SB').trim().split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'SB'}
-    function pinServers(servers){const pinned=[],remaining=[...servers];pinnedServerIds.forEach(id=>{const index=remaining.findIndex(server=>String(server.id||'').trim()===id);if(index!==-1)pinned.push(remaining.splice(index,1)[0])});return [...pinned,...remaining]}
+    function pinServers(servers){
+      const pinned=[],remaining=[...servers];
+      pinnedServerRules.forEach(rule=>{
+        const ids=rule.ids.map(pinValue),names=rule.names.map(pinValue);
+        const index=remaining.findIndex(server=>{
+          const id=pinValue(server.id||server.slug);
+          const name=pinValue(server.name);
+          return ids.includes(id)||names.includes(name);
+        });
+        if(index!==-1)pinned.push(remaining.splice(index,1)[0]);
+      });
+      return [...pinned,...remaining];
+    }
     function all(){const seen=new Set,source=remote.length?remote:[builtin],unique=source.filter(s=>{const key=(s.inviteUrl||s.name||'').toLowerCase();if(!key||seen.has(key))return false;seen.add(key);return true});return pinServers(unique)}
     function renderCategories(){const html=categoryMeta.map(([name,icon])=>`<button class="cat ${active===name?'active':''}" data-category="${name}"><span class="emoji">${icon}</span>${name}</button>`).join('');$('#categories').innerHTML=html;$('#mobileCategories').innerHTML=html;document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{active=b.dataset.category;renderCategories();render()})}
     function card(s,i){const c=color(s.color),secondary=color(s.secondaryColor||'#111a2b'),text=color(s.textColor||'#ffffff'),t=tags(s.tags),countsKnown=!s.countsUnknown,members=countsKnown?Number(s.members??s.memberCount??0):null,online=countsKnown?Number(s.online??s.onlineCount??0):null,isNew=s.isNew===true,serverId=String(s.id||s.slug||'').trim(),detailsUrl=staticServerPages[serverId]||`server.html?id=${encodeURIComponent(s.id||s.slug||s.name)}`,bannerType=String(s.customBanner||'').trim()?'Uploaded Banner':String(s.bannerPreset||'').trim()?'Official Banner':String(s.banner||'').trim()?'Uploaded Banner':'Category Banner',loading=i===0?'eager':'lazy',banner=`<img class="card-banner-image" data-banner-index="${i}" src="${esc(ServerBloomBanner.getServerBanner(s))}" alt="${esc(s.name)} Banner" loading="${loading}" width="640" height="240">`,icon=s.icon?`<img class="avatar server-avatar-image" data-icon-index="${i}" src="${esc(s.icon)}" alt="${esc(s.name)} Icon" loading="lazy" width="78" height="78">`:`<div class="avatar">${esc(initials(s.name))}</div>`;return `<article class="card" data-server-id="${esc(serverId)}" style="--c:${c};--server-primary:${c};--server-secondary:${secondary};--server-text:${text}"><div class="banner">${banner}<span class="banner-label" title="${esc(bannerType)}">${esc(bannerType)}</span><button class="bookmark" type="button" aria-label="收藏外觀，尚未啟用" title="收藏功能尚未啟用">☆</button></div><div class="card-body"><div class="identity">${icon}<h3 title="${esc(s.name)}">${esc(s.name)} <span class="verified">◆</span></h3></div><div class="chips"><span class="tag">${esc(s.category||'其他')}</span>${t.map(x=>`<span class="tag">${esc(x)}</span>`).join('')}${isNew?'<span class="tag">✨ 新社群</span>':''}</div><p class="desc">${esc(s.description||'歡迎加入這個正在成長的 Discord 社群。')}</p><div class="stats"><span>${countsKnown?`👥 ${members.toLocaleString()} 位成員`:'👥 成員數未公開'}</span><span class="online">${countsKnown?`線上 ${online.toLocaleString()} 人`:'在線數未公開'}</span></div><div class="actions"><a class="action primary" href="${esc(s.inviteUrl)}" target="_blank" rel="noopener noreferrer">☁ 加入伺服器</a><button class="action share" data-index="${i}">分享</button><a class="action details" href="${esc(detailsUrl)}">查看詳情</a></div></div></article>`}
-    function render(){const q=search.value.trim().toLowerCase(),servers=all(),items=servers.filter(s=>(active==='全部'||s.category===active)&&[s.name,s.category,s.description,...tags(s.tags)].join(' ').toLowerCase().includes(q));grid.innerHTML=items.length?items.map(s=>card(s,servers.indexOf(s))).join(''):'<div class="empty">找不到符合條件的社群，試試其他關鍵字吧。</div>';document.querySelectorAll('[data-banner-index]').forEach(image=>{const server=servers[Number(image.dataset.bannerIndex)];ServerBloomBanner.bindBannerFallback(image,server);image.src=ServerBloomBanner.getServerBanner(server)});document.querySelectorAll('[data-icon-index]').forEach(image=>image.addEventListener('error',()=>{const server=servers[Number(image.dataset.iconIndex)],fallback=document.createElement('div');fallback.className='avatar';fallback.textContent=initials(server&&server.name);image.replaceWith(fallback)},{once:true}));$('#resultCount').textContent=`顯示 ${items.length} 個結果`;$('#communityCount').textContent=servers.length.toLocaleString();const known=servers.filter(s=>!s.countsUnknown),total=known.reduce((n,s)=>n+Number(s.memberCount??s.members??0),0),onlineTotal=known.reduce((n,s)=>n+Number(s.onlineCount??s.online??0),0);$('#memberCount').textContent=known.length?total.toLocaleString():'未公開';$('#onlineCount').textContent=known.length?onlineTotal.toLocaleString():'未公開';document.querySelectorAll('.share').forEach(b=>b.onclick=async()=>{const s=servers[Number(b.dataset.index)],url=`${location.origin}${location.pathname}?server=${encodeURIComponent(s.id||s.name)}`;try{if(navigator.share)await navigator.share({title:`${s.name}｜ServerBloom`,text:s.description,url});else{await navigator.clipboard.writeText(url);b.textContent='已複製連結'}}catch{window.prompt('請複製分享連結：',url)}})}
+    function render(){
+      const q=search.value.trim().toLowerCase();
+      const servers=all();
+      const items=servers.filter(s=>
+        (active==='全部'||s.category===active)&&
+        [s.name,s.category,s.description,...tags(s.tags)].join(' ').toLowerCase().includes(q)
+      );
+
+      grid.innerHTML=items.length
+        ?items.map(s=>card(s,servers.indexOf(s))).join('')
+        :'<div class="empty">找不到符合條件的社群，試試其他關鍵字吧。</div>';
+
+      document.querySelectorAll('[data-banner-index]').forEach(image=>{
+        const server=servers[Number(image.dataset.bannerIndex)];
+        if(!server)return;
+        ServerBloomBanner.bindBannerFallback(image,server);
+        image.src=ServerBloomBanner.getServerBanner(server);
+      });
+
+      document.querySelectorAll('[data-icon-index]').forEach(image=>{
+        image.addEventListener('error',()=>{
+          const server=servers[Number(image.dataset.iconIndex)];
+          const fallback=document.createElement('div');
+          fallback.className='avatar';
+          fallback.textContent=initials(server&&server.name);
+          image.replaceWith(fallback);
+        },{once:true});
+      });
+
+      const resultCountElement=$('#resultCount');
+      if(resultCountElement)resultCountElement.textContent=`顯示 ${items.length} 個結果`;
+
+      const communityCountElement=$('#communityCount');
+      if(communityCountElement)communityCountElement.textContent=servers.length.toLocaleString();
+
+      const known=servers.filter(s=>!s.countsUnknown);
+      const total=known.reduce((n,s)=>n+Number(s.memberCount??s.members??0),0);
+      const onlineTotal=known.reduce((n,s)=>n+Number(s.onlineCount??s.online??0),0);
+
+      const memberCountElement=$('#memberCount');
+      if(memberCountElement){
+        memberCountElement.textContent=known.length?total.toLocaleString():'未公開';
+      }
+
+      const onlineCountElement=$('#onlineCount');
+      if(onlineCountElement){
+        onlineCountElement.textContent=known.length?onlineTotal.toLocaleString():'未公開';
+      }
+
+      document.querySelectorAll('.share').forEach(b=>{
+        b.onclick=async()=>{
+          const s=servers[Number(b.dataset.index)];
+          if(!s)return;
+          const url=`${location.origin}${location.pathname}?server=${encodeURIComponent(s.id||s.name)}`;
+          try{
+            if(navigator.share){
+              await navigator.share({title:`${s.name}｜ServerBloom`,text:s.description,url});
+            }else{
+              await navigator.clipboard.writeText(url);
+              b.textContent='已複製連結';
+            }
+          }catch{
+            window.prompt('請複製分享連結：',url);
+          }
+        };
+      });
+    }
     function normalize(s){return{id:String(s.id||''),slug:String(s.slug||''),name:String(s.name||'').trim(),category:String(s.category||'其他').trim(),inviteUrl:String(s.inviteUrl||'').trim(),tags:tags(s.tags),banner:String(s.banner||''),customBanner:String(s.customBanner||''),bannerPreset:String(s.bannerPreset||''),icon:String(s.icon||''),description:String(s.description||'').trim(),color:color(s.primaryColor||s.color),secondaryColor:color(s.secondaryColor||'#111a2b'),textColor:color(s.textColor||'#ffffff'),members:s.countsUnknown?null:Number(s.members??s.memberCount??0),online:s.countsUnknown?null:Number(s.online??s.onlineCount??0),countsUnknown:s.countsUnknown===true,isNew:s.isNew===true}}
     async function load(){const [servers]=await Promise.all([ServerBloomData.loadServers(),ServerBloomBanner.loadBannerPresets().catch(()=>[])]);remote=servers.map(normalize).filter(s=>s.name&&s.inviteUrl);render();return remote}
     async function submit(s){const body=new URLSearchParams;Object.entries(s).forEach(([k,v])=>body.set(k,Array.isArray(v)?v.join(','):v));await fetch(API,{method:'POST',mode:'no-cors',body})}
