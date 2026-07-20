@@ -319,7 +319,7 @@
           renderReactionButtons(buttons, state.counts, state.selected);
           window.alert("Emoji 暫時無法送出，請稍後再試。");
         } finally {
-          syncing = false;
+          yncing = false;
         }
       });
     });
