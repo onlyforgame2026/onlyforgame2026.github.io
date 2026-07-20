@@ -2,161 +2,284 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
   <title>匿名投稿｜ServerBloom</title>
-  <link rel="stylesheet" href="assets/anonymous.css">
+
+  <link
+    rel="stylesheet"
+    href="assets/anonymous.css"
+  >
 
   <style>
-    .submit-shell{
-      width:min(1100px,calc(100% - 32px));
-      margin:32px auto 60px;
+    .submit-shell {
+      width: min(
+        1100px,
+        calc(100% - 32px)
+      );
+
+      margin: 32px auto 60px;
     }
 
-    .submit-card{
-      border:1px solid var(--line);
-      border-radius:24px;
-      padding:28px;
+    .submit-card {
+      padding: 28px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 24px;
+
       background:
-        radial-gradient(circle at top right, rgba(197,148,255,.16), transparent 34%),
-        radial-gradient(circle at top left, rgba(255,145,204,.12), transparent 28%),
+        radial-gradient(
+          circle at top right,
+          rgba(197, 148, 255, 0.16),
+          transparent 34%
+        ),
+        radial-gradient(
+          circle at top left,
+          rgba(255, 145, 204, 0.12),
+          transparent 28%
+        ),
         var(--panel);
-      box-shadow:0 16px 40px rgba(0,0,0,.34);
+
+      box-shadow:
+        0 16px 40px
+        rgba(0, 0, 0, 0.34);
     }
 
-    .submit-card h1{
-      margin:0 0 10px;
-      font-size:clamp(30px,4vw,48px);
-      line-height:1.15;
+    .submit-card h1 {
+      margin: 0 0 10px;
+
+      font-size:
+        clamp(30px, 4vw, 48px);
+
+      line-height: 1.15;
     }
 
-    .submit-card h1 span{
-      color:var(--sakura);
+    .submit-card h1 span {
+      color: var(--sakura);
     }
 
-    .submit-desc{
-      margin:0 0 24px;
-      color:var(--muted);
-      line-height:1.85;
-      font-size:16px;
+    .submit-desc {
+      margin: 0 0 24px;
+
+      color: var(--muted);
+
+      line-height: 1.85;
+
+      font-size: 16px;
     }
 
-    .submit-form{
-      display:grid;
-      gap:16px;
+    .submit-form {
+      display: grid;
+      gap: 16px;
     }
 
-    .submit-row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:16px;
+    .submit-row {
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 16px;
     }
 
     .submit-field,
     .submit-select,
-    .submit-textarea{
-      width:100%;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#090819;
-      color:#fff;
-      padding:14px 16px;
-      outline:none;
-      font-size:15px;
+    .submit-textarea {
+      width: 100%;
+
+      padding: 14px 16px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 14px;
+
+      outline: none;
+
+      color: #ffffff;
+
+      background: #090819;
+
+      font-size: 15px;
     }
 
     .submit-field::placeholder,
-    .submit-textarea::placeholder{
-      color:#8f87a6;
+    .submit-textarea::placeholder {
+      color: #8f87a6;
     }
 
-    .submit-textarea{
-      min-height:420px;
-      resize:vertical;
-      line-height:1.85;
+    .submit-textarea {
+      min-height: 420px;
+
+      resize: vertical;
+
+      line-height: 1.85;
+
+      transition:
+        color 0.18s ease,
+        border-color 0.18s ease;
     }
 
-    .submit-actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:4px;
+    .submit-actions {
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 12px;
+
+      margin-top: 4px;
     }
 
-    .submit-btn{
-      min-height:50px;
-      padding:0 22px;
-      border:0;
-      border-radius:14px;
-      color:#fff;
-      font-weight:900;
-      cursor:pointer;
-      background:linear-gradient(135deg,var(--sakura),var(--purple));
-      box-shadow:0 12px 28px rgba(125,87,255,.22);
+    .submit-btn {
+      min-height: 50px;
+
+      padding: 0 22px;
+
+      border: 0;
+
+      border-radius: 14px;
+
+      color: #ffffff;
+
+      background:
+        linear-gradient(
+          135deg,
+          var(--sakura),
+          var(--purple)
+        );
+
+      box-shadow:
+        0 12px 28px
+        rgba(125, 87, 255, 0.22);
+
+      font-weight: 900;
+
+      cursor: pointer;
     }
 
-    .submit-secondary{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:50px;
-      padding:0 20px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      color:#ddd3f8;
-      text-decoration:none;
-      background:rgba(255,255,255,.02);
+    .submit-btn:disabled {
+      opacity: 0.72;
+
+      cursor: wait;
     }
 
-    .submit-note{
-      margin-top:18px;
-      padding:14px 16px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      color:var(--muted);
-      background:rgba(255,255,255,.02);
-      line-height:1.8;
-      font-size:14px;
+    .submit-secondary {
+      min-height: 50px;
+
+      padding: 0 20px;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 14px;
+
+      color: #ddd3f8;
+
+      background:
+        rgba(255, 255, 255, 0.02);
+
+      text-decoration: none;
     }
 
-    @media (max-width: 780px){
-      .submit-row{
-        grid-template-columns:1fr;
+    .submit-note {
+      margin-top: 18px;
+
+      padding: 14px 16px;
+
+      border:
+        1px solid var(--line);
+
+      border-radius: 14px;
+
+      color: var(--muted);
+
+      background:
+        rgba(255, 255, 255, 0.02);
+
+      line-height: 1.8;
+
+      font-size: 14px;
+    }
+
+    .color-help {
+      margin: -6px 0 0;
+
+      color: #a99fba;
+
+      font-size: 13px;
+
+      line-height: 1.7;
+    }
+
+    @media (max-width: 780px) {
+      .submit-row {
+        grid-template-columns: 1fr;
       }
 
-      .submit-card{
-        padding:22px;
+      .submit-card {
+        padding: 22px;
       }
 
-      .submit-textarea{
-        min-height:320px;
+      .submit-textarea {
+        min-height: 320px;
       }
     }
   </style>
 </head>
+
 <body>
   <header class="anonymous-header">
     <nav class="anonymous-nav">
-      <a class="anonymous-brand" href="./">
-        Server<span>Bloom</span> 匿名文章
+
+      <a
+        class="anonymous-brand"
+        href="./"
+      >
+        Server<span>Bloom</span>
+        匿名文章
       </a>
 
-      <a class="back-link" href="./">
+      <a
+        class="back-link"
+        href="./"
+      >
         ← 返回匿名文章
       </a>
+
     </nav>
   </header>
 
   <main class="submit-shell">
     <section class="submit-card">
-      <h1>開始你的<span>匿名投稿</span></h1>
+
+      <h1>
+        開始你的<span>匿名投稿</span>
+      </h1>
 
       <p class="submit-desc">
-        你可以匿名分享心情、感情、遊戲、Discord 社群、生活或學業故事。
-        這一頁先是獨立投稿頁，不會影響前面的 Server 頁與個人廣告頁。
+        你可以匿名分享心情、感情、遊戲、Discord 社群、
+        生活或學業故事。發布後會回到匿名文章大廳，
+        新文章會排在最前面。
       </p>
 
-      <form class="submit-form" id="anonymousSubmitForm">
+      <form
+        class="submit-form"
+        id="anonymousSubmitForm"
+      >
+
         <div class="submit-row">
+
           <input
             class="submit-field"
             id="postTitle"
@@ -165,27 +288,80 @@
             required
           >
 
-          <select class="submit-select" id="postMode" required>
-            <option value="">選擇互動模式</option>
-            <option value="呵護模式">🟡 呵護模式</option>
-            <option value="陪伴模式">🌸 陪伴模式</option>
-            <option value="建議模式">💜 建議模式</option>
-            <option value="討論模式">🟣 討論模式</option>
-            <option value="只想說說">⚫ 只想說說</option>
+          <select
+            class="submit-select"
+            id="postMode"
+            required
+          >
+            <option value="">
+              選擇互動模式
+            </option>
+
+            <option value="呵護模式">
+              🟡 呵護模式
+            </option>
+
+            <option value="陪伴模式">
+              🌸 陪伴模式
+            </option>
+
+            <option value="建議模式">
+              💜 建議模式
+            </option>
+
+            <option value="討論模式">
+              🟣 討論模式
+            </option>
+
+            <option value="只想說說">
+              ⚫ 只想說說
+            </option>
           </select>
+
         </div>
 
         <div class="submit-row">
-          <select class="submit-select" id="postCategory" required>
-            <option value="">選擇文章分類</option>
-            <option value="心情">心情</option>
-            <option value="感情">感情</option>
-            <option value="遊戲">遊戲</option>
-            <option value="Discord 社群">Discord 社群</option>
-            <option value="生活">生活</option>
-            <option value="學業">學業</option>
-            <option value="工作">工作</option>
-            <option value="其他">其他</option>
+
+          <select
+            class="submit-select"
+            id="postCategory"
+            required
+          >
+            <option value="">
+              選擇文章分類
+            </option>
+
+            <option value="心情">
+              心情
+            </option>
+
+            <option value="感情">
+              感情
+            </option>
+
+            <option value="遊戲">
+              遊戲
+            </option>
+
+            <option value="Discord 社群">
+              Discord 社群
+            </option>
+
+            <option value="生活">
+              生活
+            </option>
+
+            <option value="學業">
+              學業
+            </option>
+
+            <option value="工作">
+              工作
+            </option>
+
+            <option value="其他">
+              其他
+            </option>
           </select>
 
           <input
@@ -194,6 +370,33 @@
             maxlength="20"
             placeholder="匿名暱稱（可不填）"
           >
+
+        </div>
+
+        <div class="submit-row">
+
+          <select
+            class="submit-select"
+            id="postTheme"
+          >
+            <option value="pink-lavender">
+              米白色文字
+            </option>
+
+            <option value="sakura-pink">
+              淡粉色文字
+            </option>
+
+            <option value="lavender">
+              淡紫色文字
+            </option>
+          </select>
+
+          <div class="color-help">
+            這個選項只改文章正文顏色，
+            標題維持白色，閱讀會比較清楚。
+          </div>
+
         </div>
 
         <textarea
@@ -205,301 +408,369 @@
         ></textarea>
 
         <div class="submit-actions">
-          <button class="submit-btn" type="submit">
+
+          <button
+            class="submit-btn"
+            type="submit"
+          >
             送出匿名投稿
           </button>
 
-          <a class="submit-secondary" href="./">
+          <a
+            class="submit-secondary"
+            href="./"
+          >
             返回文章列表
           </a>
+
         </div>
       </form>
 
       <div class="submit-note">
-        目前這頁已經是「真實可打開的投稿頁」。
-        如果你要讓它真的把資料寫進資料庫，我下一步再幫你把這頁接到 Google Apps Script。
+        投稿會儲存在 Google 雲端資料庫。
+        發布成功後，所有人重新整理文章大廳都能看到。
       </div>
+
     </section>
   </main>
 
   <script>
-(() => {
-  "use strict";
+  (() => {
+    "use strict";
 
-  const API_URL =
-    "https://script.google.com/macros/s/AKfycbz1xFVctSyveh82R-qMZSKwD78H9RYsoDU7l_XP3avBBiEVOOqOeM3d9D5XKkFLrlLZ/exec";
+    const API_URL =
+      "https://script.google.com/macros/s/AKfycbz1xFVctSyveh82R-qMZSKwD78H9RYsoDU7l_XP3avBBiEVOOqOeM3d9D5XKkFLrlLZ/exec";
 
-  const form =
-    document.getElementById("anonymousSubmitForm");
-
-  const submitButton =
-    form?.querySelector(".submit-btn");
-
-  if (!form || !submitButton) {
-    return;
-  }
-
-  function getVisitorId() {
-    const key =
-      "serverbloomAnonymousVisitorId";
-
-    let visitorId =
-      localStorage.getItem(key);
-
-    if (!visitorId) {
-      visitorId =
-        "visitor-" +
-        Date.now() +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2, 12);
-
-      localStorage.setItem(
-        key,
-        visitorId
+    const form =
+      document.getElementById(
+        "anonymousSubmitForm"
       );
+
+    const submitButton =
+      form?.querySelector(
+        ".submit-btn"
+      );
+
+    const themeSelect =
+      document.getElementById(
+        "postTheme"
+      );
+
+    const contentField =
+      document.getElementById(
+        "postContent"
+      );
+
+    const textColors = {
+      "sakura-pink": "#f8b4d8",
+      "lavender": "#d8c2ff",
+      "pink-lavender": "#f4ecdf"
+    };
+
+    if (
+      !form ||
+      !submitButton ||
+      !themeSelect ||
+      !contentField
+    ) {
+      return;
     }
 
-    return visitorId;
-  }
+    function getVisitorId() {
+      const key =
+        "serverbloomAnonymousVisitorId";
 
-  function wait(milliseconds) {
-    return new Promise(resolve => {
-      window.setTimeout(
-        resolve,
-        milliseconds
-      );
-    });
-  }
+      let visitorId =
+        localStorage.getItem(key);
 
-  function loadJsonp(url) {
-    return new Promise(
-      (resolve, reject) => {
-        const callbackName =
-          "serverbloomCallback_" +
+      if (!visitorId) {
+        visitorId =
+          "visitor-" +
           Date.now() +
-          "_" +
+          "-" +
           Math.random()
             .toString(36)
-            .slice(2);
+            .slice(2, 12);
 
-        const script =
-          document.createElement(
-            "script"
-          );
+        localStorage.setItem(
+          key,
+          visitorId
+        );
+      }
 
-        const timeout =
-          window.setTimeout(() => {
+      return visitorId;
+    }
+
+    function wait(milliseconds) {
+      return new Promise(resolve => {
+        window.setTimeout(
+          resolve,
+          milliseconds
+        );
+      });
+    }
+
+    function loadJsonp(url) {
+      return new Promise(
+        (resolve, reject) => {
+
+          const callbackName =
+            "serverbloomCallback_" +
+            Date.now() +
+            "_" +
+            Math.random()
+              .toString(36)
+              .slice(2);
+
+          const script =
+            document.createElement(
+              "script"
+            );
+
+          const timeout =
+            window.setTimeout(() => {
+              cleanup();
+
+              reject(
+                new Error(
+                  "確認投稿逾時"
+                )
+              );
+            }, 12000);
+
+          function cleanup() {
+            window.clearTimeout(
+              timeout
+            );
+
+            delete window[
+              callbackName
+            ];
+
+            script.remove();
+          }
+
+          window[callbackName] =
+            data => {
+              cleanup();
+
+              resolve(data);
+            };
+
+          const separator =
+            url.includes("?")
+              ? "&"
+              : "?";
+
+          script.src =
+            url +
+            separator +
+            "callback=" +
+            encodeURIComponent(
+              callbackName
+            );
+
+          script.onerror = () => {
             cleanup();
 
             reject(
               new Error(
-                "確認投稿逾時"
+                "無法確認投稿結果"
               )
             );
-          }, 12000);
-
-        function cleanup() {
-          window.clearTimeout(
-            timeout
-          );
-
-          delete window[
-            callbackName
-          ];
-
-          script.remove();
-        }
-
-        window[callbackName] =
-          data => {
-            cleanup();
-            resolve(data);
           };
 
-        const separator =
-          url.includes("?")
-            ? "&"
-            : "?";
-
-        script.src =
-          url +
-          separator +
-          "callback=" +
-          encodeURIComponent(
-            callbackName
-          );
-
-        script.onerror = () => {
-          cleanup();
-
-          reject(
-            new Error(
-              "無法確認投稿結果"
-            )
-          );
-        };
-
-        document.body.appendChild(
-          script
-        );
-      }
-    );
-  }
-
-  form.addEventListener(
-    "submit",
-    async event => {
-      event.preventDefault();
-
-      const title =
-        document
-          .getElementById(
-            "postTitle"
-          )
-          .value
-          .trim();
-
-      const interactionMode =
-        document
-          .getElementById(
-            "postMode"
-          )
-          .value
-          .trim();
-
-      const category =
-        document
-          .getElementById(
-            "postCategory"
-          )
-          .value
-          .trim();
-
-      const nickname =
-        document
-          .getElementById(
-            "postNickname"
-          )
-          .value
-          .trim() ||
-        "匿名使用者";
-
-      const content =
-        document
-          .getElementById(
-            "postContent"
-          )
-          .value
-          .trim();
-
-      if (
-        !title ||
-        !interactionMode ||
-        !category ||
-        !content
-      ) {
-        window.alert(
-          "請先填寫標題、互動模式、分類與文章內容。"
-        );
-
-        return;
-      }
-
-      submitButton.disabled = true;
-      submitButton.textContent =
-        "正在送出匿名投稿……";
-
-      const postData =
-        new URLSearchParams({
-          action: "createPost",
-          title,
-          interactionMode,
-          category,
-          nickname,
-          content,
-          theme: "pink-lavender",
-          visitorId:
-            getVisitorId()
-        });
-
-      try {
-        await fetch(
-          API_URL,
-          {
-            method: "POST",
-            mode: "no-cors",
-            body: postData
-          }
-        );
-
-        submitButton.textContent =
-          "正在確認投稿……";
-
-        await wait(1800);
-
-        const result =
-          await loadJsonp(
-            API_URL +
-            "?action=listPosts&limit=30"
-          );
-
-        const posts =
-          Array.isArray(
-            result?.posts
-          )
-            ? result.posts
-            : [];
-
-        const createdPost =
-          posts.find(post => {
-            return (
-              post.title === title &&
-              post.content === content &&
-              post.nickname === nickname
-            );
-          });
-
-        if (!createdPost) {
-          throw new Error(
-            "投稿已送出，但暫時無法確認資料。"
+          document.body.appendChild(
+            script
           );
         }
+      );
+    }
 
-        submitButton.textContent =
-          "投稿成功 ✓";
+    function updateTextPreview() {
+      contentField.style.color =
+        textColors[
+          themeSelect.value
+        ] ||
+        textColors[
+          "pink-lavender"
+        ];
+    }
 
-        window.alert(
-          "匿名文章已成功發布。"
-        );
+    themeSelect.addEventListener(
+      "change",
+      updateTextPreview
+    );
 
-        window.location.href =
-          "./?published=" +
-          encodeURIComponent(
-            createdPost.postId
+    updateTextPreview();
+
+    form.addEventListener(
+      "submit",
+      async event => {
+        event.preventDefault();
+
+        const title =
+          document
+            .getElementById(
+              "postTitle"
+            )
+            .value
+            .trim();
+
+        const interactionMode =
+          document
+            .getElementById(
+              "postMode"
+            )
+            .value
+            .trim();
+
+        const category =
+          document
+            .getElementById(
+              "postCategory"
+            )
+            .value
+            .trim();
+
+        const nickname =
+          document
+            .getElementById(
+              "postNickname"
+            )
+            .value
+            .trim() ||
+          "匿名使用者";
+
+        const content =
+          contentField
+            .value
+            .trim();
+
+        const theme =
+          themeSelect.value ||
+          "pink-lavender";
+
+        if (
+          !title ||
+          !interactionMode ||
+          !category ||
+          !content
+        ) {
+          window.alert(
+            "請先填寫標題、互動模式、分類與文章內容。"
           );
 
-      } catch (error) {
-        console.error(
-          "匿名投稿失敗：",
-          error
-        );
+          return;
+        }
 
-        submitButton.disabled =
-          false;
+        submitButton.disabled = true;
 
         submitButton.textContent =
-          "重新送出匿名投稿";
+          "正在送出匿名投稿……";
 
-        window.alert(
-          error.message ||
-          "匿名投稿失敗，請稍後再試。"
-        );
+        const postData =
+          new URLSearchParams({
+            action: "createPost",
+            title,
+            interactionMode,
+            category,
+            nickname,
+            content,
+            theme,
+            visitorId:
+              getVisitorId()
+          });
+
+        try {
+          await fetch(
+            API_URL,
+            {
+              method: "POST",
+              mode: "no-cors",
+              body: postData
+            }
+          );
+
+          submitButton.textContent =
+            "正在確認投稿……";
+
+          let createdPost = null;
+
+          for (
+            let attempt = 0;
+            attempt < 4 &&
+            !createdPost;
+            attempt += 1
+          ) {
+            await wait(
+              attempt === 0
+                ? 450
+                : 550
+            );
+
+            const result =
+              await loadJsonp(
+                API_URL +
+                "?action=listPosts&limit=40"
+              );
+
+            const posts =
+              Array.isArray(
+                result?.posts
+              )
+                ? result.posts
+                : [];
+
+            createdPost =
+              posts.find(post => {
+                return (
+                  post.title === title &&
+                  post.content === content &&
+                  post.nickname === nickname
+                );
+              });
+          }
+
+          if (!createdPost) {
+            throw new Error(
+              "投稿已送出，但暫時無法確認資料。"
+            );
+          }
+
+          submitButton.textContent =
+            "投稿成功 ✓";
+
+          window.alert(
+            "匿名文章已成功發布。"
+          );
+
+          window.location.href =
+            "./?published=" +
+            encodeURIComponent(
+              createdPost.postId
+            );
+
+        } catch (error) {
+          console.error(
+            "匿名投稿失敗：",
+            error
+          );
+
+          submitButton.disabled =
+            false;
+
+          submitButton.textContent =
+            "重新送出匿名投稿";
+
+          window.alert(
+            error.message ||
+            "匿名投稿失敗，請稍後再試。"
+          );
+        }
       }
-    }
-  );
-})();
-</script>
+    );
+  })();
+  </script>
 </body>
 </html>
