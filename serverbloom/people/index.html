@@ -621,75 +621,44 @@
   z-index: 10;
 }
 
-/* Banner 保持在 Avatar 下方 */
-#peopleGrid .person-banner,
-#profilePreview .person-banner {
-  position: relative;
-  z-index: 1;
+/* 最終修正：卡片固定高度，但介紹全文可捲動 */
+#peopleGrid .person-introduction,
+#profilePreview .person-introduction {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: initial !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+
+  white-space: pre-line !important;
+  text-overflow: clip !important;
+
+  padding-right: 7px;
+  scrollbar-width: thin;
+  scrollbar-color: #755cff transparent;
 }
 
-    #peopleGrid .person-nickname,
-    #profilePreview .person-nickname {
-      min-height: 62px;
-      max-height: 62px;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
-    }
+#peopleGrid .person-introduction::-webkit-scrollbar,
+#profilePreview .person-introduction::-webkit-scrollbar {
+  width: 6px;
+}
 
-    #peopleGrid .person-username,
-    #profilePreview .person-username {
-      min-height: 26px;
-      max-height: 26px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
+#peopleGrid .person-introduction::-webkit-scrollbar-thumb,
+#profilePreview .person-introduction::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #755cff;
+}
 
-    #peopleGrid .person-introduction,
-    #profilePreview .person-introduction {
-      max-height: calc(1.75em * 8);
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 8;
-      overflow: hidden !important;
-      white-space: pre-line;
-      text-overflow: ellipsis;
-    }
-
-    @media (max-width: 680px) {
-      #peopleGrid {
-        grid-auto-rows: 560px;
-      }
-
-      #peopleGrid > .person-card,
-      #profilePreview .person-card {
-        height: 560px !important;
-        min-height: 560px !important;
-        max-height: 560px !important;
-      }
-
-      #peopleGrid .person-banner,
-      #profilePreview .person-banner {
-        height: 165px !important;
-        min-height: 165px !important;
-        max-height: 165px !important;
-        flex-basis: 165px;
-      }
-
-      #peopleGrid .person-body,
-      #profilePreview .person-body {
-        height: 395px;
-        max-height: 395px;
-      }
-
-      #peopleGrid .person-introduction,
-      #profilePreview .person-introduction {
-        max-height: calc(1.75em * 7);
-        -webkit-line-clamp: 7;
-      }
-     }
+#peopleGrid .person-introduction::-webkit-scrollbar-track,
+#profilePreview .person-introduction::-webkit-scrollbar-track {
+  background: transparent;
+}
   </style>
 </head>
 
