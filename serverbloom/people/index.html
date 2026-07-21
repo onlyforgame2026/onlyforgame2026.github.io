@@ -574,6 +574,64 @@
         flex-direction: column;
       }
     }
+
+        /* 所有個人卡片固定相同高度 */
+    #peopleGrid {
+      align-items: start;
+    }
+
+    #peopleGrid .person-card,
+    #profilePreview .person-card {
+      height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .person-banner {
+      flex: 0 0 185px;
+    }
+
+    .person-body {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .person-nickname {
+      min-height: 62px;
+      max-height: 62px;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+
+    .person-username {
+      min-height: 26px;
+    }
+
+    .person-introduction {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 7;
+      overflow: hidden;
+      white-space: pre-line;
+    }
+
+    @media (max-width: 680px) {
+      #peopleGrid .person-card,
+      #profilePreview .person-card {
+        height: 580px;
+      }
+
+      .person-banner {
+        flex-basis: 165px;
+      }
+
+      .person-introduction {
+        -webkit-line-clamp: 6;
+      }
+    }
   </style>
 </head>
 
