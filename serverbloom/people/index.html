@@ -603,15 +603,30 @@
     }
 
     #peopleGrid .person-body,
-    #profilePreview .person-body {
-      height: 415px;
-      min-height: 0 !important;
-      max-height: 415px;
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden !important;
-    }
+#profilePreview .person-body {
+  position: relative;
+  z-index: 2;
+  height: 415px;
+  min-height: 0 !important;
+  max-height: 415px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important;
+}
+
+/* Avatar 永遠顯示在 Banner 上方 */
+#peopleGrid .person-avatar,
+#profilePreview .person-avatar {
+  z-index: 10;
+}
+
+/* Banner 保持在 Avatar 下方 */
+#peopleGrid .person-banner,
+#profilePreview .person-banner {
+  position: relative;
+  z-index: 1;
+}
 
     #peopleGrid .person-nickname,
     #profilePreview .person-nickname {
