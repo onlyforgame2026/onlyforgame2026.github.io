@@ -174,7 +174,13 @@
     sakuraColor var(--color-duration) ease-in-out infinite alternate;
 }
 
-.sakura-petal::before {
+.sakura-petal::before {.sakura-petal::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+}
+ .sakura-petal::before {
   content: "";
   position: absolute;
   right: 8%;
@@ -183,6 +189,13 @@
   height: 43%;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.23);
+}
+
+.sakura-petal::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
 }
 
 .sakura-petal:hover {
@@ -447,7 +460,7 @@ body.sakura-modal-open {
 </head>
 <body>
   <!-- ServerBloom 櫻花互動層 -->
-<div id="sakuraRain" class="sakura-rain" aria-hidden="true"></div>
+<div id="sakuraRain" class="sakura-rain" ></div>
 
 <!-- 隨機 Server 結果視窗 -->
 <div id="sakuraModal" class="sakura-modal" hidden>
