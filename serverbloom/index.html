@@ -136,11 +136,369 @@
     @media(max-width:767px){:root{--header:60px}body{overflow-x:hidden;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}.wrap,.nav{width:min(calc(100% - 24px),var(--width))}.nav{gap:10px}.brand{font-size:18px}.nav-search{display:none}.submit-link{margin-left:auto;min-height:44px;padding:9px 12px}.hero{padding:22px 0 14px}.hero h1{font-size:31px}.hero p{font-size:14px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.metric{min-width:0;min-height:67px;padding:10px}.metric strong{font-size:17px}.directory{display:block}.side{display:none}.mobile-cats{display:flex;gap:8px;overflow-x:auto;margin-right:-12px;padding:2px 12px 14px 0;scrollbar-width:none}.mobile-cats .cat{width:auto;min-height:44px;flex:none;padding:0 14px;border:1px solid #20304a}.server-grid{grid-template-columns:minmax(0,1fr)}.card{min-width:0}.banner{height:auto;aspect-ratio:16/6}.card-banner-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.avatar{width:72px;height:72px}.identity h3{white-space:normal;overflow-wrap:anywhere}.stats{flex-wrap:wrap;justify-content:space-between;gap:8px}.knowledge{margin-left:0}.knowledge-grid{grid-template-columns:1fr}.article:nth-child(n+2){display:none}.knowledge h2 span{display:none}.submit-shell{grid-template-columns:1fr;padding:20px}.form-row{grid-template-columns:1fr}.actions{grid-template-columns:1fr 1fr}.action{min-height:44px}.action.primary{grid-column:1/-1}.submit-section{padding-top:22px}.field,.submit-btn{min-height:48px}}
     @media(max-width:380px){.brand{font-size:16px}.logo{width:30px;height:30px}.submit-link{font-size:12px}.metrics{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.action.primary{grid-column:auto}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+    /* ==================================================
+   ServerBloom 櫻花抽 Server
+   ================================================== */
+
+.sakura-rain {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sakura-petal {
+  position: absolute;
+  top: -40px;
+  width: var(--petal-size);
+  height: var(--petal-size);
+  padding: 0;
+  border: 0;
+  border-radius: 70% 30% 65% 35%;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 211, 231, 0.96),
+      rgba(255, 164, 211, 0.9)
+    );
+  box-shadow:
+    0 0 8px rgba(255, 174, 216, 0.3),
+    0 0 15px rgba(185, 156, 255, 0.2);
+  transform-origin: center;
+  animation:
+    sakuraFall var(--fall-duration) linear forwards,
+    sakuraColor var(--color-duration) ease-in-out infinite alternate;
+}
+
+.sakura-petal::before {
+  content: "";
+  position: absolute;
+  right: 8%;
+  bottom: 8%;
+  width: 43%;
+  height: 43%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.23);
+}
+
+.sakura-petal:hover {
+  filter: brightness(1.25);
+  box-shadow:
+    0 0 15px rgba(255, 174, 216, 0.65),
+    0 0 24px rgba(185, 156, 255, 0.55);
+}
+
+.sakura-petal:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
+@keyframes sakuraFall {
+  0% {
+    opacity: 0;
+    transform:
+      translate3d(0, -30px, 0)
+      rotate(0deg);
+  }
+
+  8% {
+    opacity: var(--petal-opacity);
+  }
+
+  50% {
+    transform:
+      translate3d(var(--drift-middle), 52vh, 0)
+      rotate(240deg);
+  }
+
+  92% {
+    opacity: var(--petal-opacity);
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate3d(var(--drift-end), 110vh, 0)
+      rotate(540deg);
+  }
+}
+
+@keyframes sakuraColor {
+  0% {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 215, 233, 0.97),
+        rgba(255, 164, 211, 0.9)
+      );
+  }
+
+  100% {
+    background:
+      linear-gradient(
+        135deg,
+        rgba(232, 210, 255, 0.97),
+        rgba(174, 143, 255, 0.92)
+      );
+  }
+}
+
+/* 結果彈出視窗 */
+
+.sakura-modal[hidden] {
+  display: none;
+}
+
+.sakura-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.sakura-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 5, 14, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.sakura-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 480px);
+  padding: 32px;
+  text-align: center;
+  border: 1px solid rgba(185, 156, 255, 0.45);
+  border-radius: 24px;
+  background:
+    radial-gradient(
+      circle at 50% 0,
+      rgba(242, 63, 155, 0.19),
+      transparent 43%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(117, 71, 255, 0.22),
+      transparent 45%
+    ),
+    #09111f;
+  box-shadow:
+    0 0 38px rgba(185, 156, 255, 0.22),
+    0 30px 80px rgba(0, 0, 0, 0.65);
+  animation: sakuraDialogOpen 0.28s ease;
+}
+
+@keyframes sakuraDialogOpen {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sakura-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  color: #cbd3e2;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 24px;
+}
+
+.sakura-close:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.sakura-rarity {
+  display: inline-flex;
+  padding: 5px 11px;
+  border: 1px solid rgba(185, 156, 255, 0.42);
+  border-radius: 999px;
+  color: #d7c9ff;
+  background: rgba(117, 71, 255, 0.14);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sakura-symbol {
+  margin: 17px 0 5px;
+  font-size: 64px;
+  filter: drop-shadow(0 0 18px rgba(242, 63, 155, 0.5));
+}
+
+.sakura-eyebrow {
+  margin: 0;
+  color: #9eabc0;
+  font-size: 13px;
+}
+
+.sakura-dialog h2 {
+  margin: 6px 0 9px;
+  font-size: 28px;
+}
+
+.sakura-result-description {
+  min-height: 48px;
+  margin: 0;
+  color: #aeb8ca;
+}
+
+.sakura-result-tags {
+  min-height: 27px;
+  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+}
+
+.sakura-result-tags span {
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: #d4c8ff;
+  background: rgba(117, 71, 255, 0.17);
+  font-size: 11px;
+}
+
+.sakura-dialog-actions {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 10px;
+}
+
+.sakura-join,
+.sakura-reroll {
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 900;
+}
+
+.sakura-join {
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #f05aa8,
+      #7547ff
+    );
+  box-shadow: 0 10px 25px rgba(117, 71, 255, 0.3);
+}
+
+.sakura-reroll {
+  color: #d5dbea;
+  border: 1px solid #293854;
+  background: #07101b;
+}
+
+.sakura-reroll:hover {
+  border-color: #755cff;
+}
+
+body.sakura-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 560px) {
+  .sakura-dialog {
+    padding: 27px 20px 22px;
+  }
+
+  .sakura-dialog-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .sakura-symbol {
+    font-size: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sakura-rain {
+    display: none;
+  }
+
+  .sakura-dialog {
+    animation: none;
+  }
+}
   </style>
   <style>body{min-width:0}</style>
   <link rel="stylesheet" href="assets/css/home-v2.css">
 </head>
 <body>
+  <!-- ServerBloom 櫻花互動層 -->
+<div id="sakuraRain" class="sakura-rain" aria-hidden="true"></div>
+
+<!-- 隨機 Server 結果視窗 -->
+<div id="sakuraModal" class="sakura-modal" hidden>
+  <div class="sakura-modal-backdrop" data-close-sakura></div>
+
+  <section
+    class="sakura-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="sakuraResultTitle"
+  >
+    <button
+      id="sakuraClose"
+      class="sakura-close"
+      type="button"
+      aria-label="關閉"
+    >
+      ×
+    </button>
+
+    <div id="sakuraRarity" class="sakura-rarity">🌸 櫻花祝福</div>
+
+    <div class="sakura-symbol" aria-hidden="true">🌸</div>
+
+    <p class="sakura-eyebrow">你今天遇見的是</p>
+
+    <h2 id="sakuraResultTitle">ServerBloom</h2>
+
+    <p id="sakuraResultDescription" class="sakura-result-description">
+      正在尋找適合你的社群……
+    </p>
+
+    <div id="sakuraResultTags" class="sakura-result-tags"></div>
+
+    <div class="sakura-dialog-actions">
+      <a
+        id="sakuraJoin"
+        class="sakura-join"
+        href="#"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        加入這個 Server
+      </a>
+
+      <button id="sakuraReroll" class="sakura-reroll" type="button">
+        再抽一次
+      </button>
+    </div>
+  </section>
+</div>
   <header class="topbar"><nav class="nav">
     <a class="brand" href="#top"><span class="logo"><span>∞</span></span>ServerBloom</a>
     <div class="navlinks"><a class="active" href="#discover">探索伺服器</a><a href="knowledge.html">知識庫</a><a href="#knowledge">經營技巧</a></div>
@@ -272,11 +630,264 @@
         };
       });
     }
+    let currentSakuraServer = null;
+
+const sakuraRarities = [
+  {
+    name: '🌸 普通櫻花',
+    chance: 60
+  },
+  {
+    name: '💗 稀有櫻花',
+    chance: 30
+  },
+  {
+    name: '💜 史詩櫻花',
+    chance: 9
+  },
+  {
+    name: '✨ 傳說櫻花',
+    chance: 1
+  }
+];
+
+function getSakuraRarity() {
+  const roll = Math.random() * 100;
+  let total = 0;
+
+  for (const rarity of sakuraRarities) {
+    total += rarity.chance;
+
+    if (roll < total) {
+      return rarity;
+    }
+  }
+
+  return sakuraRarities[0];
+}
+
+function getRandomSakuraServer() {
+  const servers = all().filter(server =>
+    typeof server.inviteUrl === 'string' &&
+    /^https:\/\/(www\.)?(discord\.gg\/|discord\.com\/invite\/)/i.test(
+      server.inviteUrl
+    )
+  );
+
+  if (!servers.length) {
+    return null;
+  }
+
+  return servers[Math.floor(Math.random() * servers.length)];
+}
+
+function showSakuraServer() {
+  const server = getRandomSakuraServer();
+
+  if (!server) {
+    return;
+  }
+
+  currentSakuraServer = server;
+
+  const rarity = getSakuraRarity();
+  const modal = document.querySelector('#sakuraModal');
+  const title = document.querySelector('#sakuraResultTitle');
+  const description = document.querySelector(
+    '#sakuraResultDescription'
+  );
+  const tagsContainer = document.querySelector(
+    '#sakuraResultTags'
+  );
+  const rarityElement = document.querySelector(
+    '#sakuraRarity'
+  );
+  const joinButton = document.querySelector('#sakuraJoin');
+
+  if (
+    !modal ||
+    !title ||
+    !description ||
+    !tagsContainer ||
+    !rarityElement ||
+    !joinButton
+  ) {
+    return;
+  }
+
+  title.textContent = server.name || '神秘 Server';
+
+  description.textContent =
+    server.description ||
+    '一個正在等待你探索的 Discord 社群。';
+
+  rarityElement.textContent = rarity.name;
+
+  tagsContainer.innerHTML = [
+    server.category,
+    ...tags(server.tags)
+  ]
+    .filter(Boolean)
+    .slice(0, 5)
+    .map(tag => `<span>${esc(tag)}</span>`)
+    .join('');
+
+  joinButton.href = server.inviteUrl;
+
+  modal.hidden = false;
+  document.body.classList.add('sakura-modal-open');
+
+  window.setTimeout(() => {
+    document.querySelector('#sakuraClose')?.focus();
+  }, 0);
+}
+
+function closeSakuraModal() {
+  const modal = document.querySelector('#sakuraModal');
+
+  if (!modal) {
+    return;
+  }
+
+  modal.hidden = true;
+  document.body.classList.remove('sakura-modal-open');
+}
+
+function createSakuraPetal() {
+  const container = document.querySelector('#sakuraRain');
+
+  if (!container) {
+    return;
+  }
+
+  const petal = document.createElement('button');
+
+  petal.type = 'button';
+  petal.className = 'sakura-petal';
+  petal.setAttribute(
+    'aria-label',
+    '點擊櫻花，隨機探索一個 Discord Server'
+  );
+  petal.title = '點擊櫻花，抽一個 Server';
+
+  const size = 13 + Math.random() * 12;
+  const direction = Math.random() > 0.5 ? 1 : -1;
+  const drift = 45 + Math.random() * 105;
+  const duration = 11 + Math.random() * 8;
+
+  petal.style.left = `${Math.random() * 100}%`;
+
+  petal.style.setProperty(
+    '--petal-size',
+    `${size}px`
+  );
+
+  petal.style.setProperty(
+    '--drift-middle',
+    `${direction * drift * 0.45}px`
+  );
+
+  petal.style.setProperty(
+    '--drift-end',
+    `${direction * drift}px`
+  );
+
+  petal.style.setProperty(
+    '--fall-duration',
+    `${duration}s`
+  );
+
+  petal.style.setProperty(
+    '--color-duration',
+    `${3 + Math.random() * 3}s`
+  );
+
+  petal.style.setProperty(
+    '--petal-opacity',
+    `${0.56 + Math.random() * 0.25}`
+  );
+
+  petal.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    petal.remove();
+    showSakuraServer();
+  });
+
+  petal.addEventListener('animationend', event => {
+    if (event.animationName === 'sakuraFall') {
+      petal.remove();
+    }
+  });
+
+  container.appendChild(petal);
+}
+
+function startSakuraRain() {
+  const reducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  );
+
+  if (reducedMotion.matches) {
+    return;
+  }
+
+  for (let index = 0; index < 7; index += 1) {
+    window.setTimeout(
+      createSakuraPetal,
+      index * 700
+    );
+  }
+
+  window.setInterval(createSakuraPetal, 1500);
+}
+
+function setupSakuraControls() {
+  const closeButton = document.querySelector('#sakuraClose');
+  const rerollButton = document.querySelector('#sakuraReroll');
+  const modal = document.querySelector('#sakuraModal');
+
+  closeButton?.addEventListener(
+    'click',
+    closeSakuraModal
+  );
+
+  rerollButton?.addEventListener(
+    'click',
+    showSakuraServer
+  );
+
+  modal?.querySelectorAll('[data-close-sakura]')
+    .forEach(element => {
+      element.addEventListener(
+        'click',
+        closeSakuraModal
+      );
+    });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeSakuraModal();
+    }
+  });
+}
     function normalize(s){return{id:String(s.id||''),slug:String(s.slug||''),name:String(s.name||'').trim(),category:String(s.category||'其他').trim(),inviteUrl:String(s.inviteUrl||'').trim(),tags:tags(s.tags),banner:String(s.banner||''),customBanner:String(s.customBanner||''),bannerPreset:String(s.bannerPreset||''),icon:String(s.icon||''),description:String(s.description||'').trim(),color:color(s.primaryColor||s.color),secondaryColor:color(s.secondaryColor||'#111a2b'),textColor:color(s.textColor||'#ffffff'),members:s.countsUnknown?null:Number(s.members??s.memberCount??0),online:s.countsUnknown?null:Number(s.online??s.onlineCount??0),countsUnknown:s.countsUnknown===true,isNew:s.isNew===true}}
     async function load(){const [servers]=await Promise.all([ServerBloomData.loadServers(),ServerBloomBanner.loadBannerPresets().catch(()=>[])]);remote=servers.map(normalize).filter(s=>s.name&&s.inviteUrl);render();return remote}
     async function submit(s){const body=new URLSearchParams;Object.entries(s).forEach(([k,v])=>body.set(k,Array.isArray(v)?v.join(','):v));await fetch(API,{method:'POST',mode:'no-cors',body})}
     search.addEventListener('input',render);$('#serverForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('#submitButton');if(btn.disabled)return;const s={name:$('#serverName').value.trim(),category:$('#serverCategory').value,inviteUrl:$('#serverInvite').value.trim(),tags:tags($('#serverTags').value),description:$('#serverDescription').value.trim(),color:$('#serverColor').value};if(!s.name||!s.category||!s.description){status.className='status error';status.textContent='請完整填寫社群名稱、分類與簡介。';return}if(!/^https:\/\/(www\.)?(discord\.gg\/[A-Za-z0-9-]+|discord\.com\/invite\/[A-Za-z0-9-]+)\/?$/i.test(s.inviteUrl)){status.className='status error';status.textContent='請輸入有效的 Discord 邀請網址。';return}btn.disabled=true;btn.textContent='正在提交…';try{await submit(s);status.className='status success';status.textContent='投稿已送出並等待人工審核，審核通過後才會上架。';e.target.reset();$('#serverColor').value='#755cff'}catch{status.className='status error';status.textContent='投稿失敗，請稍後再試。'}finally{btn.disabled=false;btn.textContent='送出審核'}});
-    renderCategories();render();load().catch(()=>{status.textContent='共用資料暫時無法讀取，已顯示精選社群。'});
+    renderCategories();
+render();
+setupSakuraControls();
+
+load()
+  .catch(() => {
+    status.textContent =
+      '共用資料暫時無法讀取，已顯示精選社群。';
+  })
+  .finally(() => {
+    startSakuraRain();
+  });
   })();
   </script>
 </body>
