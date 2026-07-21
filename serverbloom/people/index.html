@@ -575,7 +575,7 @@
       }
     }
 
-    /* 公開個人卡片：強制全部相同高度 */
+       /* 公開個人卡片：固定等高 */
     #peopleGrid {
       align-items: stretch;
       grid-auto-rows: 600px;
@@ -583,6 +583,7 @@
 
     #peopleGrid > .person-card,
     #profilePreview .person-card {
+      position: relative;
       width: 100%;
       height: 600px !important;
       min-height: 600px !important;
@@ -592,73 +593,145 @@
       overflow: hidden !important;
     }
 
+    /* Banner 固定高度 */
     #peopleGrid .person-banner,
     #profilePreview .person-banner {
+      position: relative;
+      z-index: 1;
       width: 100%;
       height: 185px !important;
       min-height: 185px !important;
       max-height: 185px !important;
-      flex: 0 0 185px;
+      flex: 0 0 185px !important;
       overflow: hidden;
     }
 
+    /* 內容區固定高度，但保留 Avatar 疊在 Banner 上 */
     #peopleGrid .person-body,
-#profilePreview .person-body {
-  position: relative;
-  z-index: 2;
-  height: 415px;
-  min-height: 0 !important;
-  max-height: 415px;
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  overflow: visible !important;
-}
+    #profilePreview .person-body {
+      position: relative;
+      z-index: 2;
+      box-sizing: border-box;
+      height: 415px !important;
+      min-height: 415px !important;
+      max-height: 415px !important;
+      flex: 0 0 415px !important;
+      display: flex;
+      flex-direction: column;
+      overflow: visible !important;
+    }
 
-/* Avatar 永遠顯示在 Banner 上方 */
-#peopleGrid .person-avatar,
-#profilePreview .person-avatar {
-  z-index: 10;
-}
+    #peopleGrid .person-avatar,
+    #profilePreview .person-avatar {
+      z-index: 10;
+    }
 
-/* 最終修正：卡片固定高度，但介紹全文可捲動 */
-#peopleGrid .person-introduction,
-#profilePreview .person-introduction {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
+    /* 名稱最多兩行，預留相同空間 */
+    #peopleGrid .person-nickname,
+    #profilePreview .person-nickname {
+      height: 62px;
+      min-height: 62px;
+      max-height: 62px;
+      flex: 0 0 62px;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
 
-  display: block !important;
-  -webkit-line-clamp: unset !important;
-  -webkit-box-orient: initial !important;
+    /* Username 固定一行 */
+    #peopleGrid .person-username,
+    #profilePreview .person-username {
+      height: 26px;
+      min-height: 26px;
+      max-height: 26px;
+      flex: 0 0 26px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
 
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  overscroll-behavior: contain;
+    /* Introduction 固定 205px，全文在框內捲動 */
+    #peopleGrid .person-introduction,
+    #profilePreview .person-introduction {
+      box-sizing: border-box;
+      height: 205px !important;
+      min-height: 205px !important;
+      max-height: 205px !important;
+      flex: 0 0 205px !important;
 
-  white-space: pre-line !important;
-  text-overflow: clip !important;
+      display: block !important;
+      margin-top: 22px;
 
-  padding-right: 7px;
-  scrollbar-width: thin;
-  scrollbar-color: #755cff transparent;
-}
+      overflow-y: scroll !important;
+      overflow-x: hidden !important;
 
-#peopleGrid .person-introduction::-webkit-scrollbar,
-#profilePreview .person-introduction::-webkit-scrollbar {
-  width: 6px;
-}
+      -webkit-line-clamp: unset !important;
+      -webkit-box-orient: initial !important;
 
-#peopleGrid .person-introduction::-webkit-scrollbar-thumb,
-#profilePreview .person-introduction::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: #755cff;
-}
+      white-space: pre-line !important;
+      text-overflow: clip !important;
+      overflow-wrap: anywhere;
 
-#peopleGrid .person-introduction::-webkit-scrollbar-track,
-#profilePreview .person-introduction::-webkit-scrollbar-track {
-  background: transparent;
-}
+      padding-right: 10px;
+      scrollbar-width: auto;
+      scrollbar-color: #755cff #101827;
+    }
+
+    #peopleGrid .person-introduction::-webkit-scrollbar,
+    #profilePreview .person-introduction::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #peopleGrid .person-introduction::-webkit-scrollbar-thumb,
+    #profilePreview .person-introduction::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: #755cff;
+    }
+
+    #peopleGrid .person-introduction::-webkit-scrollbar-track,
+    #profilePreview .person-introduction::-webkit-scrollbar-track {
+      border-radius: 999px;
+      background: #101827;
+    }
+
+    @media (max-width: 680px) {
+      #peopleGrid {
+        grid-auto-rows: 560px;
+      }
+
+      #peopleGrid > .person-card,
+      #profilePreview .person-card {
+        height: 560px !important;
+        min-height: 560px !important;
+        max-height: 560px !important;
+      }
+
+      #peopleGrid .person-banner,
+      #profilePreview .person-banner {
+        height: 165px !important;
+        min-height: 165px !important;
+        max-height: 165px !important;
+        flex-basis: 165px !important;
+      }
+
+      #peopleGrid .person-body,
+      #profilePreview .person-body {
+        height: 395px !important;
+        min-height: 395px !important;
+        max-height: 395px !important;
+        flex-basis: 395px !important;
+      }
+
+      #peopleGrid .person-introduction,
+      #profilePreview .person-introduction {
+        height: 185px !important;
+        min-height: 185px !important;
+        max-height: 185px !important;
+        flex-basis: 185px !important;
+        margin-top: 16px;
+      }
+    }
   </style>
 </head>
 
