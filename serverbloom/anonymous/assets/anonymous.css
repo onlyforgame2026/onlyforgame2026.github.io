@@ -321,3 +321,92 @@ button {
     transition: none !important;
   }
 }
+/* ==================================================
+   匿名文章卡片：YouTube 式固定排列
+   ================================================== */
+
+/* 電腦版：三欄整齊排列 */
+.anonymous-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* 每張文章卡片固定相同高度 */
+.anonymous-card {
+  box-sizing: border-box;
+  width: 100%;
+  height: 260px;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 卡片內部垂直排列 */
+.anonymous-card .card-content {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+/* 上方標籤列不被壓縮 */
+.anonymous-card .card-meta {
+  flex-shrink: 0;
+}
+
+/* 文章標題最多顯示兩行 */
+.anonymous-card .card-content h3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  flex-shrink: 0;
+}
+
+/* 文章摘要最多顯示四行 */
+.anonymous-card .card-content > p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* 作者與日期固定貼在卡片底部 */
+.anonymous-card .card-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+/* 若作者日期沒有 card-footer，
+   讓內容中的最後一個區塊自動貼底 */
+.anonymous-card .card-content > :last-child {
+  margin-top: auto;
+}
+
+/* 平板：兩欄 */
+@media (max-width: 1000px) {
+  .anonymous-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* 手機：單欄 */
+@media (max-width: 680px) {
+  .anonymous-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .anonymous-card {
+    height: 260px;
+  }
+}
