@@ -1,64 +1,4 @@
-function safeImageUrl(value) {
-  const text =
-    String(
-      value || ""
-    ).trim();
-
-  if (!text) {
-    return "";
-  }
-
-  if (
-    /^data:image\/(?:jpeg|png|webp);base64,/i
-      .test(text)
-  ) {
-    return text;
-  }
-
-  try {
-    const parsed =
-      new URL(text);
-
-    if (
-      parsed.protocol !== "https:" &&
-      parsed.protocol !== "http:"
-    ) {
-      return "";
-    }
-
-    const hostname =
-      parsed.hostname
-        .replace(/^www\./, "")
-        .toLowerCase();
-
-    if (
-      hostname === "drive.google.com"
-    ) {
-      const pathMatch =
-        parsed.pathname.match(
-          /\/(?:file\/d|d)\/([^/]+)/
-        );
-
-      const fileId =
-        parsed.searchParams.get("id") ||
-        pathMatch?.[1] ||
-        "";
-
-      if (fileId) {
-        return (
-          "https://drive.google.com/thumbnail?id=" +
-          encodeURIComponent(fileId) +
-          "&sz=w1600"
-        );
-      }
-    }
-
-    return parsed.href;
-
-  } catch {
-    return "";
-  }
-}<!doctype html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
@@ -1038,15 +978,8 @@ const grid =
         }
 
         if (
-          text.startsWith(
-            "data:image/jpeg;base64,"
-          ) ||
-          text.startsWith(
-            "data:image/png;base64,"
-          ) ||
-          text.startsWith(
-            "data:image/webp;base64,"
-          )
+          /^data:image\/(?:jpeg|png|webp);base64,/i
+            .test(text)
         ) {
           return text;
         }
@@ -1068,6 +1001,229 @@ const grid =
           return "";
         }
       }
+
+      function extractGoogleDriveFileId(value) {
+        const text =
+          safeImageUrl(value);
+
+        if (
+          !text ||
+          text.startsWith("data:image/")
+        ) {
+          return "";
+        }
+
+        try {
+          const parsed =
+            new URL(text);
+
+          const hostname =
+            parsed.hostname
+              .replace(/^www\./, "")
+              .toLowerCase();
+
+          if (
+            hostname === "drive.google.com" ||
+            hostname === "drive.usercontent.google.com"
+          ) {
+            const pathMatch =
+              parsed.pathname.match(
+                /\/(?:file\/d|d)\/([^/]+)/
+              );
+
+            return (
+              parsed.searchParams.get("id") ||
+              pathMatch?.[1] ||
+              ""
+            );
+          }
+
+          if (
+            hostname.endsWith(
+              ".googleusercontent.com"
+            ) ||
+            hostname === "googleusercontent.com"
+          ) {
+            const pathMatch =
+              parsed.pathname.match(
+                /\/d\/([^/=]+)/
+              );
+
+            return (
+              pathMatch?.[1] ||
+              ""
+            );
+          }
+
+          return "";
+
+        } catch {
+          return "";
+        }
+      }
+
+      function imageCandidates(value) {
+        const safeUrl =
+          safeImageUrl(value);
+
+        if (!safeUrl) {
+          return [];
+        }
+
+        if (
+          safeUrl.startsWith(
+            "data:image/"
+          )
+        ) {
+          return [safeUrl];
+        }
+
+        const fileId =
+          extractGoogleDriveFileId(
+            safeUrl
+          );
+
+        if (!fileId) {
+          return [safeUrl];
+        }
+
+        const encodedId =
+          encodeURIComponent(
+            fileId
+          );
+
+        return Array.from(
+          new Set([
+            "https://lh3.googleusercontent.com/d/" +
+              encodedId +
+              "=w1600",
+
+            "https://drive.google.com/thumbnail?id=" +
+              encodedId +
+              "&sz=w1600",
+
+            "https://drive.usercontent.google.com/download?id=" +
+              encodedId +
+              "&export=view&authuser=0",
+
+            "https://drive.google.com/uc?export=view&id=" +
+              encodedId
+          ])
+        );
+      }
+
+      function imageCandidateAttribute(value) {
+        return escapeHtml(
+          JSON.stringify(
+            imageCandidates(value)
+          )
+        );
+      }
+
+      window.ServerBloomImageLoaded =
+        image => {
+          image.style.visibility =
+            "visible";
+
+          image.style.display =
+            "block";
+
+          image.dataset.imageLoaded =
+            "true";
+
+          image.onerror = null;
+        };
+
+      window.ServerBloomImageFallback =
+        image => {
+          let candidates = [];
+
+          try {
+            candidates =
+              JSON.parse(
+                image.dataset
+                  .imageCandidates ||
+                "[]"
+              );
+          } catch {
+            candidates = [];
+          }
+
+          if (!candidates.length) {
+            image.style.display =
+              "none";
+
+            return;
+          }
+
+          const currentIndex =
+            Number(
+              image.dataset
+                .imageIndex ||
+              "0"
+            );
+
+          const nextIndex =
+            currentIndex + 1;
+
+          if (
+            nextIndex <
+            candidates.length
+          ) {
+            image.dataset.imageIndex =
+              String(nextIndex);
+
+            image.style.visibility =
+              "hidden";
+
+            image.src =
+              candidates[nextIndex];
+
+            return;
+          }
+
+          const retryCount =
+            Number(
+              image.dataset
+                .imageRetryCount ||
+              "0"
+            );
+
+          if (retryCount < 2) {
+            image.dataset
+              .imageRetryCount =
+              String(
+                retryCount + 1
+              );
+
+            image.dataset.imageIndex =
+              "0";
+
+            image.style.visibility =
+              "hidden";
+
+            window.setTimeout(
+              () => {
+                image.src =
+                  candidates[0] +
+                  (
+                    candidates[0]
+                      .includes("?")
+                      ? "&"
+                      : "?"
+                  ) +
+                  "retry=" +
+                  Date.now();
+              },
+              1200
+            );
+
+            return;
+          }
+
+          image.style.display =
+            "none";
+        };
 
       function initials(name) {
         const text =
@@ -1156,19 +1312,30 @@ const grid =
       }
 
       function renderAvatar(person) {
-        if (person.avatar) {
+        const candidates =
+          imageCandidates(
+            person.avatar
+          );
+
+        if (candidates.length) {
           return `
             <div class="person-avatar">
               <img
                 src="${escapeHtml(
+                  candidates[0]
+                )}"
+                data-image-candidates="${imageCandidateAttribute(
                   person.avatar
                 )}"
+                data-image-index="0"
                 alt="${escapeHtml(
                   person.nickname
                 )} 的 Avatar"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                onerror="this.remove()"
+                loading="eager"
+                decoding="async"
+                style="visibility:hidden"
+                onload="window.ServerBloomImageLoaded(this)"
+                onerror="window.ServerBloomImageFallback(this)"
               >
             </div>
           `;
@@ -1186,19 +1353,30 @@ const grid =
       }
 
       function renderBanner(person) {
-        if (person.banner) {
+        const candidates =
+          imageCandidates(
+            person.banner
+          );
+
+        if (candidates.length) {
           return `
             <div class="person-banner">
               <img
                 src="${escapeHtml(
+                  candidates[0]
+                )}"
+                data-image-candidates="${imageCandidateAttribute(
                   person.banner
                 )}"
+                data-image-index="0"
                 alt="${escapeHtml(
                   person.nickname
                 )} 的 Banner"
-                loading="lazy"
-                referrerpolicy="no-referrer"
-                onerror="this.remove()"
+                loading="eager"
+                decoding="async"
+                style="visibility:hidden"
+                onload="window.ServerBloomImageLoaded(this)"
+                onerror="window.ServerBloomImageFallback(this)"
               >
             </div>
           `;
