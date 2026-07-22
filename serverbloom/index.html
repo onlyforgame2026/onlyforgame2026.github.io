@@ -159,17 +159,58 @@
   opacity: 0;
   cursor: pointer;
   pointer-events: auto;
+  --petal-color-a: rgba(255, 211, 231, 0.96);
+  --petal-color-b: rgba(255, 164, 211, 0.9);
+  --petal-glow-a: rgba(255, 174, 216, 0.42);
+  --petal-glow-b: rgba(185, 156, 255, 0.24);
   background:
     linear-gradient(
       135deg,
-      rgba(255, 211, 231, 0.96),
-      rgba(255, 164, 211, 0.9)
+      var(--petal-color-a),
+      var(--petal-color-b)
     );
   box-shadow:
-    0 0 8px rgba(255, 174, 216, 0.3),
-    0 0 15px rgba(185, 156, 255, 0.2);
+    0 0 8px var(--petal-glow-a),
+    0 0 15px var(--petal-glow-b);
   transform-origin: center;
   will-change: transform, opacity;
+}
+
+
+/* 櫻花外形不變，只依稀有度改變顏色與光暈 */
+.sakura-petal.sakura-common {
+  --petal-color-a: rgba(255, 220, 235, 0.98);
+  --petal-color-b: rgba(255, 158, 204, 0.94);
+  --petal-glow-a: rgba(255, 166, 211, 0.48);
+  --petal-glow-b: rgba(255, 109, 181, 0.26);
+}
+
+.sakura-petal.sakura-rare {
+  --petal-color-a: rgba(255, 177, 225, 0.99);
+  --petal-color-b: rgba(238, 72, 173, 0.96);
+  --petal-glow-a: rgba(255, 79, 186, 0.7);
+  --petal-glow-b: rgba(255, 166, 226, 0.42);
+}
+
+.sakura-petal.sakura-epic {
+  --petal-color-a: rgba(220, 190, 255, 0.99);
+  --petal-color-b: rgba(126, 66, 255, 0.97);
+  --petal-glow-a: rgba(150, 88, 255, 0.82);
+  --petal-glow-b: rgba(207, 167, 255, 0.48);
+}
+
+.sakura-petal.sakura-legendary {
+  --petal-color-a: rgba(255, 247, 166, 1);
+  --petal-color-b: rgba(255, 176, 46, 0.98);
+  --petal-glow-a: rgba(255, 214, 69, 0.95);
+  --petal-glow-b: rgba(255, 133, 24, 0.58);
+}
+
+.sakura-petal.sakura-black {
+  --petal-color-a: rgba(82, 69, 99, 0.99);
+  --petal-color-b: rgba(12, 9, 20, 1);
+  --petal-glow-a: rgba(151, 94, 210, 0.78);
+  --petal-glow-b: rgba(18, 9, 31, 0.92);
 }
 
 .sakura-petal::before,
@@ -230,26 +271,6 @@
     transform:
       translate3d(var(--drift-end), 110vh, 0)
       rotate(540deg);
-  }
-}
-
-@keyframes sakuraColor {
-  0% {
-    background:
-      linear-gradient(
-        135deg,
-        rgba(255, 215, 233, 0.97),
-        rgba(255, 164, 211, 0.9)
-      );
-  }
-
-  100% {
-    background:
-      linear-gradient(
-        135deg,
-        rgba(232, 210, 255, 0.97),
-        rgba(174, 143, 255, 0.92)
-      );
   }
 }
 
@@ -340,6 +361,47 @@
   background: rgba(117, 71, 255, 0.14);
   font-size: 12px;
   font-weight: 800;
+}
+
+
+.sakura-dialog[data-rarity="common"] {
+  border-color: rgba(255, 164, 211, 0.48);
+}
+
+.sakura-dialog[data-rarity="rare"] {
+  border-color: rgba(242, 63, 155, 0.72);
+  box-shadow: 0 0 45px rgba(242, 63, 155, 0.28), 0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+.sakura-dialog[data-rarity="epic"] {
+  border-color: rgba(151, 91, 255, 0.82);
+  box-shadow: 0 0 52px rgba(117, 71, 255, 0.38), 0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+.sakura-dialog[data-rarity="legendary"] {
+  border-color: rgba(255, 210, 72, 0.92);
+  box-shadow: 0 0 60px rgba(255, 185, 38, 0.4), 0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+.sakura-dialog[data-rarity="black"] {
+  border-color: rgba(111, 74, 145, 0.95);
+  background:
+    radial-gradient(circle at 50% 0, rgba(90, 49, 123, 0.28), transparent 43%),
+    radial-gradient(circle at 100% 100%, rgba(20, 8, 31, 0.62), transparent 45%),
+    #05040a;
+  box-shadow: 0 0 68px rgba(74, 35, 105, 0.55), 0 30px 90px rgba(0, 0, 0, 0.82);
+}
+
+.sakura-dialog[data-rarity="legendary"] .sakura-rarity {
+  color: #fff2a8;
+  border-color: rgba(255, 210, 72, 0.68);
+  background: rgba(255, 184, 32, 0.16);
+}
+
+.sakura-dialog[data-rarity="black"] .sakura-rarity {
+  color: #d5b8ee;
+  border-color: rgba(127, 82, 163, 0.72);
+  background: rgba(35, 17, 49, 0.62);
 }
 
 .sakura-symbol {
@@ -433,7 +495,48 @@ body.sakura-modal-open {
     grid-template-columns: 1fr;
   }
 
-  .sakura-symbol {
+  
+.sakura-dialog[data-rarity="common"] {
+  border-color: rgba(255, 164, 211, 0.48);
+}
+
+.sakura-dialog[data-rarity="rare"] {
+  border-color: rgba(242, 63, 155, 0.72);
+  box-shadow: 0 0 45px rgba(242, 63, 155, 0.28), 0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+.sakura-dialog[data-rarity="epic"] {
+  border-color: rgba(151, 91, 255, 0.82);
+  box-shadow: 0 0 52px rgba(117, 71, 255, 0.38), 0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+.sakura-dialog[data-rarity="legendary"] {
+  border-color: rgba(255, 210, 72, 0.92);
+  box-shadow: 0 0 60px rgba(255, 185, 38, 0.4), 0 30px 80px rgba(0, 0, 0, 0.65);
+}
+
+.sakura-dialog[data-rarity="black"] {
+  border-color: rgba(111, 74, 145, 0.95);
+  background:
+    radial-gradient(circle at 50% 0, rgba(90, 49, 123, 0.28), transparent 43%),
+    radial-gradient(circle at 100% 100%, rgba(20, 8, 31, 0.62), transparent 45%),
+    #05040a;
+  box-shadow: 0 0 68px rgba(74, 35, 105, 0.55), 0 30px 90px rgba(0, 0, 0, 0.82);
+}
+
+.sakura-dialog[data-rarity="legendary"] .sakura-rarity {
+  color: #fff2a8;
+  border-color: rgba(255, 210, 72, 0.68);
+  background: rgba(255, 184, 32, 0.16);
+}
+
+.sakura-dialog[data-rarity="black"] .sakura-rarity {
+  color: #d5b8ee;
+  border-color: rgba(127, 82, 163, 0.72);
+  background: rgba(35, 17, 49, 0.62);
+}
+
+.sakura-symbol {
     font-size: 54px;
   }
 }
@@ -636,24 +739,42 @@ body.sakura-modal-open {
 
 const sakuraRarities = [
   {
+    key: 'common',
     name: '🌸 普通櫻花',
     chance: 60
   },
   {
+    key: 'rare',
     name: '💗 稀有櫻花',
     chance: 30
   },
   {
+    key: 'epic',
     name: '💜 史詩櫻花',
     chance: 9
   },
   {
+    key: 'legendary',
     name: '✨ 傳說櫻花',
     chance: 1
   }
 ];
 
+const blackSakuraRarity = {
+  key: 'black',
+  name: '🖤 隱藏黑櫻',
+  chance: 0.1
+};
+
 function getSakuraRarity() {
+  /*
+   * 黑櫻為獨立的 0.1% 隱藏事件。
+   * 沒有觸發黑櫻時，再依 60 / 30 / 9 / 1 抽取一般稀有度。
+   */
+  if (Math.random() < 0.001) {
+    return blackSakuraRarity;
+  }
+
   const roll = Math.random() * 100;
   let total = 0;
 
@@ -683,7 +804,7 @@ function getRandomSakuraServer() {
   return servers[Math.floor(Math.random() * servers.length)];
 }
 
-function showSakuraServer() {
+function showSakuraServer(selectedRarity = null) {
   const server = getRandomSakuraServer();
 
   if (!server) {
@@ -692,7 +813,7 @@ function showSakuraServer() {
 
   currentSakuraServer = server;
 
-  const rarity = getSakuraRarity();
+  const rarity = selectedRarity || getSakuraRarity();
   const modal = document.querySelector('#sakuraModal');
   const title = document.querySelector('#sakuraResultTitle');
   const description = document.querySelector(
@@ -705,6 +826,7 @@ function showSakuraServer() {
     '#sakuraRarity'
   );
   const joinButton = document.querySelector('#sakuraJoin');
+  const dialog = modal?.querySelector('.sakura-dialog');
 
   if (
     !modal ||
@@ -712,7 +834,8 @@ function showSakuraServer() {
     !description ||
     !tagsContainer ||
     !rarityElement ||
-    !joinButton
+    !joinButton ||
+    !dialog
   ) {
     return;
   }
@@ -724,6 +847,7 @@ function showSakuraServer() {
     '一個正在等待你探索的 Discord 社群。';
 
   rarityElement.textContent = rarity.name;
+  dialog.dataset.rarity = rarity.key;
 
   tagsContainer.innerHTML = [
     server.category,
@@ -762,14 +886,16 @@ function createSakuraPetal(initialProgress = 0) {
     return;
   }
 
+  const rarity = getSakuraRarity();
   const petal = document.createElement('button');
   petal.type = 'button';
-  petal.className = 'sakura-petal';
+  petal.className = `sakura-petal sakura-${rarity.key}`;
+  petal.dataset.rarity = rarity.key;
   petal.setAttribute(
     'aria-label',
     '點擊櫻花，隨機探索一個 Discord Server'
   );
-  petal.title = '點擊櫻花，抽一個 Server';
+  petal.title = `${rarity.name}｜點擊抽一個 Server`;
 
   const size = 13 + Math.random() * 12;
   const direction = Math.random() > 0.5 ? 1 : -1;
@@ -817,7 +943,7 @@ function createSakuraPetal(initialProgress = 0) {
     event.stopPropagation();
     animation.cancel();
     petal.remove();
-    showSakuraServer();
+    showSakuraServer(rarity);
   });
 
   animation.addEventListener('finish', () => {
