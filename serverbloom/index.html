@@ -838,14 +838,6 @@ function createSakuraPetal() {
 }
 
 function startSakuraRain() {
-  const reducedMotion = window.matchMedia(
-    '(prefers-reduced-motion: reduce)'
-  );
-
-  if (reducedMotion.matches) {
-    return;
-  }
-
   for (let index = 0; index < 7; index += 1) {
     window.setTimeout(
       createSakuraPetal,
