@@ -169,33 +169,26 @@
     0 0 8px rgba(255, 174, 216, 0.3),
     0 0 15px rgba(185, 156, 255, 0.2);
   transform-origin: center;
-  animation:
-    sakuraFall var(--fall-duration) linear infinite,
-    sakuraColor var(--color-duration) ease-in-out infinite alternate;
+  will-change: transform, opacity;
 }
 
-.sakura-petal::before {.sakura-petal::after {
+.sakura-petal::before,
+.sakura-petal::after {
   content: "";
   position: absolute;
-  inset: -12px;
   border-radius: 50%;
 }
- .sakura-petal::before {
-  content: "";
-  position: absolute;
+
+.sakura-petal::before {
   right: 8%;
   bottom: 8%;
   width: 43%;
   height: 43%;
-  border-radius: 50%;
   background: rgba(255, 255, 255, 0.23);
 }
 
 .sakura-petal::after {
-  content: "";
-  position: absolute;
   inset: -12px;
-  border-radius: 50%;
 }
 
 .sakura-petal:hover {
@@ -446,10 +439,6 @@ body.sakura-modal-open {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sakura-rain {
-    display: none;
-  }
-
   .sakura-dialog {
     animation: none;
   }
@@ -766,14 +755,14 @@ function closeSakuraModal() {
   document.body.classList.remove('sakura-modal-open');
 }
 
-function createSakuraPetal() {
- const container = document.querySelector('#sakuraRain');
+function createSakuraPetal(initialProgress = 0) {
+  const container = document.querySelector('#sakuraRain');
+
   if (!container) {
     return;
   }
 
   const petal = document.createElement('button');
-
   petal.type = 'button';
   petal.className = 'sakura-petal';
   petal.setAttribute(
@@ -785,66 +774,65 @@ function createSakuraPetal() {
   const size = 13 + Math.random() * 12;
   const direction = Math.random() > 0.5 ? 1 : -1;
   const drift = 45 + Math.random() * 105;
-  const duration = 11 + Math.random() * 8;
+  const durationMs = (11 + Math.random() * 8) * 1000;
+  const opacity = 0.56 + Math.random() * 0.25;
 
   petal.style.left = `${Math.random() * 100}%`;
+  petal.style.setProperty('--petal-size', `${size}px`);
+  container.appendChild(petal);
 
-  petal.style.setProperty(
-    '--petal-size',
-    `${size}px`
+  const animation = petal.animate(
+    [
+      {
+        opacity: 0,
+        transform: 'translate3d(0, -30px, 0) rotate(0deg)',
+        offset: 0
+      },
+      { opacity, offset: 0.08 },
+      {
+        opacity,
+        transform: `translate3d(${direction * drift * 0.45}px, 52vh, 0) rotate(240deg)`,
+        offset: 0.5
+      },
+      { opacity, offset: 0.92 },
+      {
+        opacity: 0,
+        transform: `translate3d(${direction * drift}px, 110vh, 0) rotate(540deg)`,
+        offset: 1
+      }
+    ],
+    {
+      duration: durationMs,
+      easing: 'linear',
+      fill: 'forwards'
+    }
   );
 
-  petal.style.setProperty(
-    '--drift-middle',
-    `${direction * drift * 0.45}px`
-  );
-
-  petal.style.setProperty(
-    '--drift-end',
-    `${direction * drift}px`
-  );
-
-  petal.style.setProperty(
-    '--fall-duration',
-    `${duration}s`
-  );
-
-  petal.style.setProperty(
-    '--color-duration',
-    `${3 + Math.random() * 3}s`
-  );
-
-  petal.style.setProperty(
-    '--petal-opacity',
-    `${0.56 + Math.random() * 0.25}`
-  );
+  if (initialProgress > 0) {
+    animation.currentTime = Math.min(initialProgress, 0.9) * durationMs;
+  }
 
   petal.addEventListener('click', event => {
     event.preventDefault();
     event.stopPropagation();
-
+    animation.cancel();
     petal.remove();
     showSakuraServer();
   });
 
-  petal.addEventListener('animationend', event => {
-    if (event.animationName === 'sakuraFall') {
-      petal.remove();
-    }
+  animation.addEventListener('finish', () => {
+    petal.remove();
   });
-
-  container.appendChild(petal);
 }
 
 function startSakuraRain() {
-  for (let index = 0; index < 7; index += 1) {
-    window.setTimeout(
-      createSakuraPetal,
-      index * 700
-    );
+  const initialPetalCount = 18;
+
+  for (let index = 0; index < initialPetalCount; index += 1) {
+    createSakuraPetal(0.05 + Math.random() * 0.8);
   }
 
-  window.setInterval(createSakuraPetal, 1500);
+  window.setInterval(() => createSakuraPetal(), 900);
 }
 
 function setupSakuraControls() {
