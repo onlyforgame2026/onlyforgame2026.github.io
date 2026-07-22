@@ -641,10 +641,16 @@ body.sakura-modal-open {
       '31731950-952d-439b-9492-c59ba7cd31c8':'servers/just-a-server/',
       'e7493e44-4ce1-4543-93a6-22f5984a2093':'servers/lol-tw-hk/'
     });
-    const pinnedServerRules=Object.freeze([
-      {ids:['onlyforgame','only-for-game'],names:['only for game']},
-      {ids:['紅塵客棧'],names:['紅塵客棧']}
-    ]);
+   const pinnedServerRules = Object.freeze([
+  {
+    ids: ['serverbloom', 'server-bloom'],
+    names: ['serverbloom']
+  },
+  {
+    ids: ['紅塵客棧'],
+    names: ['紅塵客棧']
+  }
+]);
     const categoryMeta=[['全部','▦'],['遊戲','🎮'],['聊天交友','💬'],['創作','🎨'],['技術','⌘'],['學習','▣'],['其他','•••']];let remote=[],active='全部';
     const $=s=>document.querySelector(s),grid=$('#serverGrid'),search=$('#search'),status=$('#status');
     const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
