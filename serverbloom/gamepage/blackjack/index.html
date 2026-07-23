@@ -1,0 +1,1404 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070b18">
+  <meta name="description" content="ServerBloom 經典 21 點：下注、要牌、停牌與加倍，免費在瀏覽器直接遊玩。">
+  <title>經典 21 點｜ServerBloom Arcade</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      --page:#050914;
+      --page-2:#090f20;
+      --panel:#0c1425;
+      --panel-2:#111c30;
+      --line:rgba(255,255,255,.11);
+      --text:#f7f8ff;
+      --muted:#9da8bd;
+      --gold:#f7c95a;
+      --gold-2:#dc9d25;
+      --green:#087046;
+      --green-dark:#023923;
+      --red:#ff5c72;
+      --violet:#8b5cf6;
+      --cyan:#29c5f6;
+      --shadow:0 24px 70px rgba(0,0,0,.48);
+      --radius:22px;
+      font-family:Inter,"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      min-height:100vh;
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 74% -15%,rgba(139,92,246,.22),transparent 34%),
+        radial-gradient(circle at -10% 55%,rgba(41,197,246,.11),transparent 32%),
+        linear-gradient(160deg,var(--page),var(--page-2) 72%);
+    }
+    body.modal-open{overflow:hidden}
+    button,a{-webkit-tap-highlight-color:transparent}
+    button{font:inherit;color:inherit}
+    button:focus-visible,a:focus-visible{
+      outline:3px solid rgba(247,201,90,.55);
+      outline-offset:3px;
+    }
+    button:disabled{cursor:not-allowed;opacity:.42;filter:saturate(.55)}
+    a{color:inherit;text-decoration:none}
+    [hidden]{display:none!important}
+
+    .topbar{
+      position:sticky;
+      z-index:50;
+      top:0;
+      height:66px;
+      border-bottom:1px solid var(--line);
+      background:rgba(5,9,20,.86);
+      backdrop-filter:blur(18px);
+    }
+    .nav{
+      width:min(calc(100% - 32px),1480px);
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      margin:auto;
+    }
+    .brand{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:11px;
+      font-weight:950;
+    }
+    .brand-mark{
+      width:40px;
+      height:40px;
+      flex:none;
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:13px;
+      background:linear-gradient(145deg,#7449ff,#f34da8);
+      box-shadow:0 0 28px rgba(139,92,246,.34);
+      font-size:20px;
+    }
+    .brand-copy{min-width:0}
+    .brand-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:17px}
+    .brand-copy small{display:block;margin-top:1px;color:#aeb8ca;font-size:11px;font-weight:750}
+    .nav-actions{display:flex;align-items:center;gap:9px}
+    .nav-button{
+      min-height:40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      padding:0 14px;
+      border:1px solid #2a3853;
+      border-radius:999px;
+      background:#111a2b;
+      font-weight:850;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .nav-button:hover{border-color:#566784;background:#18243a;transform:translateY(-1px)}
+    .icon-button{width:40px;padding:0}
+
+    .page{
+      width:min(calc(100% - 34px),1480px);
+      margin:0 auto;
+      padding:28px 0 64px;
+    }
+    .page-heading{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:19px;
+    }
+    .eyebrow{
+      margin:0 0 7px;
+      color:#d5c5ff;
+      font-size:12px;
+      font-weight:950;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+    }
+    h1{
+      margin:0;
+      font-size:clamp(30px,4vw,50px);
+      line-height:1.03;
+      letter-spacing:-1.3px;
+    }
+    .gradient{
+      background:linear-gradient(90deg,#fff2bc,#f5bd45 45%,#ff8c67);
+      background-clip:text;
+      color:transparent;
+    }
+    .heading-note{
+      max-width:540px;
+      margin:9px 0 0;
+      color:#aab4c7;
+      font-size:14px;
+      line-height:1.65;
+    }
+    .fair-badge{
+      flex:none;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:10px 13px;
+      border:1px solid rgba(41,197,246,.26);
+      border-radius:13px;
+      color:#b8ecff;
+      background:rgba(41,197,246,.08);
+      font-size:12px;
+      font-weight:850;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 320px;
+      gap:20px;
+      align-items:start;
+    }
+    .game-shell{
+      min-width:0;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:#07100c;
+      box-shadow:var(--shadow);
+    }
+    .score-strip{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(90deg,#0b1324,#101a2e);
+    }
+    .score-item{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:12px 14px;
+      border-right:1px solid var(--line);
+    }
+    .score-item:last-child{border-right:0}
+    .score-icon{
+      width:34px;
+      height:34px;
+      flex:none;
+      display:grid;
+      place-items:center;
+      border-radius:11px;
+      background:rgba(255,255,255,.07);
+      font-size:17px;
+    }
+    .score-copy{min-width:0}
+    .score-copy small{display:block;color:#8e9ab1;font-size:10px;font-weight:850;letter-spacing:.08em}
+    .score-copy strong{
+      display:block;
+      overflow:hidden;
+      margin-top:2px;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:17px;
+    }
+
+    .felt{
+      position:relative;
+      min-height:590px;
+      display:grid;
+      grid-template-rows:1fr auto 1fr;
+      gap:8px;
+      overflow:hidden;
+      padding:24px clamp(16px,3.5vw,50px);
+      background:
+        radial-gradient(ellipse at 50% 45%,rgba(28,153,92,.72),rgba(4,73,44,.92) 55%,#01321e 100%);
+      isolation:isolate;
+    }
+    .felt::before{
+      content:"";
+      position:absolute;
+      z-index:-2;
+      inset:12% 7%;
+      border:2px solid rgba(247,201,90,.24);
+      border-radius:50%;
+      box-shadow:inset 0 0 0 7px rgba(255,255,255,.025);
+    }
+    .felt::after{
+      content:"BLACKJACK  •  PAYS 3 TO 2  •  DEALER STANDS ON 17";
+      position:absolute;
+      z-index:-1;
+      left:50%;
+      top:49%;
+      width:min(82%,780px);
+      padding-top:46px;
+      border-top:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.13);
+      text-align:center;
+      font-size:clamp(10px,1.35vw,16px);
+      font-weight:950;
+      letter-spacing:.15em;
+      transform:translate(-50%,-50%);
+    }
+    .hand-zone{
+      min-height:205px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:11px;
+    }
+    .zone-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:0;
+      color:rgba(255,255,255,.82);
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:.03em;
+    }
+    .score-bubble{
+      min-width:31px;
+      height:25px;
+      display:inline-grid;
+      place-items:center;
+      padding:0 8px;
+      border:1px solid rgba(255,255,255,.2);
+      border-radius:999px;
+      color:white;
+      background:rgba(0,0,0,.25);
+      font-size:12px;
+    }
+    .hand{
+      min-height:136px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding-left:0;
+    }
+    .playing-card{
+      --tilt:0deg;
+      position:relative;
+      width:clamp(70px,7.2vw,98px);
+      aspect-ratio:5/7;
+      flex:none;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      border:1px solid rgba(0,0,0,.22);
+      border-radius:11px;
+      color:#121625;
+      background:linear-gradient(145deg,#fff,#e8ebf2);
+      box-shadow:0 12px 22px rgba(0,0,0,.28);
+      transform:translateY(0) rotate(var(--tilt));
+      animation:deal-card .32s cubic-bezier(.2,.8,.2,1) both;
+      animation-delay:calc(var(--index) * 55ms);
+    }
+    .playing-card + .playing-card{margin-left:-14px}
+    .playing-card:nth-child(2n){--tilt:1.5deg}
+    .playing-card:nth-child(3n){--tilt:-1deg}
+    .playing-card.red{color:#d5273e}
+    .playing-card.back{
+      border:5px solid #f3f4f8;
+      color:rgba(255,255,255,.82);
+      background:
+        linear-gradient(45deg,transparent 44%,rgba(255,255,255,.13) 45% 55%,transparent 56%) 0 0/15px 15px,
+        linear-gradient(-45deg,transparent 44%,rgba(255,255,255,.13) 45% 55%,transparent 56%) 0 0/15px 15px,
+        linear-gradient(135deg,#3a2078,#7b42e4);
+      box-shadow:inset 0 0 0 2px #432681,0 12px 22px rgba(0,0,0,.28);
+    }
+    .card-corner{
+      position:absolute;
+      left:8px;
+      top:6px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      font-family:Georgia,serif;
+      font-size:clamp(13px,1.65vw,20px);
+      font-weight:800;
+      line-height:.92;
+    }
+    .card-corner.bottom{inset:auto 8px 6px auto;transform:rotate(180deg)}
+    .card-suit{font-family:Georgia,serif;font-size:clamp(29px,3.5vw,48px)}
+    .card-back-mark{
+      width:46%;
+      aspect-ratio:1;
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(255,255,255,.34);
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+      box-shadow:0 0 26px rgba(255,255,255,.12);
+      font-size:clamp(20px,3vw,38px);
+    }
+    @keyframes deal-card{
+      from{opacity:0;transform:translate(110px,-95px) rotate(14deg) scale(.82)}
+      to{opacity:1;transform:translateY(0) rotate(var(--tilt)) scale(1)}
+    }
+
+    .round-message{
+      z-index:3;
+      min-height:44px;
+      width:fit-content;
+      max-width:min(92%,720px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      justify-self:center;
+      gap:8px;
+      padding:9px 16px;
+      border:1px solid rgba(255,255,255,.2);
+      border-radius:999px;
+      color:white;
+      background:rgba(1,15,9,.68);
+      box-shadow:0 10px 25px rgba(0,0,0,.22);
+      text-align:center;
+      font-size:13px;
+      font-weight:900;
+      backdrop-filter:blur(8px);
+    }
+    .round-message.win{border-color:rgba(247,201,90,.6);color:#fff2bd;background:rgba(72,49,3,.77)}
+    .round-message.loss{border-color:rgba(255,92,114,.5);color:#ffd1d8;background:rgba(82,7,18,.72)}
+    .round-message.push{border-color:rgba(41,197,246,.45);color:#c6f2ff;background:rgba(3,47,63,.72)}
+    .shoe{
+      position:absolute;
+      top:18px;
+      right:18px;
+      display:flex;
+      align-items:center;
+      gap:7px;
+      padding:7px 10px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:10px;
+      color:rgba(255,255,255,.73);
+      background:rgba(0,0,0,.19);
+      font-size:10px;
+      font-weight:850;
+    }
+
+    .control-panel{
+      padding:15px;
+      border-top:1px solid var(--line);
+      background:linear-gradient(180deg,#0d1727,#0a1220);
+    }
+    .bet-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:13px;
+    }
+    .control-label{
+      flex:none;
+      color:#a7b2c6;
+      font-size:12px;
+      font-weight:900;
+    }
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{
+      width:50px;
+      height:50px;
+      display:grid;
+      place-items:center;
+      border:4px dashed rgba(255,255,255,.72);
+      border-radius:50%;
+      color:white;
+      background:var(--chip-color,#8b5cf6);
+      box-shadow:inset 0 0 0 3px rgba(0,0,0,.22),0 8px 15px rgba(0,0,0,.25);
+      font-size:12px;
+      font-weight:1000;
+      cursor:pointer;
+      transition:.16s ease;
+    }
+    .chip:hover:not(:disabled){transform:translateY(-4px) rotate(-4deg);filter:brightness(1.12)}
+    .chip[data-chip="10"]{--chip-color:#367ad8}
+    .chip[data-chip="50"]{--chip-color:#c44556}
+    .chip[data-chip="100"]{--chip-color:#303745}
+    .chip[data-chip="250"]{--chip-color:#99622c}
+    .action-row{
+      display:grid;
+      grid-template-columns:minmax(98px,1fr) repeat(4,minmax(90px,1fr));
+      gap:9px;
+    }
+    .game-button{
+      min-height:48px;
+      border:1px solid #2a3853;
+      border-radius:13px;
+      background:#172238;
+      font-weight:950;
+      cursor:pointer;
+      transition:.16s ease;
+    }
+    .game-button:hover:not(:disabled){border-color:#64738d;background:#202e47;transform:translateY(-1px)}
+    .game-button.primary{
+      border:0;
+      color:#221700;
+      background:linear-gradient(135deg,#ffe28a,#eaa92e);
+      box-shadow:0 8px 20px rgba(234,169,46,.24);
+    }
+    .game-button.danger{color:#ffd3d9;border-color:rgba(255,92,114,.28);background:rgba(255,92,114,.09)}
+    .keyboard-hint{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin:11px 2px 0;
+      color:#78869e;
+      font-size:10px;
+      font-weight:750;
+    }
+    kbd{
+      min-width:20px;
+      display:inline-grid;
+      place-items:center;
+      margin-right:3px;
+      padding:2px 5px;
+      border:1px solid #33425b;
+      border-radius:5px;
+      color:#cbd4e4;
+      background:#111a2b;
+      box-shadow:0 2px 0 #03060c;
+      font:inherit;
+    }
+
+    .sidebar{display:grid;gap:14px}
+    .side-card{
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:17px;
+      background:linear-gradient(155deg,rgba(17,28,48,.96),rgba(9,16,29,.97));
+      box-shadow:0 15px 40px rgba(0,0,0,.24);
+    }
+    .side-card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 15px;
+      border-bottom:1px solid var(--line);
+    }
+    .side-card h2{margin:0;font-size:15px}
+    .side-body{padding:14px 15px}
+    .rule-list{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+    .rule-list li{
+      display:grid;
+      grid-template-columns:29px minmax(0,1fr);
+      gap:9px;
+      align-items:start;
+      color:#b5bfd1;
+      font-size:12px;
+      line-height:1.55;
+    }
+    .rule-number{
+      width:27px;
+      height:27px;
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(247,201,90,.23);
+      border-radius:8px;
+      color:#ffd96f;
+      background:rgba(247,201,90,.08);
+      font-size:11px;
+      font-weight:950;
+    }
+    .stat-list{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .stat-box{
+      padding:11px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      background:rgba(255,255,255,.035);
+    }
+    .stat-box small{display:block;color:#7f8ca3;font-size:10px;font-weight:850}
+    .stat-box strong{display:block;margin-top:4px;font-size:18px}
+    .wide-button{
+      width:100%;
+      min-height:42px;
+      margin-top:11px;
+      border:1px solid #2b3a55;
+      border-radius:11px;
+      background:#151f33;
+      font-weight:850;
+      cursor:pointer;
+    }
+    .wide-button:hover{background:#1c2941}
+    .other-games{display:grid;gap:8px}
+    .other-game{
+      display:grid;
+      grid-template-columns:42px minmax(0,1fr) auto;
+      gap:9px;
+      align-items:center;
+      padding:9px;
+      border:1px solid transparent;
+      border-radius:11px;
+      transition:.16s ease;
+    }
+    .other-game:hover{border-color:#2b3a55;background:#151f33;transform:translateX(2px)}
+    .game-icon{
+      width:42px;
+      height:42px;
+      display:grid;
+      place-items:center;
+      border-radius:11px;
+      background:linear-gradient(135deg,var(--icon-color),#131a2a);
+      font-size:20px;
+    }
+    .other-game strong{display:block;font-size:12px}
+    .other-game small{display:block;margin-top:3px;color:#7f8ca3;font-size:10px}
+    .other-game span:last-child{color:#7e8ba1}
+    .local-note{margin:10px 0 0;color:#6f7c92;font-size:10px;line-height:1.5}
+
+    .modal{
+      position:fixed;
+      z-index:100;
+      inset:0;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      background:rgba(2,5,12,.78);
+      backdrop-filter:blur(10px);
+    }
+    .modal-card{
+      width:min(100%,560px);
+      max-height:min(760px,90vh);
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:20px;
+      background:#0d1627;
+      box-shadow:0 30px 100px rgba(0,0,0,.65);
+    }
+    .modal-head{
+      position:sticky;
+      top:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      padding:17px 18px;
+      border-bottom:1px solid var(--line);
+      background:rgba(13,22,39,.95);
+      backdrop-filter:blur(10px);
+    }
+    .modal-head h2{margin:0;font-size:19px}
+    .modal-close{
+      width:37px;
+      height:37px;
+      border:1px solid #32415c;
+      border-radius:50%;
+      background:#172238;
+      cursor:pointer;
+    }
+    .modal-body{display:grid;gap:12px;padding:18px}
+    .help-block{
+      display:grid;
+      grid-template-columns:42px minmax(0,1fr);
+      gap:12px;
+      padding:13px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:13px;
+      background:rgba(255,255,255,.035);
+    }
+    .help-icon{
+      width:42px;
+      height:42px;
+      display:grid;
+      place-items:center;
+      border-radius:12px;
+      background:rgba(247,201,90,.11);
+      font-size:20px;
+    }
+    .help-block strong{font-size:13px}
+    .help-block p{margin:4px 0 0;color:#aeb8cb;font-size:12px;line-height:1.6}
+
+    .toast{
+      position:fixed;
+      z-index:120;
+      left:50%;
+      bottom:max(24px,env(safe-area-inset-bottom));
+      max-width:calc(100% - 30px);
+      padding:10px 15px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:999px;
+      color:white;
+      background:rgba(10,18,32,.94);
+      box-shadow:0 12px 36px rgba(0,0,0,.45);
+      font-size:12px;
+      font-weight:850;
+      transform:translate(-50%,20px);
+      opacity:0;
+      pointer-events:none;
+      transition:.22s ease;
+    }
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+
+    .spark{
+      position:absolute;
+      z-index:6;
+      left:50%;
+      top:50%;
+      width:8px;
+      height:14px;
+      border-radius:3px;
+      background:var(--spark-color);
+      pointer-events:none;
+      animation:spark-fly .85s ease-out forwards;
+    }
+    @keyframes spark-fly{
+      to{
+        opacity:0;
+        transform:translate(var(--spark-x),var(--spark-y)) rotate(360deg);
+      }
+    }
+
+    @media(max-width:1120px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .side-card:first-child{grid-column:span 1}
+      .side-card:last-child{grid-column:span 1}
+    }
+    @media(max-width:820px){
+      .page{width:min(calc(100% - 22px),1480px);padding-top:18px}
+      .page-heading{align-items:start}
+      .fair-badge{display:none}
+      .felt{min-height:545px;padding-inline:14px}
+      .score-strip{grid-template-columns:1fr 1fr}
+      .score-item:nth-child(2){border-right:0}
+      .score-item:nth-child(-n+2){border-bottom:1px solid var(--line)}
+      .action-row{grid-template-columns:repeat(3,1fr)}
+      .game-button.primary{grid-column:span 2}
+      .sidebar{grid-template-columns:1fr 1fr}
+      .side-card:last-child{grid-column:1/-1}
+    }
+    @media(max-width:580px){
+      .topbar{height:60px}
+      .nav{width:calc(100% - 20px)}
+      .brand-mark{width:36px;height:36px}
+      .brand-copy small{display:none}
+      .nav-button{padding:0 11px;font-size:12px}
+      .nav-button .wide-label{display:none}
+      .page-heading{margin-bottom:14px}
+      .heading-note{font-size:12px}
+      .game-shell{border-radius:16px}
+      .score-item{padding:10px}
+      .score-icon{width:29px;height:29px;font-size:14px}
+      .score-copy strong{font-size:15px}
+      .felt{min-height:500px;padding-top:22px;padding-bottom:12px}
+      .felt::before{inset:12% -20%}
+      .hand-zone{min-height:175px}
+      .hand{min-height:115px}
+      .playing-card{width:67px;border-radius:9px}
+      .playing-card + .playing-card{margin-left:-23px}
+      .round-message{min-height:40px;padding:8px 12px;font-size:11px}
+      .shoe{top:10px;right:10px;font-size:9px}
+      .control-panel{padding:12px}
+      .bet-row{align-items:flex-start;flex-direction:column}
+      .chips{width:100%;justify-content:space-between}
+      .chip{width:46px;height:46px}
+      .action-row{grid-template-columns:repeat(2,1fr)}
+      .game-button.primary{grid-column:auto}
+      .keyboard-hint{display:none}
+      .sidebar{grid-template-columns:1fr}
+      .side-card:last-child{grid-column:auto}
+    }
+    @media(max-width:360px){
+      .brand-copy strong{font-size:14px}
+      .nav-button{padding:0 9px}
+      .score-copy small{font-size:9px}
+      .playing-card{width:61px}
+      .playing-card + .playing-card{margin-left:-25px}
+      .chip{width:43px;height:43px;font-size:11px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav" aria-label="主要導覽">
+      <a class="brand" href="../" aria-label="返回復古遊戲大廳">
+        <span class="brand-mark">🌸</span>
+        <span class="brand-copy">
+          <strong>ServerBloom Arcade</strong>
+          <small>復古遊戲大廳</small>
+        </span>
+      </a>
+      <div class="nav-actions">
+        <button class="nav-button icon-button" id="soundButton" type="button" aria-label="切換遊戲音效" aria-pressed="true">🔊</button>
+        <button class="nav-button" id="helpButton" type="button"><span>❓</span><span class="wide-label">玩法說明</span></button>
+        <a class="nav-button" href="../"><span>←</span><span class="wide-label">返回大廳</span></a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="page-heading" aria-labelledby="pageTitle">
+      <div>
+        <p class="eyebrow">ServerBloom Original Game</p>
+        <h1 id="pageTitle">經典 <span class="gradient">21 點</span></h1>
+        <p class="heading-note">比莊家更接近 21 點就贏。這裡只有免費虛擬籌碼，沒有儲值、沒有เงินจริง，安心把莊家打到睡不著。</p>
+      </div>
+      <div class="fair-badge"><span>🛡️</span><span>純前端遊戲<br>不收集個人資料</span></div>
+    </section>
+
+    <div class="layout">
+      <section class="game-shell" aria-label="21 點遊戲桌">
+        <div class="score-strip">
+          <div class="score-item">
+            <span class="score-icon">💰</span>
+            <span class="score-copy"><small>可用籌碼</small><strong id="balanceText">1,000</strong></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">🎯</span>
+            <span class="score-copy"><small>本局下注</small><strong id="betText">0</strong></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">🏆</span>
+            <span class="score-copy"><small>勝場</small><strong id="winsText">0</strong></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">🔥</span>
+            <span class="score-copy"><small>目前連勝</small><strong id="streakText">0</strong></span>
+          </div>
+        </div>
+
+        <div class="felt" id="felt">
+          <span class="shoe">🂠 牌靴剩餘 <b id="shoeText">312</b></span>
+
+          <section class="hand-zone" aria-label="莊家手牌">
+            <h2 class="zone-title">莊家 <span class="score-bubble" id="dealerScore">—</span></h2>
+            <div class="hand" id="dealerHand"></div>
+          </section>
+
+          <div class="round-message" id="roundMessage" role="status" aria-live="polite">
+            先選下注籌碼，再按「發牌」
+          </div>
+
+          <section class="hand-zone" aria-label="玩家手牌">
+            <h2 class="zone-title">玩家 <span class="score-bubble" id="playerScore">—</span></h2>
+            <div class="hand" id="playerHand"></div>
+          </section>
+        </div>
+
+        <div class="control-panel">
+          <div class="bet-row">
+            <span class="control-label">選擇下注</span>
+            <div class="chips" aria-label="下注籌碼">
+              <button class="chip" type="button" data-chip="10" aria-label="下注 10 籌碼">10</button>
+              <button class="chip" type="button" data-chip="50" aria-label="下注 50 籌碼">50</button>
+              <button class="chip" type="button" data-chip="100" aria-label="下注 100 籌碼">100</button>
+              <button class="chip" type="button" data-chip="250" aria-label="下注 250 籌碼">250</button>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="game-button danger" id="clearBetButton" type="button">清空下注</button>
+            <button class="game-button primary" id="dealButton" type="button">發牌</button>
+            <button class="game-button" id="hitButton" type="button">要牌</button>
+            <button class="game-button" id="standButton" type="button">停牌</button>
+            <button class="game-button" id="doubleButton" type="button">加倍</button>
+          </div>
+
+          <div class="keyboard-hint" aria-hidden="true">
+            <span><kbd>Enter</kbd>發牌</span>
+            <span><kbd>H</kbd>要牌</span>
+            <span><kbd>S</kbd>停牌</span>
+            <span><kbd>D</kbd>加倍</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar" aria-label="遊戲資訊">
+        <section class="side-card">
+          <div class="side-card-head"><h2>🃏 快速規則</h2><button class="nav-button icon-button" id="sideHelpButton" type="button" aria-label="開啟完整說明">?</button></div>
+          <div class="side-body">
+            <ol class="rule-list">
+              <li><span class="rule-number">1</span><span>先選籌碼下注，再按發牌。目標是接近 21，但不能超過。</span></li>
+              <li><span class="rule-number">2</span><span>A 可算 1 或 11；J、Q、K 都算 10 點。</span></li>
+              <li><span class="rule-number">3</span><span>莊家會補牌到 17 點；Blackjack 獎金為 3:2。</span></li>
+              <li><span class="rule-number">4</span><span>加倍會把下注乘二，只再拿一張牌後自動停牌。</span></li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="side-card">
+          <div class="side-card-head"><h2>📊 本機戰績</h2></div>
+          <div class="side-body">
+            <div class="stat-list">
+              <div class="stat-box"><small>落敗</small><strong id="lossesText">0</strong></div>
+              <div class="stat-box"><small>平手</small><strong id="pushesText">0</strong></div>
+              <div class="stat-box"><small>Blackjack</small><strong id="blackjacksText">0</strong></div>
+              <div class="stat-box"><small>最高資金</small><strong id="bestBalanceText">1,000</strong></div>
+            </div>
+            <button class="wide-button" id="refillButton" type="button">🎁 領取 1,000 免費籌碼</button>
+            <p class="local-note">戰績只保存在這台裝置的瀏覽器。清除瀏覽器資料後會重新開始。</p>
+          </div>
+        </section>
+
+        <section class="side-card">
+          <div class="side-card-head"><h2>🎮 接著玩</h2></div>
+          <div class="side-body other-games">
+            <a class="other-game" href="../#game=snake">
+              <span class="game-icon" style="--icon-color:#30b96a">🐍</span>
+              <span><strong>櫻花貪吃蛇</strong><small>動作遊戲</small></span><span>›</span>
+            </a>
+            <a class="other-game" href="../#game=tetris">
+              <span class="game-icon" style="--icon-color:#7159e8">♦️</span>
+              <span><strong>霓虹俄羅斯方塊</strong><small>益智遊戲</small></span><span>›</span>
+            </a>
+            <a class="other-game" href="../#game=game2048">
+              <span class="game-icon" style="--icon-color:#e95a52">🔢</span>
+              <span><strong>Bloom 2048</strong><small>數字益智</small></span><span>›</span>
+            </a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+    <section class="modal-card">
+      <header class="modal-head">
+        <h2 id="helpTitle">🂡 21 點完整玩法</h2>
+        <button class="modal-close" id="closeHelpButton" type="button" aria-label="關閉玩法說明">✕</button>
+      </header>
+      <div class="modal-body">
+        <div class="help-block">
+          <span class="help-icon">🎯</span>
+          <div><strong>勝利目標</strong><p>讓手牌總點數比莊家更接近 21。任何一方超過 21 都會立刻爆牌；同點數則是平手並退還下注。</p></div>
+        </div>
+        <div class="help-block">
+          <span class="help-icon">🃏</span>
+          <div><strong>牌面點數</strong><p>2～10 依牌面計算，J／Q／K 都是 10 點。A 會自動選擇最有利的 1 或 11 點，不必自己切換。</p></div>
+        </div>
+        <div class="help-block">
+          <span class="help-icon">✨</span>
+          <div><strong>Blackjack</strong><p>開局前兩張牌剛好是 A 加一張 10 點牌，就是 Blackjack，獲勝時支付 3:2；若莊家也是 Blackjack 則平手。</p></div>
+        </div>
+        <div class="help-block">
+          <span class="help-icon">✋</span>
+          <div><strong>要牌、停牌、加倍</strong><p>「要牌」再拿一張；「停牌」把回合交給莊家；「加倍」只限前兩張牌，下注乘二、再拿一張後自動停牌。</p></div>
+        </div>
+        <div class="help-block">
+          <span class="help-icon">🏦</span>
+          <div><strong>免費籌碼</strong><p>所有籌碼皆為遊戲內虛擬數字，不能購買或兌現。沒有足夠籌碼時，可以免費補充 1,000。</p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    const STORAGE_KEY = "serverbloom_blackjack_profile_v2";
+    const STARTING_BALANCE = 1000;
+    const MIN_BET = 10;
+    const SHOE_DECKS = 6;
+    const ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+    const suits = [
+      {symbol:"♠",name:"黑桃",red:false},
+      {symbol:"♥",name:"紅心",red:true},
+      {symbol:"♦",name:"方塊",red:true},
+      {symbol:"♣",name:"梅花",red:false}
+    ];
+
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+    const delay = milliseconds => new Promise(resolve => setTimeout(resolve,milliseconds));
+    const formatNumber = value => Math.max(0,Math.round(Number(value) || 0)).toLocaleString("zh-TW");
+
+    const defaultProfile = () => ({
+      balance:STARTING_BALANCE,
+      wins:0,
+      losses:0,
+      pushes:0,
+      blackjacks:0,
+      streak:0,
+      bestBalance:STARTING_BALANCE,
+      sound:true
+    });
+
+    function loadProfile(){
+      try{
+        const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if(!parsed || typeof parsed !== "object") return defaultProfile();
+        const clean = defaultProfile();
+        for(const key of ["balance","wins","losses","pushes","blackjacks","streak","bestBalance"]){
+          const value = Number(parsed[key]);
+          if(Number.isFinite(value) && value >= 0) clean[key] = Math.round(value);
+        }
+        clean.sound = parsed.sound !== false;
+        clean.bestBalance = Math.max(clean.bestBalance,clean.balance,STARTING_BALANCE);
+        return clean;
+      }catch{
+        return defaultProfile();
+      }
+    }
+
+    let profile = loadProfile();
+    let shoe = [];
+    let player = [];
+    let dealer = [];
+    let bet = 0;
+    let phase = "betting";
+    let busy = false;
+    let revealDealer = false;
+    let messageTone = "";
+    let previousFocus = null;
+    let audioContext = null;
+    let toastTimer = null;
+
+    function saveProfile(){
+      profile.bestBalance = Math.max(profile.bestBalance,profile.balance);
+      try{localStorage.setItem(STORAGE_KEY,JSON.stringify(profile))}catch{}
+    }
+
+    function saveSoundPreference(){
+      try{
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        stored.sound = profile.sound;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(stored));
+      }catch{}
+    }
+
+    function secureRandomIndex(max){
+      if(window.crypto && typeof window.crypto.getRandomValues === "function"){
+        const numbers = new Uint32Array(1);
+        window.crypto.getRandomValues(numbers);
+        return Math.floor((numbers[0] / 4294967296) * max);
+      }
+      return Math.floor(Math.random() * max);
+    }
+
+    function buildShoe(){
+      shoe = [];
+      for(let deckIndex=0;deckIndex<SHOE_DECKS;deckIndex++){
+        for(const suit of suits){
+          for(const rank of ranks){
+            shoe.push({rank,suit});
+          }
+        }
+      }
+      for(let index=shoe.length-1;index>0;index--){
+        const swapIndex = secureRandomIndex(index+1);
+        [shoe[index],shoe[swapIndex]] = [shoe[swapIndex],shoe[index]];
+      }
+    }
+
+    function drawCard(){
+      if(!shoe.length) buildShoe();
+      return shoe.pop();
+    }
+
+    function handValue(hand){
+      let total = 0;
+      let aces = 0;
+      for(const card of hand){
+        if(card.rank === "A"){
+          total += 11;
+          aces++;
+        }else if(["J","Q","K"].includes(card.rank)){
+          total += 10;
+        }else{
+          total += Number(card.rank);
+        }
+      }
+      while(total > 21 && aces > 0){
+        total -= 10;
+        aces--;
+      }
+      return {total,soft:aces > 0};
+    }
+
+    const isBlackjack = hand => hand.length === 2 && handValue(hand).total === 21;
+
+    function cardMarkup(card,index,hidden=false){
+      if(hidden){
+        return `<article class="playing-card back" style="--index:${index}" aria-label="莊家蓋牌">
+          <span class="card-back-mark">🌸</span>
+        </article>`;
+      }
+      const colorClass = card.suit.red ? " red" : "";
+      const label = `${card.suit.name}${card.rank}`;
+      return `<article class="playing-card${colorClass}" style="--index:${index}" aria-label="${label}">
+        <span class="card-corner"><b>${card.rank}</b><span>${card.suit.symbol}</span></span>
+        <span class="card-suit">${card.suit.symbol}</span>
+        <span class="card-corner bottom"><b>${card.rank}</b><span>${card.suit.symbol}</span></span>
+      </article>`;
+    }
+
+    function setMessage(text,tone=""){
+      $("#roundMessage").textContent = text;
+      messageTone = tone;
+      $("#roundMessage").className = `round-message${tone ? ` ${tone}` : ""}`;
+    }
+
+    function renderHands(){
+      const dealerHidden = !revealDealer && ["playing","dealing"].includes(phase);
+      $("#dealerHand").innerHTML = dealer.map((card,index) => cardMarkup(card,index,dealerHidden && index === 1)).join("");
+      $("#playerHand").innerHTML = player.map((card,index) => cardMarkup(card,index)).join("");
+
+      if(dealer.length){
+        if(dealerHidden){
+          $("#dealerScore").textContent = handValue([dealer[0]]).total;
+        }else{
+          const dealerValue = handValue(dealer);
+          $("#dealerScore").textContent = `${dealerValue.total}${dealerValue.soft && dealerValue.total < 21 ? " 軟" : ""}`;
+        }
+      }else{
+        $("#dealerScore").textContent = "—";
+      }
+
+      if(player.length){
+        const playerValue = handValue(player);
+        $("#playerScore").textContent = `${playerValue.total}${playerValue.soft && playerValue.total < 21 ? " 軟" : ""}`;
+      }else{
+        $("#playerScore").textContent = "—";
+      }
+    }
+
+    function renderControls(){
+      const isBetting = phase === "betting";
+      const isPlaying = phase === "playing";
+      const isSettled = phase === "settled";
+
+      $$("[data-chip]").forEach(button => {
+        const amount = Number(button.dataset.chip);
+        button.disabled = !isBetting || busy || profile.balance < amount;
+      });
+      $("#clearBetButton").disabled = !isBetting || busy || bet === 0;
+      $("#hitButton").disabled = !isPlaying || busy;
+      $("#standButton").disabled = !isPlaying || busy;
+      $("#doubleButton").disabled = !isPlaying || busy || player.length !== 2 || profile.balance < bet;
+      $("#dealButton").disabled = busy || (!isSettled && (!isBetting || bet < MIN_BET));
+      $("#dealButton").textContent = isSettled ? "下一局" : "發牌";
+      $("#refillButton").disabled = busy || !["betting","settled"].includes(phase);
+    }
+
+    function renderStats(){
+      $("#balanceText").textContent = formatNumber(profile.balance);
+      $("#betText").textContent = formatNumber(bet);
+      $("#winsText").textContent = formatNumber(profile.wins);
+      $("#streakText").textContent = formatNumber(profile.streak);
+      $("#lossesText").textContent = formatNumber(profile.losses);
+      $("#pushesText").textContent = formatNumber(profile.pushes);
+      $("#blackjacksText").textContent = formatNumber(profile.blackjacks);
+      $("#bestBalanceText").textContent = formatNumber(profile.bestBalance);
+      $("#shoeText").textContent = formatNumber(shoe.length);
+      $("#soundButton").textContent = profile.sound ? "🔊" : "🔇";
+      $("#soundButton").setAttribute("aria-pressed",String(profile.sound));
+    }
+
+    function render(){
+      renderHands();
+      renderControls();
+      renderStats();
+    }
+
+    function showToast(text){
+      clearTimeout(toastTimer);
+      $("#toast").textContent = text;
+      $("#toast").classList.add("show");
+      toastTimer = setTimeout(() => $("#toast").classList.remove("show"),2200);
+    }
+
+    function playTone(frequency=440,duration=.08,type="sine",volume=.025){
+      if(!profile.sound) return;
+      try{
+        audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
+        if(audioContext.state === "suspended") audioContext.resume();
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency,audioContext.currentTime);
+        gain.gain.setValueAtTime(volume,audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.0001,audioContext.currentTime + duration);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+      }catch{}
+    }
+
+    function celebration(){
+      const colors = ["#f7c95a","#ff6b81","#48dca2","#67c7ff","#b692ff"];
+      for(let index=0;index<30;index++){
+        const spark = document.createElement("i");
+        spark.className = "spark";
+        spark.style.setProperty("--spark-color",colors[index % colors.length]);
+        spark.style.setProperty("--spark-x",`${secureRandomIndex(420)-210}px`);
+        spark.style.setProperty("--spark-y",`${secureRandomIndex(260)-170}px`);
+        $("#felt").appendChild(spark);
+        setTimeout(() => spark.remove(),950);
+      }
+    }
+
+    function placeBet(amount){
+      if(phase !== "betting" || busy || profile.balance < amount) return;
+      profile.balance -= amount;
+      bet += amount;
+      setMessage(`目前下注 ${formatNumber(bet)}，可以繼續加注或直接發牌`);
+      playTone(230 + Math.min(amount,250),.07,"triangle",.035);
+      render();
+    }
+
+    function clearBet(){
+      if(phase !== "betting" || busy || bet === 0) return;
+      profile.balance += bet;
+      bet = 0;
+      setMessage("下注已收回，重新選擇籌碼");
+      playTone(180,.09,"sine",.025);
+      render();
+    }
+
+    async function dealRound(){
+      if(phase !== "betting" || busy || bet < MIN_BET) return;
+      if(shoe.length < 70) buildShoe();
+      busy = true;
+      phase = "dealing";
+      revealDealer = false;
+      player = [];
+      dealer = [];
+      setMessage("洗牌完成，正在發牌……");
+      render();
+
+      const order = [
+        () => player.push(drawCard()),
+        () => dealer.push(drawCard()),
+        () => player.push(drawCard()),
+        () => dealer.push(drawCard())
+      ];
+      for(const dealOne of order){
+        dealOne();
+        playTone(300 + (player.length + dealer.length) * 35,.045,"triangle",.018);
+        renderHands();
+        renderStats();
+        await delay(145);
+      }
+
+      phase = "playing";
+      busy = false;
+      render();
+      await checkOpeningBlackjacks();
+    }
+
+    async function checkOpeningBlackjacks(){
+      const playerNatural = isBlackjack(player);
+      const dealerNatural = isBlackjack(dealer);
+      if(!playerNatural && !dealerNatural){
+        setMessage("要牌、停牌，還是加倍？");
+        renderControls();
+        return;
+      }
+      revealDealer = true;
+      renderHands();
+      await delay(280);
+      if(playerNatural && dealerNatural){
+        settleRound("push","雙方都是 Blackjack，平手退注！");
+      }else if(playerNatural){
+        settleRound("blackjack","Blackjack！獲得 3:2 獎金 ✨");
+      }else{
+        settleRound("loss","莊家 Blackjack，這局由莊家獲勝。");
+      }
+    }
+
+    async function hit(){
+      if(phase !== "playing" || busy) return;
+      busy = true;
+      player.push(drawCard());
+      playTone(405,.06,"triangle",.024);
+      render();
+      await delay(260);
+      const total = handValue(player).total;
+      if(total > 21){
+        settleRound("loss",`爆牌！你的點數是 ${total}。`);
+      }else if(total === 21){
+        setMessage("剛好 21 點，自動停牌！");
+        busy = false;
+        renderControls();
+        await delay(350);
+        await stand();
+      }else{
+        setMessage(`目前 ${total} 點，還要再拿一張嗎？`);
+        busy = false;
+        renderControls();
+      }
+    }
+
+    async function doubleDown(){
+      if(phase !== "playing" || busy || player.length !== 2 || profile.balance < bet) return;
+      busy = true;
+      profile.balance -= bet;
+      bet *= 2;
+      player.push(drawCard());
+      setMessage(`下注加倍到 ${formatNumber(bet)}，最後一張牌已發出`);
+      playTone(520,.09,"square",.025);
+      render();
+      await delay(450);
+      if(handValue(player).total > 21){
+        settleRound("loss",`加倍後爆牌！你的點數是 ${handValue(player).total}。`);
+      }else{
+        busy = false;
+        await stand();
+      }
+    }
+
+    async function stand(){
+      if(phase !== "playing" || busy) return;
+      busy = true;
+      phase = "dealer";
+      revealDealer = true;
+      setMessage("莊家翻開底牌……");
+      render();
+      await delay(520);
+
+      while(handValue(dealer).total < 17){
+        dealer.push(drawCard());
+        playTone(350 + dealer.length * 30,.06,"triangle",.021);
+        setMessage(`莊家補牌，目前 ${handValue(dealer).total} 點`);
+        renderHands();
+        renderStats();
+        await delay(520);
+      }
+
+      const playerTotal = handValue(player).total;
+      const dealerTotal = handValue(dealer).total;
+      if(dealerTotal > 21){
+        settleRound("win",`莊家 ${dealerTotal} 點爆牌，你贏了！`);
+      }else if(playerTotal > dealerTotal){
+        settleRound("win",`${playerTotal} 比 ${dealerTotal}，你贏了！`);
+      }else if(playerTotal < dealerTotal){
+        settleRound("loss",`${dealerTotal} 比 ${playerTotal}，莊家獲勝。`);
+      }else{
+        settleRound("push",`雙方都是 ${playerTotal} 點，平手退注。`);
+      }
+    }
+
+    function settleRound(result,message){
+      revealDealer = true;
+      phase = "settled";
+      busy = false;
+
+      if(result === "blackjack"){
+        profile.balance += Math.round(bet * 2.5);
+        profile.wins++;
+        profile.blackjacks++;
+        profile.streak++;
+        celebration();
+        playTone(760,.22,"triangle",.04);
+      }else if(result === "win"){
+        profile.balance += bet * 2;
+        profile.wins++;
+        profile.streak++;
+        celebration();
+        playTone(660,.18,"triangle",.035);
+      }else if(result === "push"){
+        profile.balance += bet;
+        profile.pushes++;
+        playTone(430,.14,"sine",.025);
+      }else{
+        profile.losses++;
+        profile.streak = 0;
+        playTone(145,.22,"sawtooth",.018);
+      }
+
+      profile.bestBalance = Math.max(profile.bestBalance,profile.balance);
+      saveProfile();
+      setMessage(`${message}　按「下一局」繼續。`,result === "blackjack" || result === "win" ? "win" : result === "push" ? "push" : "loss");
+      render();
+      if(profile.balance < MIN_BET) showToast("籌碼不足時，可在右側免費補充 1,000");
+    }
+
+    function prepareNextRound(){
+      if(phase !== "settled" || busy) return;
+      bet = 0;
+      player = [];
+      dealer = [];
+      phase = "betting";
+      revealDealer = false;
+      setMessage(profile.balance >= MIN_BET ? "先選下注籌碼，再按「發牌」" : "籌碼不足，請先領取免費籌碼");
+      render();
+    }
+
+    function refillChips(){
+      if(busy || !["betting","settled"].includes(phase)) return;
+      if(phase === "settled") prepareNextRound();
+      if(bet > 0){
+        profile.balance += bet;
+        bet = 0;
+      }
+      profile.balance += STARTING_BALANCE;
+      profile.bestBalance = Math.max(profile.bestBalance,profile.balance);
+      saveProfile();
+      setMessage("已補充 1,000 免費籌碼，選好下注就開打！");
+      playTone(620,.12,"triangle",.035);
+      showToast("🎁 免費籌碼已加入");
+      render();
+    }
+
+    function openHelp(){
+      previousFocus = document.activeElement;
+      $("#helpModal").hidden = false;
+      document.body.classList.add("modal-open");
+      $("#closeHelpButton").focus();
+    }
+
+    function closeHelp(){
+      $("#helpModal").hidden = true;
+      document.body.classList.remove("modal-open");
+      if(previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    }
+
+    $$("[data-chip]").forEach(button => button.addEventListener("click",() => placeBet(Number(button.dataset.chip))));
+    $("#clearBetButton").addEventListener("click",clearBet);
+    $("#dealButton").addEventListener("click",() => phase === "settled" ? prepareNextRound() : dealRound());
+    $("#hitButton").addEventListener("click",hit);
+    $("#standButton").addEventListener("click",stand);
+    $("#doubleButton").addEventListener("click",doubleDown);
+    $("#refillButton").addEventListener("click",refillChips);
+    $("#helpButton").addEventListener("click",openHelp);
+    $("#sideHelpButton").addEventListener("click",openHelp);
+    $("#closeHelpButton").addEventListener("click",closeHelp);
+    $("#helpModal").addEventListener("click",event => {
+      if(event.target === $("#helpModal")) closeHelp();
+    });
+    $("#soundButton").addEventListener("click",() => {
+      profile.sound = !profile.sound;
+      saveSoundPreference();
+      renderStats();
+      if(profile.sound) playTone(520,.08,"triangle",.03);
+      showToast(profile.sound ? "遊戲音效已開啟" : "遊戲音效已關閉");
+    });
+
+    document.addEventListener("keydown",event => {
+      if(!$("#helpModal").hidden){
+        if(event.key === "Escape") closeHelp();
+        return;
+      }
+      if(event.repeat) return;
+      const key = event.key.toLowerCase();
+      if(event.key === "Enter" && phase === "betting" && bet >= MIN_BET){
+        event.preventDefault();
+        dealRound();
+      }else if(key === "h"){
+        hit();
+      }else if(key === "s"){
+        stand();
+      }else if(key === "d"){
+        doubleDown();
+      }
+    });
+
+    buildShoe();
+    render();
+  </script>
+</body>
+</html>
