@@ -1,0 +1,1646 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#120722">
+  <meta name="description" content="ServerBloom 櫻花貪吃蛇：每一節蛇身保留吃下的花朵顏色，並追逐會以貪吃蛇 50% 速度逃跑的金色櫻花。">
+  <title>櫻花貪吃蛇｜ServerBloom Arcade</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      --page:#090411;
+      --page-2:#140823;
+      --panel:#130b20;
+      --panel-2:#1c102e;
+      --panel-3:#25143c;
+      --line:rgba(255,255,255,.12);
+      --text:#fff8ff;
+      --muted:#b8a9c8;
+      --pink:#ff72b6;
+      --pink-2:#ff3f9d;
+      --lavender:#c7a6ff;
+      --purple:#7c3aed;
+      --purple-2:#4c1d95;
+      --gold:#ffd45a;
+      --gold-2:#f2a91f;
+      --green:#62e6a7;
+      --red:#ff6680;
+      --shadow:0 26px 80px rgba(0,0,0,.48);
+      --radius:22px;
+      font-family:Inter,"Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      min-height:100vh;
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 80% -12%,rgba(124,58,237,.28),transparent 35%),
+        radial-gradient(circle at -10% 55%,rgba(255,63,157,.15),transparent 31%),
+        linear-gradient(155deg,var(--page),var(--page-2) 72%);
+    }
+    body.modal-open{overflow:hidden}
+    button,a{-webkit-tap-highlight-color:transparent}
+    button{font:inherit;color:inherit}
+    button:focus-visible,a:focus-visible{
+      outline:3px solid rgba(255,212,90,.58);
+      outline-offset:3px;
+    }
+    a{color:inherit;text-decoration:none}
+    [hidden]{display:none!important}
+
+    .topbar{
+      position:sticky;
+      z-index:50;
+      top:0;
+      height:66px;
+      border-bottom:1px solid var(--line);
+      background:rgba(9,4,17,.86);
+      backdrop-filter:blur(18px);
+    }
+    .nav{
+      width:min(calc(100% - 32px),1480px);
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      margin:auto;
+    }
+    .brand{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:11px;
+      font-weight:950;
+    }
+    .brand-mark{
+      width:40px;
+      height:40px;
+      flex:none;
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(255,255,255,.2);
+      border-radius:13px;
+      background:linear-gradient(145deg,var(--pink-2),var(--purple));
+      box-shadow:0 0 28px rgba(255,63,157,.28);
+      font-size:20px;
+    }
+    .brand-copy{min-width:0}
+    .brand-copy strong{
+      display:block;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:17px;
+    }
+    .brand-copy small{
+      display:block;
+      margin-top:1px;
+      color:#c9bad8;
+      font-size:11px;
+      font-weight:750;
+    }
+    .nav-actions{display:flex;align-items:center;gap:9px}
+    .nav-button{
+      min-height:40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      padding:0 14px;
+      border:1px solid #493260;
+      border-radius:999px;
+      background:#211332;
+      font-weight:850;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .nav-button:hover{
+      border-color:#8d66ad;
+      background:#2d1945;
+      transform:translateY(-1px);
+    }
+    .icon-button{width:40px;padding:0}
+
+    .page{
+      width:min(calc(100% - 34px),1480px);
+      margin:0 auto;
+      padding:28px 0 64px;
+    }
+    .page-heading{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:19px;
+    }
+    .eyebrow{
+      margin:0 0 7px;
+      color:#e5c8ff;
+      font-size:12px;
+      font-weight:950;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+    }
+    h1{
+      margin:0;
+      font-size:clamp(30px,4vw,50px);
+      line-height:1.03;
+      letter-spacing:-1.3px;
+    }
+    .gradient{
+      background:linear-gradient(90deg,#ff95c8 4%,#c8a8ff 50%,#8f5cff);
+      background-clip:text;
+      color:transparent;
+    }
+    .heading-note{
+      max-width:630px;
+      margin:9px 0 0;
+      color:#beafcc;
+      font-size:14px;
+      line-height:1.65;
+    }
+    .gold-badge{
+      flex:none;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:10px 13px;
+      border:1px solid rgba(255,212,90,.34);
+      border-radius:13px;
+      color:#ffeaa8;
+      background:rgba(255,212,90,.09);
+      font-size:12px;
+      font-weight:850;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 320px;
+      gap:20px;
+      align-items:start;
+    }
+    .game-shell{
+      min-width:0;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:#0d0715;
+      box-shadow:var(--shadow);
+    }
+    .score-strip{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(90deg,#180c27,#25123b);
+    }
+    .score-item{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:12px 14px;
+      border-right:1px solid var(--line);
+    }
+    .score-item:last-child{border-right:0}
+    .score-icon{
+      width:34px;
+      height:34px;
+      flex:none;
+      display:grid;
+      place-items:center;
+      border-radius:11px;
+      background:rgba(255,255,255,.07);
+      font-size:17px;
+    }
+    .score-copy{min-width:0}
+    .score-copy small{
+      display:block;
+      color:#a998b8;
+      font-size:10px;
+      font-weight:850;
+      letter-spacing:.08em;
+    }
+    .score-copy strong{
+      display:block;
+      overflow:hidden;
+      margin-top:2px;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:17px;
+    }
+
+    .board-zone{
+      position:relative;
+      padding:clamp(10px,2vw,18px);
+      background:
+        radial-gradient(circle at 50% 0,rgba(124,58,237,.18),transparent 42%),
+        #09040f;
+    }
+    .canvas-wrap{
+      position:relative;
+      width:min(100%,980px);
+      margin:auto;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:17px;
+      background:#100719;
+      box-shadow:
+        inset 0 0 60px rgba(89,35,133,.2),
+        0 18px 42px rgba(0,0,0,.38);
+    }
+    canvas{
+      width:100%;
+      height:auto;
+      display:block;
+      aspect-ratio:3/2;
+      touch-action:none;
+    }
+    .board-overlay{
+      position:absolute;
+      z-index:10;
+      inset:0;
+      display:grid;
+      place-items:center;
+      padding:20px;
+      text-align:center;
+      background:rgba(7,2,12,.72);
+      backdrop-filter:blur(7px);
+    }
+    .overlay-card{
+      width:min(100%,430px);
+      padding:25px;
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:20px;
+      background:linear-gradient(145deg,rgba(39,20,60,.97),rgba(17,8,28,.97));
+      box-shadow:0 25px 70px rgba(0,0,0,.52);
+    }
+    .overlay-icon{display:block;margin-bottom:8px;font-size:42px}
+    .overlay-card h2{margin:0;font-size:clamp(25px,4vw,36px)}
+    .overlay-card p{
+      margin:10px auto 18px;
+      color:#cfbfd9;
+      line-height:1.6;
+    }
+    .result-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin:16px 0 19px;
+    }
+    .result-cell{
+      padding:10px 7px;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+    }
+    .result-cell small{display:block;color:#a998b8;font-size:10px;font-weight:800}
+    .result-cell strong{display:block;margin-top:3px;font-size:19px}
+    .primary-button{
+      min-height:47px;
+      padding:0 23px;
+      border:0;
+      border-radius:12px;
+      color:white;
+      background:linear-gradient(135deg,var(--pink-2),var(--purple));
+      box-shadow:0 10px 28px rgba(177,52,167,.3);
+      font-weight:950;
+      cursor:pointer;
+    }
+    .primary-button:hover{filter:brightness(1.1);transform:translateY(-1px)}
+
+    .status-row{
+      min-height:47px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      padding:9px 15px;
+      border-top:1px solid var(--line);
+      border-bottom:1px solid var(--line);
+      background:#170c25;
+    }
+    .status-copy{
+      min-width:0;
+      overflow:hidden;
+      color:#d9cce4;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:13px;
+      font-weight:800;
+    }
+    .gold-timer{
+      min-width:178px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#ffe694;
+      font-size:11px;
+      font-weight:900;
+    }
+    .timer-track{
+      width:80px;
+      height:7px;
+      overflow:hidden;
+      border-radius:999px;
+      background:rgba(255,255,255,.1);
+    }
+    .timer-fill{
+      width:0;
+      height:100%;
+      border-radius:inherit;
+      background:linear-gradient(90deg,var(--gold-2),#fff0a5);
+      transition:width .12s linear;
+    }
+
+    .control-deck{
+      min-height:84px;
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:center;
+      gap:17px;
+      padding:11px 15px;
+      background:linear-gradient(90deg,#12091d,#1a0d29);
+    }
+    .action-buttons{display:flex;flex-wrap:wrap;gap:8px}
+    .control-button{
+      min-height:42px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      padding:0 14px;
+      border:1px solid #55396e;
+      border-radius:11px;
+      color:#f7eeff;
+      background:#29163c;
+      font-weight:900;
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+    .control-button:hover,.control-button:active{
+      border-color:#b987db;
+      background:#3a1d58;
+    }
+    .control-button.primary{
+      border:0;
+      background:linear-gradient(135deg,var(--pink-2),var(--purple));
+    }
+    .keyboard-hint{
+      justify-self:center;
+      color:#a998b8;
+      text-align:center;
+      font-size:11px;
+      line-height:1.55;
+    }
+    .keyboard-hint b{color:#d9cbe6}
+    .dpad{
+      width:138px;
+      display:grid;
+      grid-template-columns:repeat(3,42px);
+      grid-template-rows:repeat(2,42px);
+      justify-content:end;
+      gap:5px;
+    }
+    .dpad button{
+      display:grid;
+      place-items:center;
+      border:1px solid #60407b;
+      border-radius:11px;
+      color:white;
+      background:#311a47;
+      font-size:20px;
+      font-weight:950;
+      cursor:pointer;
+      touch-action:manipulation;
+      user-select:none;
+    }
+    .dpad button:active{background:var(--purple);transform:scale(.95)}
+    .up{grid-column:2}
+    .left{grid-column:1;grid-row:2}
+    .down{grid-column:2;grid-row:2}
+    .right{grid-column:3;grid-row:2}
+
+    .sidebar{display:grid;gap:14px}
+    .side-card{
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:linear-gradient(145deg,rgba(35,18,53,.94),rgba(18,9,29,.94));
+      box-shadow:0 16px 40px rgba(0,0,0,.22);
+    }
+    .side-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+    }
+    .side-head h2{margin:0;font-size:15px}
+    .side-body{padding:15px 16px}
+    .gold-rule{
+      position:relative;
+      overflow:hidden;
+      padding:14px;
+      border:1px solid rgba(255,212,90,.25);
+      border-radius:14px;
+      background:linear-gradient(135deg,rgba(255,212,90,.11),rgba(124,58,237,.12));
+    }
+    .gold-rule::after{
+      content:"🌸";
+      position:absolute;
+      right:-5px;
+      bottom:-15px;
+      color:var(--gold);
+      filter:sepia(1) saturate(4);
+      opacity:.24;
+      font-size:70px;
+      transform:rotate(-16deg);
+    }
+    .gold-rule strong{position:relative;z-index:1;color:#ffe796}
+    .gold-rule p{
+      position:relative;
+      z-index:1;
+      margin:7px 0 0;
+      color:#d8cadf;
+      font-size:12px;
+      line-height:1.58;
+    }
+    .speed-callout{
+      position:relative;
+      z-index:1;
+      display:inline-flex;
+      margin-top:9px;
+      padding:5px 8px;
+      border-radius:999px;
+      color:#251509;
+      background:linear-gradient(90deg,var(--gold),#fff1a7);
+      font-size:11px;
+      font-weight:950;
+    }
+    .legend{display:grid;gap:9px}
+    .legend-row{
+      display:grid;
+      grid-template-columns:28px minmax(0,1fr) auto;
+      align-items:center;
+      gap:9px;
+      color:#d8cde1;
+      font-size:12px;
+    }
+    .legend-flower{
+      width:25px;
+      height:25px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:color-mix(in srgb,var(--food) 26%,transparent);
+      filter:drop-shadow(0 0 7px var(--food));
+    }
+    .legend-row strong{font-size:11px}
+    .meter-label{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+      color:#cbbdd5;
+      font-size:12px;
+      font-weight:850;
+    }
+    .charge-track{
+      height:10px;
+      display:flex;
+      gap:4px;
+    }
+    .charge-cell{
+      flex:1;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:4px;
+      background:rgba(255,255,255,.05);
+    }
+    .charge-cell.filled{
+      border-color:rgba(255,212,90,.45);
+      background:linear-gradient(90deg,var(--gold-2),var(--gold));
+      box-shadow:0 0 10px rgba(255,212,90,.26);
+    }
+    .record-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .record-box{
+      padding:10px;
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:12px;
+      background:rgba(255,255,255,.04);
+    }
+    .record-box small{display:block;color:#9f90ae;font-size:10px;font-weight:800}
+    .record-box strong{display:block;margin-top:4px;font-size:18px}
+    .other-games{display:grid}
+    .other-game{
+      display:grid;
+      grid-template-columns:36px minmax(0,1fr) auto;
+      align-items:center;
+      gap:10px;
+      padding:11px 16px;
+      border-top:1px solid rgba(255,255,255,.07);
+      transition:.16s ease;
+    }
+    .other-game:first-child{border-top:0}
+    .other-game:hover{background:rgba(255,255,255,.05)}
+    .other-icon{
+      width:36px;
+      height:36px;
+      display:grid;
+      place-items:center;
+      border-radius:11px;
+      background:rgba(255,255,255,.07);
+      font-size:18px;
+    }
+    .other-game strong{display:block;font-size:12px}
+    .other-game small{display:block;margin-top:3px;color:#9789a6;font-size:10px}
+
+    .modal{
+      position:fixed;
+      z-index:100;
+      inset:0;
+      display:grid;
+      place-items:center;
+      padding:18px;
+      background:rgba(5,1,10,.78);
+      backdrop-filter:blur(10px);
+    }
+    .modal-card{
+      width:min(100%,560px);
+      max-height:min(760px,calc(100vh - 36px));
+      overflow:auto;
+      border:1px solid #5f3c78;
+      border-radius:21px;
+      background:linear-gradient(145deg,#28153d,#12091e);
+      box-shadow:0 35px 100px rgba(0,0,0,.65);
+    }
+    .modal-head{
+      position:sticky;
+      z-index:2;
+      top:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:17px 19px;
+      border-bottom:1px solid var(--line);
+      background:rgba(34,17,53,.96);
+      backdrop-filter:blur(10px);
+    }
+    .modal-head h2{margin:0;font-size:19px}
+    .modal-close{
+      width:38px;
+      height:38px;
+      border:0;
+      border-radius:50%;
+      background:#3e2554;
+      cursor:pointer;
+    }
+    .modal-body{display:grid;gap:11px;padding:18px}
+    .instruction{
+      padding:12px 13px;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:13px;
+      background:rgba(255,255,255,.04);
+    }
+    .instruction strong{display:block;margin-bottom:4px;color:#e1c6f8;font-size:13px}
+    .instruction p{margin:0;color:#c8b9d2;font-size:12px;line-height:1.6}
+
+    .toast{
+      position:fixed;
+      z-index:120;
+      left:50%;
+      bottom:24px;
+      max-width:min(420px,calc(100% - 30px));
+      padding:11px 16px;
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:999px;
+      color:white;
+      background:rgba(34,17,53,.95);
+      box-shadow:0 15px 40px rgba(0,0,0,.45);
+      font-size:12px;
+      font-weight:900;
+      transform:translate(-50%,20px);
+      opacity:0;
+      pointer-events:none;
+      transition:.22s ease;
+    }
+    .toast.show{transform:translate(-50%,0);opacity:1}
+
+    @media(max-width:1080px){
+      .layout{grid-template-columns:1fr}
+      .sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .side-card:last-child{grid-column:1/-1}
+    }
+    @media(max-width:700px){
+      .topbar{height:61px}
+      .nav{width:min(calc(100% - 22px),1480px)}
+      .brand-copy small,.wide-label{display:none}
+      .nav-button{padding:0 11px}
+      .page{width:min(calc(100% - 22px),1480px);padding-top:20px}
+      .page-heading{align-items:start;flex-direction:column}
+      .gold-badge{align-self:flex-start}
+      .score-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .score-item:nth-child(2){border-right:0}
+      .score-item:nth-child(-n+2){border-bottom:1px solid var(--line)}
+      .board-zone{padding:7px}
+      .canvas-wrap{border-radius:11px}
+      .status-row{align-items:flex-start;flex-direction:column;gap:7px}
+      .status-copy{width:100%;white-space:normal}
+      .gold-timer{width:100%;justify-content:space-between}
+      .timer-track{flex:1}
+      .control-deck{grid-template-columns:1fr auto;gap:10px;padding:10px}
+      .keyboard-hint{display:none}
+      .dpad{width:136px}
+      .action-buttons{display:grid}
+      .control-button{padding:0 11px}
+      .sidebar{grid-template-columns:1fr}
+      .side-card:last-child{grid-column:auto}
+    }
+    @media(max-width:430px){
+      h1{font-size:31px}
+      .heading-note{font-size:13px}
+      .brand-copy strong{font-size:15px}
+      .score-item{padding:9px 10px}
+      .score-icon{width:30px;height:30px}
+      .score-copy strong{font-size:15px}
+      .control-deck{grid-template-columns:minmax(0,1fr) 127px}
+      .dpad{width:127px;grid-template-columns:repeat(3,39px);grid-template-rows:repeat(2,39px);gap:5px}
+      .control-button{min-height:39px;font-size:12px}
+      .overlay-card{padding:20px 15px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav" aria-label="主選單">
+      <a class="brand" href="../" aria-label="返回復古遊戲大廳">
+        <span class="brand-mark">🐍</span>
+        <span class="brand-copy">
+          <strong>ServerBloom Arcade</strong>
+          <small>復古遊戲大廳</small>
+        </span>
+      </a>
+      <div class="nav-actions">
+        <button class="nav-button icon-button" id="soundButton" type="button" aria-label="切換音效">🔊</button>
+        <button class="nav-button icon-button" id="helpButton" type="button" aria-label="開啟玩法說明">❓</button>
+        <a class="nav-button" href="../"><span>←</span><span class="wide-label">返回大廳</span></a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page">
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">Bloom Snake</p>
+        <h1>櫻花<span class="gradient">貪吃蛇</span></h1>
+        <p class="heading-note">每一節新蛇身都會保留食物顏色：依序吃粉色 → 深紫 → 粉色，就長出粉 → 深紫 → 粉色。累積 5 朵後，金色櫻花會以貪吃蛇 50% 的速度逃開。</p>
+      </div>
+      <div class="gold-badge">🌟 金色櫻花 +10 分・會逃跑</div>
+    </header>
+
+    <div class="layout">
+      <section class="game-shell" aria-label="櫻花貪吃蛇遊戲">
+        <div class="score-strip">
+          <div class="score-item">
+            <span class="score-icon">✦</span>
+            <span class="score-copy"><small>本局分數</small><strong id="scoreText">0</strong></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">🏆</span>
+            <span class="score-copy"><small>最高分</small><strong id="bestScoreText">0</strong></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">🐍</span>
+            <span class="score-copy"><small>蛇身長度</small><strong id="lengthText">4</strong></span>
+          </div>
+          <div class="score-item">
+            <span class="score-icon">⚡</span>
+            <span class="score-copy"><small>目前速度</small><strong id="speedText">1.0×</strong></span>
+          </div>
+        </div>
+
+        <div class="board-zone">
+          <div class="canvas-wrap">
+            <canvas id="gameCanvas" width="720" height="480" aria-label="貪吃蛇遊戲區"></canvas>
+
+            <div class="board-overlay" id="startOverlay">
+              <div class="overlay-card">
+                <span class="overlay-icon">🌸🐍</span>
+                <h2>追上會逃跑的櫻花</h2>
+                <p>每吃一朵，新長出的蛇身就留下那朵花的顏色。每吃 5 朵還會召喚金色櫻花；牠每移動兩格，金櫻花只逃一格。</p>
+                <button class="primary-button" id="startButton" type="button">開始遊戲</button>
+              </div>
+            </div>
+
+            <div class="board-overlay" id="resultOverlay" hidden>
+              <div class="overlay-card">
+                <span class="overlay-icon">🌙</span>
+                <h2 id="resultTitle">遊戲結束</h2>
+                <p id="resultMessage">差一點，再追一次。</p>
+                <div class="result-grid">
+                  <div class="result-cell"><small>分數</small><strong id="resultScore">0</strong></div>
+                  <div class="result-cell"><small>長度</small><strong id="resultLength">4</strong></div>
+                  <div class="result-cell"><small>金櫻花</small><strong id="resultGold">0</strong></div>
+                </div>
+                <button class="primary-button" id="againButton" type="button">再玩一次</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-row" aria-live="polite">
+          <span class="status-copy" id="statusText">方向鍵／WASD 操作，手機可滑動或按方向鍵。</span>
+          <span class="gold-timer" id="goldTimer" hidden>
+            <span>金櫻花剩 <b id="goldSeconds">12.0</b> 秒</span>
+            <span class="timer-track"><span class="timer-fill" id="timerFill"></span></span>
+          </span>
+        </div>
+
+        <div class="control-deck">
+          <div class="action-buttons">
+            <button class="control-button primary" id="newGameButton" type="button">↻ 新遊戲</button>
+            <button class="control-button" id="pauseButton" type="button">⏸ 暫停</button>
+          </div>
+          <div class="keyboard-hint"><b>方向鍵／WASD</b> 移動<br><b>Space</b> 暫停・<b>R</b> 重開</div>
+          <div class="dpad" aria-label="手機方向控制">
+            <button class="up" type="button" data-direction="up" aria-label="向上">↑</button>
+            <button class="left" type="button" data-direction="left" aria-label="向左">←</button>
+            <button class="down" type="button" data-direction="down" aria-label="向下">↓</button>
+            <button class="right" type="button" data-direction="right" aria-label="向右">→</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="side-card">
+          <header class="side-head"><h2>🌟 金色櫻花規則</h2></header>
+          <div class="side-body">
+            <div class="gold-rule">
+              <strong>牠真的會躲你</strong>
+              <p>每吃 5 朵普通花就會出現 12 秒。金櫻花會判斷蛇頭方向，挑選更遠的安全位置逃跑。</p>
+              <span class="speed-callout">逃跑速度＝貪吃蛇 50%</span>
+            </div>
+            <div style="margin-top:14px">
+              <div class="meter-label"><span>金櫻花能量</span><strong id="chargeLabel">0 / 5</strong></div>
+              <div class="charge-track" id="chargeTrack" aria-label="金色櫻花出現進度"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="side-card">
+          <header class="side-head"><h2>🌸 花朵分數</h2></header>
+          <div class="side-body legend">
+            <div class="legend-row">
+              <span class="legend-flower" style="--food:#ff72b6">✿</span>
+              <span>粉色花朵</span><strong>+1</strong>
+            </div>
+            <div class="legend-row">
+              <span class="legend-flower" style="--food:#c7a6ff">✿</span>
+              <span>淡紫花朵</span><strong>+2</strong>
+            </div>
+            <div class="legend-row">
+              <span class="legend-flower" style="--food:#7c3aed">✿</span>
+              <span>深紫花朵</span><strong>+3・長 2 格</strong>
+            </div>
+            <div class="legend-row">
+              <span class="legend-flower" style="--food:#ffd45a">✿</span>
+              <span>金色櫻花</span><strong>+10・長 3 格</strong>
+            </div>
+            <div class="instruction" style="margin-top:5px">
+              <strong>🎨 蛇身會記住顏色</strong>
+              <p>吃粉 → 淡紫 → 深紫，新長出的每一節就會依序顯示粉 → 淡紫 → 深紫。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="side-card">
+          <header class="side-head"><h2>📊 個人紀錄</h2></header>
+          <div class="side-body">
+            <div class="record-grid">
+              <div class="record-box"><small>最高分</small><strong id="recordBestScore">0</strong></div>
+              <div class="record-box"><small>最長蛇身</small><strong id="recordBestLength">4</strong></div>
+              <div class="record-box"><small>抓到金櫻花</small><strong id="recordTotalGold">0</strong></div>
+              <div class="record-box"><small>遊玩局數</small><strong id="recordGames">0</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="side-card">
+          <header class="side-head"><h2>🎮 接著玩</h2></header>
+          <div class="other-games">
+            <a class="other-game" href="../blackjack/">
+              <span class="other-icon">🂡</span>
+              <span><strong>經典 21 點</strong><small>卡牌遊戲</small></span><span>›</span>
+            </a>
+            <a class="other-game" href="../#game=tetris">
+              <span class="other-icon">♦️</span>
+              <span><strong>俄羅斯方塊</strong><small>益智遊戲</small></span><span>›</span>
+            </a>
+            <a class="other-game" href="../#game=game2048">
+              <span class="other-icon">🔢</span>
+              <span><strong>霓虹 2048</strong><small>益智遊戲</small></span><span>›</span>
+            </a>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+    <section class="modal-card">
+      <header class="modal-head">
+        <h2 id="helpTitle">❓ 櫻花貪吃蛇玩法</h2>
+        <button class="modal-close" id="closeHelpButton" type="button" aria-label="關閉說明">✕</button>
+      </header>
+      <div class="modal-body">
+        <div class="instruction">
+          <strong>🎯 遊戲目標</strong>
+          <p>吃下三種彩色花朵增加分數與蛇身長度，避免撞牆或撞到自己的身體。</p>
+        </div>
+        <div class="instruction">
+          <strong>🌸 三種普通花</strong>
+          <p>粉色 +1、淡紫 +2、深紫 +3。每一節新蛇身會永久保留食物顏色；深紫花會連續長出 2 節深紫，其餘普通花長 1 節。</p>
+        </div>
+        <div class="instruction">
+          <strong>🌟 金色櫻花</strong>
+          <p>吃滿 5 朵普通花就會出現。它存在 12 秒，並以蛇 50% 的速度挑選遠離蛇頭的位置；抓到可得 10 分並長 3 格。</p>
+        </div>
+        <div class="instruction">
+          <strong>⌨️ 電腦操作</strong>
+          <p>方向鍵或 W／A／S／D 移動，Space 暫停，R 直接開始新遊戲。蛇不能立刻 180 度回頭。</p>
+        </div>
+        <div class="instruction">
+          <strong>📱 手機操作</strong>
+          <p>直接在遊戲畫面向四個方向滑動，也可以使用下方方向按鈕。</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => [...document.querySelectorAll(selector)];
+    const canvas = $("#gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const COLS = 30;
+    const ROWS = 20;
+    const CELL = 24;
+    const BASE_DELAY = 135;
+    const MIN_DELAY = 72;
+    const GOLD_DURATION = 12000;
+    const PROFILE_KEY = "serverbloom_snake_profile_v2";
+
+    const DIRECTIONS = {
+      up:{x:0,y:-1},
+      down:{x:0,y:1},
+      left:{x:-1,y:0},
+      right:{x:1,y:0}
+    };
+
+    const FOOD_TYPES = [
+      {id:"pink",label:"粉色花朵",color:"#ff72b6",core:"#fff0f8",points:1,grow:1,weight:55},
+      {id:"light",label:"淡紫花朵",color:"#c7a6ff",core:"#f8f1ff",points:2,grow:1,weight:30},
+      {id:"deep",label:"深紫花朵",color:"#7c3aed",core:"#e6d7ff",points:3,grow:2,weight:15}
+    ];
+
+    const defaultProfile = {
+      bestScore:0,
+      bestLength:4,
+      totalGold:0,
+      games:0,
+      sound:true
+    };
+
+    let profile = loadProfile();
+    let snake = [];
+    let direction = {...DIRECTIONS.right};
+    let turnQueue = [];
+    let food = null;
+    let gold = null;
+    let particles = [];
+    let score = 0;
+    let growthColors = [];
+    let segmentColors = [];
+    let goldCharge = 0;
+    let goldCaught = 0;
+    let tickNumber = 0;
+    let running = false;
+    let paused = false;
+    let ended = false;
+    let tickTimer = 0;
+    let touchStart = null;
+    let audioContext = null;
+    let lastFrame = performance.now();
+    let previousFocus = null;
+    let bestAtStart = 0;
+    let pausedAt = 0;
+
+    function loadProfile(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+        const legacyBest = Number(localStorage.getItem("serverbloom_best_snake") || 0);
+        const merged = {...defaultProfile,...saved};
+        merged.bestScore = Math.max(Number(merged.bestScore) || 0,legacyBest);
+        return merged;
+      }catch{
+        return {...defaultProfile};
+      }
+    }
+
+    function saveProfile(){
+      try{
+        localStorage.setItem(PROFILE_KEY,JSON.stringify(profile));
+        localStorage.setItem("serverbloom_best_snake",String(profile.bestScore));
+      }
+      catch{}
+      renderRecords();
+    }
+
+    function formatNumber(value){
+      return Math.max(0,Math.floor(Number(value) || 0)).toLocaleString("zh-TW");
+    }
+
+    function sameCell(a,b){
+      return Boolean(a && b && a.x === b.x && a.y === b.y);
+    }
+
+    function cellKey(point){
+      return `${point.x},${point.y}`;
+    }
+
+    function currentDelay(){
+      return Math.max(MIN_DELAY,BASE_DELAY - Math.floor(score / 8) * 7);
+    }
+
+    function speedMultiplier(){
+      return BASE_DELAY / currentDelay();
+    }
+
+    function isInside(point){
+      return point.x >= 0 && point.x < COLS && point.y >= 0 && point.y < ROWS;
+    }
+
+    function isSnakeCell(point,body=snake){
+      return body.some(part => sameCell(part,point));
+    }
+
+    function randomEmptyCell(options={}){
+      const blocked = new Set(snake.map(cellKey));
+      if(food && !options.ignoreFood) blocked.add(cellKey(food));
+      if(gold && !options.ignoreGold) blocked.add(cellKey(gold));
+
+      const candidates = [];
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          const point = {x,y};
+          if(blocked.has(cellKey(point))) continue;
+          if(options.minDistance && snake[0]){
+            const distance = Math.abs(x-snake[0].x)+Math.abs(y-snake[0].y);
+            if(distance < options.minDistance) continue;
+          }
+          candidates.push(point);
+        }
+      }
+      if(!candidates.length) return null;
+      return candidates[Math.floor(Math.random()*candidates.length)];
+    }
+
+    function chooseFoodType(){
+      const roll = Math.random()*100;
+      let cursor = 0;
+      for(const type of FOOD_TYPES){
+        cursor += type.weight;
+        if(roll < cursor) return type;
+      }
+      return FOOD_TYPES[0];
+    }
+
+    function spawnFood(){
+      const point = randomEmptyCell({ignoreFood:true});
+      food = point ? {...point,type:chooseFoodType()} : null;
+    }
+
+    function spawnGold(){
+      const point = randomEmptyCell({ignoreGold:true,minDistance:8}) || randomEmptyCell({ignoreGold:true});
+      if(!point) return;
+      gold = {
+        ...point,
+        bornAt:performance.now(),
+        expiresAt:performance.now()+GOLD_DURATION
+      };
+      goldCharge = 0;
+      setStatus("🌟 金色櫻花出現了！牠正以你 50% 的速度逃跑。","gold");
+      playTone(760,.12,"triangle",.035);
+      setTimeout(()=>playTone(980,.12,"triangle",.028),90);
+      burst(point.x,point.y,"#ffd45a",18);
+      renderCharge();
+    }
+
+    function openNeighbors(point,blocked){
+      return Object.values(DIRECTIONS).filter(step => {
+        const next = {x:point.x+step.x,y:point.y+step.y};
+        return isInside(next) && !blocked.has(cellKey(next));
+      }).length;
+    }
+
+    function moveGold(approachingHead){
+      if(!gold) return;
+      const blocked = new Set(snake.map(cellKey));
+      blocked.add(cellKey(approachingHead));
+      if(food) blocked.add(cellKey(food));
+
+      const choices = Object.values(DIRECTIONS)
+        .map(step => ({x:gold.x+step.x,y:gold.y+step.y}))
+        .filter(point => isInside(point) && !blocked.has(cellKey(point)));
+
+      if(!choices.length) return;
+
+      choices.sort((a,b) => {
+        const distanceA = Math.abs(a.x-approachingHead.x)+Math.abs(a.y-approachingHead.y);
+        const distanceB = Math.abs(b.x-approachingHead.x)+Math.abs(b.y-approachingHead.y);
+        const freedomA = openNeighbors(a,blocked);
+        const freedomB = openNeighbors(b,blocked);
+        const wallA = Math.min(a.x,COLS-1-a.x,a.y,ROWS-1-a.y);
+        const wallB = Math.min(b.x,COLS-1-b.x,b.y,ROWS-1-b.y);
+        return (distanceB*12+freedomB*3+wallB*.35+Math.random()) -
+               (distanceA*12+freedomA*3+wallA*.35+Math.random());
+      });
+
+      const old = {x:gold.x,y:gold.y};
+      gold.x = choices[0].x;
+      gold.y = choices[0].y;
+      particles.push({
+        x:old.x*CELL+CELL/2,
+        y:old.y*CELL+CELL/2,
+        vx:(Math.random()-.5)*18,
+        vy:(Math.random()-.5)*18,
+        life:.45,
+        maxLife:.45,
+        color:"#ffd45a",
+        size:2.4
+      });
+    }
+
+    function resetState(){
+      clearTimeout(tickTimer);
+      snake = [
+        {x:8,y:10},
+        {x:7,y:10},
+        {x:6,y:10},
+        {x:5,y:10}
+      ];
+      direction = {...DIRECTIONS.right};
+      turnQueue = [];
+      food = null;
+      gold = null;
+      particles = [];
+      score = 0;
+      growthColors = [];
+      segmentColors = ["#ff72b6","#c7a6ff","#7c3aed","#ff72b6"];
+      goldCharge = 0;
+      goldCaught = 0;
+      tickNumber = 0;
+      running = false;
+      paused = false;
+      ended = false;
+      pausedAt = 0;
+      spawnFood();
+      renderStats();
+      renderCharge();
+      updateGoldTimer(performance.now());
+      $("#pauseButton").textContent = "⏸ 暫停";
+      setStatus("方向鍵／WASD 操作，手機可滑動或按方向鍵。");
+    }
+
+    function startGame(){
+      resetState();
+      $("#startOverlay").hidden = true;
+      $("#resultOverlay").hidden = true;
+      running = true;
+      bestAtStart = profile.bestScore;
+      profile.games++;
+      saveProfile();
+      setStatus("開始！先吃彩色花朵，累積 5 朵召喚金色櫻花。");
+      playTone(520,.08,"triangle",.025);
+      scheduleTick();
+    }
+
+    function scheduleTick(){
+      clearTimeout(tickTimer);
+      if(!running || paused || ended) return;
+      tickTimer = window.setTimeout(gameTick,currentDelay());
+    }
+
+    function gameTick(){
+      if(!running || paused || ended) return;
+      tickNumber++;
+
+      if(turnQueue.length) direction = turnQueue.shift();
+      const nextHead = {
+        x:snake[0].x+direction.x,
+        y:snake[0].y+direction.y
+      };
+
+      const now = performance.now();
+      if(gold && now >= gold.expiresAt){
+        burst(gold.x,gold.y,"#b99c63",12);
+        gold = null;
+        setStatus("金色櫻花逃走了。再吃 5 朵普通花，就能重新召喚。");
+      }else if(gold && tickNumber % 2 === 0 && !sameCell(nextHead,gold)){
+        moveGold(nextHead);
+      }
+
+      const eatsFood = sameCell(nextHead,food);
+      const eatsGold = sameCell(nextHead,gold);
+      const willGrow = growthColors.length > 0 || eatsFood || eatsGold;
+      const collisionBody = willGrow ? snake : snake.slice(0,-1);
+
+      if(!isInside(nextHead) || isSnakeCell(nextHead,collisionBody)){
+        endGame(!isInside(nextHead) ? "撞到花園邊界了" : "撞到自己的蛇身了");
+        return;
+      }
+
+      snake.unshift(nextHead);
+      const newlyEatenColors = [];
+      let profileDirty = false;
+
+      if(eatsFood && food){
+        const eaten = food;
+        score += eaten.type.points;
+        for(let index=0;index<eaten.type.grow;index++) newlyEatenColors.push(eaten.type.color);
+        goldCharge = Math.min(5,goldCharge+1);
+        burst(eaten.x,eaten.y,eaten.type.color,14);
+        playFoodTone(eaten.type);
+        setStatus(`${eaten.type.label} +${eaten.type.points} 分`);
+        spawnFood();
+        if(goldCharge >= 5 && !gold) spawnGold();
+      }
+
+      if(eatsGold && gold){
+        score += 10;
+        for(let index=0;index<3;index++) newlyEatenColors.push("#ffd45a");
+        goldCaught++;
+        profile.totalGold++;
+        profileDirty = true;
+        burst(gold.x,gold.y,"#ffd45a",30);
+        gold = null;
+        setStatus("✨ 抓到金色櫻花！+10 分、蛇身 +3");
+        playGoldCatchSound();
+      }
+
+      growthColors.push(...newlyEatenColors);
+      if(growthColors.length){
+        segmentColors.push(growthColors.shift());
+      }else{
+        snake.pop();
+      }
+
+      const nextBestScore = Math.max(profile.bestScore,score);
+      const nextBestLength = Math.max(profile.bestLength,snake.length);
+      if(nextBestScore !== profile.bestScore || nextBestLength !== profile.bestLength){
+        profile.bestScore = nextBestScore;
+        profile.bestLength = nextBestLength;
+        profileDirty = true;
+      }
+      if(profileDirty) saveProfile();
+      renderStats();
+      renderCharge();
+      updateGoldTimer(performance.now());
+      scheduleTick();
+    }
+
+    function endGame(reason){
+      running = false;
+      paused = false;
+      ended = true;
+      clearTimeout(tickTimer);
+      profile.bestScore = Math.max(profile.bestScore,score);
+      profile.bestLength = Math.max(profile.bestLength,snake.length);
+      saveProfile();
+
+      $("#resultTitle").textContent = score > bestAtStart ? "新的花園紀錄！" : "遊戲結束";
+      $("#resultMessage").textContent = `${reason}。這次得到 ${formatNumber(score)} 分。`;
+      $("#resultScore").textContent = formatNumber(score);
+      $("#resultLength").textContent = formatNumber(snake.length);
+      $("#resultGold").textContent = formatNumber(goldCaught);
+      $("#resultOverlay").hidden = false;
+      $("#pauseButton").textContent = "⏸ 暫停";
+      setStatus(`${reason}，按「再玩一次」重新挑戰。`);
+      playTone(165,.24,"sawtooth",.02);
+    }
+
+    function queueTurn(name){
+      if(!DIRECTIONS[name]) return;
+      const candidate = DIRECTIONS[name];
+      const last = turnQueue.length ? turnQueue[turnQueue.length-1] : direction;
+      if(candidate.x === last.x && candidate.y === last.y) return;
+      if(candidate.x === -last.x && candidate.y === -last.y) return;
+      if(turnQueue.length < 2) turnQueue.push({...candidate});
+    }
+
+    function togglePause(force){
+      if(!running || ended) return;
+      paused = typeof force === "boolean" ? force : !paused;
+      $("#pauseButton").textContent = paused ? "▶ 繼續" : "⏸ 暫停";
+      if(paused){
+        pausedAt = performance.now();
+        clearTimeout(tickTimer);
+        setStatus("遊戲已暫停。按 Space 或「繼續」回到花園。");
+      }else{
+        const pauseDuration = Math.max(0,performance.now()-pausedAt);
+        if(gold) gold.expiresAt += pauseDuration;
+        pausedAt = 0;
+        setStatus("繼續追花！金色櫻花每兩步逃一格。");
+        scheduleTick();
+      }
+    }
+
+    function setStatus(message,tone="normal"){
+      const element = $("#statusText");
+      element.textContent = message;
+      element.style.color = tone === "gold" ? "#ffe694" : "";
+      clearTimeout(setStatus.timer);
+      if(tone === "gold"){
+        setStatus.timer = setTimeout(()=>{element.style.color=""},1800);
+      }
+    }
+
+    function renderStats(){
+      $("#scoreText").textContent = formatNumber(score);
+      $("#bestScoreText").textContent = formatNumber(profile.bestScore);
+      $("#lengthText").textContent = formatNumber(snake.length || 4);
+      $("#speedText").textContent = `${speedMultiplier().toFixed(1)}×`;
+      renderRecords();
+    }
+
+    function renderRecords(){
+      $("#recordBestScore").textContent = formatNumber(profile.bestScore);
+      $("#recordBestLength").textContent = formatNumber(profile.bestLength);
+      $("#recordTotalGold").textContent = formatNumber(profile.totalGold);
+      $("#recordGames").textContent = formatNumber(profile.games);
+      $("#soundButton").textContent = profile.sound ? "🔊" : "🔇";
+      $("#soundButton").setAttribute("aria-label",profile.sound ? "關閉音效" : "開啟音效");
+    }
+
+    function renderCharge(){
+      $("#chargeLabel").textContent = `${gold ? 5 : goldCharge} / 5`;
+      $("#chargeTrack").innerHTML = Array.from({length:5},(_,index) =>
+        `<span class="charge-cell ${index < (gold ? 5 : goldCharge) ? "filled" : ""}"></span>`
+      ).join("");
+    }
+
+    function updateGoldTimer(now){
+      if(!gold){
+        $("#goldTimer").hidden = true;
+        return;
+      }
+      const remaining = Math.max(0,gold.expiresAt-now);
+      $("#goldTimer").hidden = false;
+      $("#goldSeconds").textContent = (remaining/1000).toFixed(1);
+      $("#timerFill").style.width = `${remaining/GOLD_DURATION*100}%`;
+    }
+
+    function burst(gridX,gridY,color,count){
+      const centerX = gridX*CELL+CELL/2;
+      const centerY = gridY*CELL+CELL/2;
+      for(let index=0;index<count;index++){
+        const angle = Math.random()*Math.PI*2;
+        const speed = 25+Math.random()*75;
+        particles.push({
+          x:centerX,
+          y:centerY,
+          vx:Math.cos(angle)*speed,
+          vy:Math.sin(angle)*speed,
+          life:.55+Math.random()*.35,
+          maxLife:.9,
+          color,
+          size:1.8+Math.random()*3
+        });
+      }
+    }
+
+    function roundedRect(context,x,y,width,height,radius){
+      const r = Math.min(radius,width/2,height/2);
+      context.beginPath();
+      context.moveTo(x+r,y);
+      context.arcTo(x+width,y,x+width,y+height,r);
+      context.arcTo(x+width,y+height,x,y+height,r);
+      context.arcTo(x,y+height,x,y,r);
+      context.arcTo(x,y,x+width,y,r);
+      context.closePath();
+    }
+
+    function drawBackground(time){
+      const gradient = ctx.createRadialGradient(360,60,10,360,240,470);
+      gradient.addColorStop(0,"#221035");
+      gradient.addColorStop(.55,"#100719");
+      gradient.addColorStop(1,"#08030e");
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+
+      ctx.strokeStyle = "rgba(221,186,255,.055)";
+      ctx.lineWidth = 1;
+      for(let x=0;x<=COLS;x++){
+        ctx.beginPath();
+        ctx.moveTo(x*CELL+.5,0);
+        ctx.lineTo(x*CELL+.5,canvas.height);
+        ctx.stroke();
+      }
+      for(let y=0;y<=ROWS;y++){
+        ctx.beginPath();
+        ctx.moveTo(0,y*CELL+.5);
+        ctx.lineTo(canvas.width,y*CELL+.5);
+        ctx.stroke();
+      }
+
+      for(let index=0;index<24;index++){
+        const x = (index*137+31)%canvas.width;
+        const y = (index*83+57)%canvas.height;
+        const alpha = .08+Math.sin(time*.0015+index)*.035;
+        ctx.fillStyle = `rgba(255,196,229,${alpha})`;
+        ctx.beginPath();
+        ctx.arc(x,y,1.1+(index%3)*.4,0,Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    function drawFlower(point,color,core,size,time,golden=false){
+      if(!point) return;
+      const x = point.x*CELL+CELL/2;
+      const y = point.y*CELL+CELL/2;
+      const pulse = 1+Math.sin(time*.006+(point.x+point.y))*.08;
+
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(time*.00045+(point.x-point.y)*.08);
+      ctx.scale(pulse,pulse);
+      ctx.shadowColor = color;
+      ctx.shadowBlur = golden ? 22 : 13;
+      ctx.fillStyle = color;
+
+      for(let petal=0;petal<5;petal++){
+        ctx.save();
+        ctx.rotate(petal*Math.PI*2/5);
+        ctx.beginPath();
+        ctx.ellipse(0,-size*.48,size*.31,size*.56,0,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.shadowBlur = golden ? 16 : 7;
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(0,0,size*.28,0,Math.PI*2);
+      ctx.fill();
+
+      if(golden){
+        ctx.strokeStyle = "rgba(255,249,190,.9)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(0,0,size*1.02,0,Math.PI*2);
+        ctx.stroke();
+        for(let sparkle=0;sparkle<3;sparkle++){
+          const angle = time*.0018+sparkle*Math.PI*2/3;
+          ctx.fillStyle = "#fff6b8";
+          ctx.beginPath();
+          ctx.arc(Math.cos(angle)*size*1.25,Math.sin(angle)*size*1.25,1.5,0,Math.PI*2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawSnake(){
+      snake.slice().reverse().forEach((part,reverseIndex) => {
+        const index = snake.length-1-reverseIndex;
+        const isHead = index === 0;
+        const segmentColor = segmentColors[index] || "#c7a6ff";
+        const x = part.x*CELL+2.5;
+        const y = part.y*CELL+2.5;
+        const size = CELL-5;
+
+        ctx.save();
+        ctx.shadowColor = segmentColor;
+        ctx.shadowBlur = isHead ? 15 : 6;
+        ctx.fillStyle = segmentColor;
+        roundedRect(ctx,x,y,size,size,isHead ? 8 : 6);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(255,255,255,.16)";
+        roundedRect(ctx,x+3,y+3,size-6,4,2);
+        ctx.fill();
+
+        if(isHead){
+          ctx.shadowBlur = 0;
+          const perpendicular = {x:-direction.y,y:direction.x};
+          const forward = direction;
+          for(const side of [-1,1]){
+            const eyeX = part.x*CELL+CELL/2+forward.x*4+perpendicular.x*side*4.6;
+            const eyeY = part.y*CELL+CELL/2+forward.y*4+perpendicular.y*side*4.6;
+            ctx.fillStyle = "#fff";
+            ctx.beginPath();
+            ctx.arc(eyeX,eyeY,2.7,0,Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#281137";
+            ctx.beginPath();
+            ctx.arc(eyeX+forward.x*.8,eyeY+forward.y*.8,1.25,0,Math.PI*2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      });
+    }
+
+    function drawParticles(delta){
+      particles = particles.filter(particle => {
+        particle.life -= delta;
+        if(particle.life <= 0) return false;
+        particle.x += particle.vx*delta;
+        particle.y += particle.vy*delta;
+        particle.vx *= .97;
+        particle.vy *= .97;
+        const alpha = Math.min(1,particle.life/particle.maxLife);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = particle.color;
+        ctx.beginPath();
+        ctx.arc(particle.x,particle.y,particle.size*alpha,0,Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        return true;
+      });
+    }
+
+    function drawPause(){
+      if(!paused || ended) return;
+      ctx.fillStyle = "rgba(7,2,12,.56)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#fff5ff";
+      ctx.font = "900 36px Inter, sans-serif";
+      ctx.fillText("遊戲暫停",canvas.width/2,canvas.height/2-10);
+      ctx.fillStyle = "#cbbad8";
+      ctx.font = "700 15px Inter, sans-serif";
+      ctx.fillText("按 Space 或下方按鈕繼續",canvas.width/2,canvas.height/2+28);
+    }
+
+    function renderFrame(now){
+      const delta = Math.min(.04,(now-lastFrame)/1000 || 0);
+      lastFrame = now;
+      drawBackground(now);
+      if(food) drawFlower(food,food.type.color,food.type.core,9,now,false);
+      if(gold) drawFlower(gold,"#ffd45a","#fff6bd",10.5,now,true);
+      drawSnake();
+      drawParticles(delta);
+      drawPause();
+      updateGoldTimer(now);
+      requestAnimationFrame(renderFrame);
+    }
+
+    function ensureAudio(){
+      if(!profile.sound) return null;
+      if(!audioContext){
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if(AudioContext) audioContext = new AudioContext();
+      }
+      if(audioContext?.state === "suspended") audioContext.resume();
+      return audioContext;
+    }
+
+    function playTone(frequency,duration,type="sine",volume=.025,delay=0){
+      const audio = ensureAudio();
+      if(!audio) return;
+      const start = audio.currentTime+delay;
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency,start);
+      gain.gain.setValueAtTime(0,start);
+      gain.gain.linearRampToValueAtTime(volume,start+.008);
+      gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+      oscillator.connect(gain);
+      gain.connect(audio.destination);
+      oscillator.start(start);
+      oscillator.stop(start+duration+.02);
+    }
+
+    function playFoodTone(type){
+      const frequencies = {pink:470,light:570,deep:680};
+      playTone(frequencies[type.id] || 500,.09,"triangle",.027);
+    }
+
+    function playGoldCatchSound(){
+      [660,830,1040].forEach((frequency,index) =>
+        playTone(frequency,.18,"triangle",.035,index*.075)
+      );
+    }
+
+    function showToast(message){
+      const toast = $("#toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(()=>toast.classList.remove("show"),1700);
+    }
+
+    function openHelp(){
+      previousFocus = document.activeElement;
+      $("#helpModal").hidden = false;
+      document.body.classList.add("modal-open");
+      $("#closeHelpButton").focus();
+      if(running && !paused) togglePause(true);
+    }
+
+    function closeHelp(){
+      $("#helpModal").hidden = true;
+      document.body.classList.remove("modal-open");
+      if(previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
+    }
+
+    $("#startButton").addEventListener("click",startGame);
+    $("#againButton").addEventListener("click",startGame);
+    $("#newGameButton").addEventListener("click",startGame);
+    $("#pauseButton").addEventListener("click",()=>togglePause());
+    $("#helpButton").addEventListener("click",openHelp);
+    $("#closeHelpButton").addEventListener("click",closeHelp);
+    $("#helpModal").addEventListener("click",event => {
+      if(event.target === $("#helpModal")) closeHelp();
+    });
+    $("#soundButton").addEventListener("click",() => {
+      profile.sound = !profile.sound;
+      saveProfile();
+      if(profile.sound) playTone(560,.09,"triangle",.03);
+      showToast(profile.sound ? "遊戲音效已開啟" : "遊戲音效已關閉");
+    });
+
+    $$(".dpad button").forEach(button => {
+      button.addEventListener("pointerdown",event => {
+        event.preventDefault();
+        queueTurn(button.dataset.direction);
+      });
+    });
+
+    document.addEventListener("keydown",event => {
+      if(!$("#helpModal").hidden){
+        if(event.key === "Escape") closeHelp();
+        return;
+      }
+      const keyMap = {
+        ArrowUp:"up",w:"up",W:"up",
+        ArrowDown:"down",s:"down",S:"down",
+        ArrowLeft:"left",a:"left",A:"left",
+        ArrowRight:"right",d:"right",D:"right"
+      };
+      if(keyMap[event.key]){
+        event.preventDefault();
+        queueTurn(keyMap[event.key]);
+      }else if(event.code === "Space"){
+        event.preventDefault();
+        togglePause();
+      }else if(event.key === "r" || event.key === "R"){
+        event.preventDefault();
+        startGame();
+      }
+    });
+
+    canvas.addEventListener("touchstart",event => {
+      const touch = event.changedTouches[0];
+      touchStart = {x:touch.clientX,y:touch.clientY};
+    },{passive:true});
+
+    canvas.addEventListener("touchend",event => {
+      if(!touchStart) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX-touchStart.x;
+      const dy = touch.clientY-touchStart.y;
+      touchStart = null;
+      if(Math.max(Math.abs(dx),Math.abs(dy)) < 18) return;
+      queueTurn(Math.abs(dx)>Math.abs(dy)
+        ? (dx>0 ? "right" : "left")
+        : (dy>0 ? "down" : "up"));
+    },{passive:true});
+
+    document.addEventListener("visibilitychange",() => {
+      if(document.hidden && running && !paused) togglePause(true);
+    });
+
+    resetState();
+    renderRecords();
+    requestAnimationFrame(renderFrame);
+  </script>
+</body>
+</html>
