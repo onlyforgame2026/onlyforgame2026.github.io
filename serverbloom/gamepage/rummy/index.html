@@ -245,6 +245,15 @@ button{font:inherit;color:inherit}
   color:#7c43da;
   background:linear-gradient(145deg,#fff,#e7dcff);
 }
+.tile.pending-joker{
+  border-color:#ffd86b;
+  box-shadow:0 0 0 3px rgba(255,216,107,.28),0 0 24px rgba(255,216,107,.48);
+  animation:jokerPulse 1s ease-in-out infinite alternate;
+}
+@keyframes jokerPulse{
+  from{transform:translateY(-9px) scale(1)}
+  to{transform:translateY(-13px) scale(1.04)}
+}
 .controls{
   display:flex;
   flex-wrap:wrap;
@@ -369,6 +378,7 @@ button{font:inherit;color:inherit}
       <button class="btn" id="draw">抽一張並結束回合</button>
       <button class="btn" id="sortColor">依顏色排序</button>
       <button class="btn" id="sortNumber">依數字排序</button>
+      <button class="btn" id="undoJoker" disabled>復原 Joker 替換</button>
       <button class="btn" id="newGame">重新洗牌</button>
     </div>
   </section>
@@ -389,6 +399,10 @@ button{font:inherit;color:inherit}
     <div class="rule">
       <strong>破冰規則</strong>
       每位玩家第一次成功出牌，牌面總和必須達到 30 分。
+    </div>
+    <div class="rule">
+      <strong>Joker 二次移動</strong>
+      用正確手牌替換場上 Joker 後，必須在同一回合把 Joker 放進另一個合法牌組。
     </div>
   </div>
 </main>
@@ -428,6 +442,7 @@ let round = 1;
 let playerTurn = true;
 let gameOver = false;
 let aiActing = -1;
+let pendingJokerMove = null;
 
 function shuffle(array){
   for(let i=array.length-1;i>0;i--){
@@ -469,7 +484,7 @@ function tileHTML(tile,selectable=false){
   const disabled = selectable && (!playerTurn || gameOver) ? "disabled" : "";
   return `
     <button
-      class="tile ${tile.joker?"joker":tile.color} ${selected.has(tile.uid)?"selected":""}"
+      class="tile ${tile.joker?"joker":tile.color} ${selected.has(tile.uid)?"selected":""} ${pendingJokerMove?.joker.uid===tile.uid?"pending-joker":""}"
       data-id="${tile.uid}"
       type="button"
       ${selectable?"":"tabindex=\"-1\""}
@@ -685,6 +700,16 @@ function render(){
             >
               ＋ 加入選取的牌
             </button>
+            ${group.tiles.some(tile=>tile.joker)?`
+              <button
+                class="group-add"
+                type="button"
+                data-replace-joker="${index}"
+                ${!playerTurn||gameOver||!opened||pendingJokerMove?"disabled":""}
+              >
+                ♻ 用手牌替換 Joker
+              </button>
+            `:""}
           </div>
         </div>
       `).join("")
@@ -709,9 +734,10 @@ function render(){
 
   const disabled=!playerTurn||gameOver;
   $("#play").disabled=disabled;
-  $("#draw").disabled=disabled;
+  $("#draw").disabled=disabled||Boolean(pendingJokerMove);
   $("#sortColor").disabled=gameOver;
   $("#sortNumber").disabled=gameOver;
+  $("#undoJoker").disabled=!pendingJokerMove||gameOver;
 }
 
 function finishGame(winnerName,isHuman=false,aiIndex=-1){
@@ -786,6 +812,97 @@ async function runAiTurns(){
   render();
 }
 
+function replaceTableJoker(groupIndex){
+  if(!playerTurn||gameOver)return;
+
+  if(!opened){
+    setMessage("你必須先完成 30 分破冰，才能移動場上的 Joker。","bad");
+    return;
+  }
+
+  if(pendingJokerMove){
+    setMessage("你已經拿出一張 Joker，請先把它重新出牌或按「復原 Joker 替換」。","bad");
+    return;
+  }
+
+  const replacementTiles=selectedTiles();
+
+  if(replacementTiles.length!==1||replacementTiles[0].joker){
+    setMessage("請先只選取 1 張普通手牌，用它替換場上的 Joker。","bad");
+    return;
+  }
+
+  const group=groups[groupIndex];
+  if(!group){
+    setMessage("找不到這組桌面牌。","bad");
+    return;
+  }
+
+  const jokerIndex=group.tiles.findIndex(tile=>tile.joker);
+  if(jokerIndex<0){
+    setMessage("這個牌組裡沒有 Joker。","bad");
+    return;
+  }
+
+  const replacementTile=replacementTiles[0];
+  const joker=group.tiles[jokerIndex];
+  const candidate=group.tiles.map((tile,index)=>
+    index===jokerIndex?replacementTile:tile
+  );
+  const analysis=analyzeGroup(candidate);
+
+  if(!analysis){
+    setMessage("這張牌不能取代該 Joker；替換後必須仍是合法順組或同數字組。","bad");
+    return;
+  }
+
+  pendingJokerMove={
+    joker,
+    replacementTile,
+    groupIndex,
+    previousGroup:{
+      owner:group.owner,
+      tiles:[...group.tiles],
+      analysis:{...group.analysis}
+    }
+  };
+
+  group.tiles=sortGroupTiles(candidate,analysis);
+  group.analysis=analysis;
+  group.owner=`${group.owner}＋你替換 Joker`;
+
+  hand=hand.filter(tile=>tile.uid!==replacementTile.uid);
+  hand.push(joker);
+  selected=new Set([joker.uid]);
+
+  setMessage(
+    `Joker 已被取出並自動選取。請在同一回合把它加入另一個合法牌組，不能抽牌結束回合。`,
+    "good"
+  );
+  render();
+}
+
+function undoJokerReplacement(){
+  if(!pendingJokerMove||gameOver)return;
+
+  const {joker,replacementTile,groupIndex,previousGroup}=pendingJokerMove;
+  const group=groups[groupIndex];
+
+  if(group){
+    group.owner=previousGroup.owner;
+    group.tiles=[...previousGroup.tiles];
+    group.analysis={...previousGroup.analysis};
+  }
+
+  hand=hand.filter(tile=>tile.uid!==joker.uid);
+  hand.push(replacementTile);
+  selected.clear();
+  pendingJokerMove=null;
+
+  setMessage("已復原 Joker 替換，桌面與手牌回到替換前狀態。");
+  sortBy("number");
+}
+
 function extendTableGroup(groupIndex){
   if(!playerTurn||gameOver)return;
 
@@ -798,6 +915,11 @@ function extendTableGroup(groupIndex){
 
   if(!tiles.length){
     setMessage("請先在你的牌架選取要加入的牌。","bad");
+    return;
+  }
+
+  if(pendingJokerMove&&!tiles.some(tile=>tile.uid===pendingJokerMove.joker.uid)){
+    setMessage("你已取出場上 Joker，這次出牌必須包含該 Joker。","bad");
     return;
   }
 
@@ -822,6 +944,10 @@ function extendTableGroup(groupIndex){
 
   hand=hand.filter(tile=>!selected.has(tile.uid));
   selected.clear();
+
+  if(pendingJokerMove){
+    pendingJokerMove=null;
+  }
 
   const addedValue=Math.max(
     tiles.reduce((sum,tile)=>sum+(tile.joker?0:tile.number),0),
@@ -850,6 +976,12 @@ function submitGroup(){
   if(!playerTurn||gameOver)return;
 
   const tiles=selectedTiles();
+
+  if(pendingJokerMove&&!tiles.some(tile=>tile.uid===pendingJokerMove.joker.uid)){
+    setMessage("你已取出場上 Joker，這次出牌必須包含該 Joker。","bad");
+    return;
+  }
+
   const analysis=analyzeGroup(tiles);
 
   if(!analysis){
@@ -872,6 +1004,10 @@ function submitGroup(){
   hand=hand.filter(tile=>!selected.has(tile.uid));
   selected.clear();
 
+  if(pendingJokerMove){
+    pendingJokerMove=null;
+  }
+
   score+=analysis.value+tiles.length*10;
   localStorage.setItem(
     BEST_KEY,
@@ -891,6 +1027,11 @@ function submitGroup(){
 
 function drawAndEndTurn(){
   if(!playerTurn||gameOver)return;
+
+  if(pendingJokerMove){
+    setMessage("你已取出場上 Joker，必須先把它重新放入合法牌組，或按「復原 Joker 替換」。","bad");
+    return;
+  }
 
   selected.clear();
 
@@ -934,6 +1075,7 @@ function start(){
   playerTurn=true;
   gameOver=false;
   aiActing=-1;
+  pendingJokerMove=null;
   $("#overlay").hidden=true;
 
   drawTo(hand,14);
@@ -966,15 +1108,23 @@ $("#rack").addEventListener("click",event=>{
 });
 
 $("#table").addEventListener("click",event=>{
-  const button=event.target.closest("[data-extend-group]");
-  if(!button)return;
-  extendTableGroup(Number(button.dataset.extendGroup));
+  const replaceButton=event.target.closest("[data-replace-joker]");
+  if(replaceButton){
+    replaceTableJoker(Number(replaceButton.dataset.replaceJoker));
+    return;
+  }
+
+  const extendButton=event.target.closest("[data-extend-group]");
+  if(extendButton){
+    extendTableGroup(Number(extendButton.dataset.extendGroup));
+  }
 });
 
 $("#play").addEventListener("click",submitGroup);
 $("#draw").addEventListener("click",drawAndEndTurn);
 $("#sortColor").addEventListener("click",()=>sortBy("color"));
 $("#sortNumber").addEventListener("click",()=>sortBy("number"));
+$("#undoJoker").addEventListener("click",undoJokerReplacement);
 $("#newGame").addEventListener("click",start);
 $("#overlayRestart").addEventListener("click",start);
 
