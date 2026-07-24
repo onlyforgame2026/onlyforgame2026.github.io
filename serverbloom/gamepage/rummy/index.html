@@ -12,6 +12,7 @@
   --pink:#ff77ad;
   --violet:#9b6cff;
   --green:#46db97;
+  --yellow:#ffd66b;
   --panel:#151125;
   --line:#392f53;
 }
@@ -26,10 +27,11 @@ body{
     #090711;
 }
 button{font:inherit;color:inherit}
+button:focus-visible{outline:3px solid rgba(255,119,173,.45);outline-offset:2px}
 .top{
   position:sticky;
   top:0;
-  z-index:20;
+  z-index:30;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -49,16 +51,16 @@ button{font:inherit;color:inherit}
   background:#171321;
 }
 .wrap{
-  width:min(1240px,calc(100% - 24px));
+  width:min(1360px,calc(100% - 24px));
   margin:auto;
-  padding:24px 0 60px;
+  padding:24px 0 64px;
 }
 .hero h1{
   margin:0;
   font-size:clamp(30px,5vw,54px);
 }
 .hero p{
-  max-width:900px;
+  max-width:1050px;
   color:#c4b9d0;
   line-height:1.7;
 }
@@ -75,6 +77,19 @@ button{font:inherit;color:inherit}
   background:#171321;
   font-weight:800;
 }
+.turn-pill{
+  border-color:#ff77ad;
+  box-shadow:0 0 18px rgba(255,119,173,.2);
+}
+.start-draw{
+  margin:0 0 14px;
+  padding:11px 14px;
+  border:1px solid #4a3b5e;
+  border-radius:14px;
+  color:#d9cadf;
+  background:#120e1b;
+  line-height:1.6;
+}
 .ai-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -84,7 +99,7 @@ button{font:inherit;color:inherit}
 .ai-card{
   position:relative;
   overflow:hidden;
-  min-height:112px;
+  min-height:118px;
   padding:14px;
   border:1px solid var(--line);
   border-radius:16px;
@@ -133,8 +148,18 @@ button{font:inherit;color:inherit}
   margin:0 0 12px;
   font-size:19px;
 }
+.panel-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.panel-title small{
+  color:#9c8ea8;
+  font-weight:700;
+}
 .message{
-  min-height:50px;
+  min-height:52px;
   display:flex;
   align-items:center;
   padding:11px 14px;
@@ -142,6 +167,7 @@ button{font:inherit;color:inherit}
   border-radius:12px;
   color:#eadff1;
   background:#0f0c19;
+  line-height:1.55;
 }
 .message.good{border-color:#3bd98b}
 .message.bad{border-color:#ff637f}
@@ -149,22 +175,32 @@ button{font:inherit;color:inherit}
 .table-groups{
   display:flex;
   flex-wrap:wrap;
+  align-items:flex-start;
   gap:12px;
-  min-height:94px;
+  min-height:110px;
 }
 .group{
-  min-width:120px;
-  padding:9px;
+  min-width:148px;
+  padding:10px;
   border:1px solid #493e60;
-  border-radius:13px;
+  border-radius:14px;
   background:#0e0b17;
+  transition:.18s ease;
+}
+.group.invalid{
+  border-color:#ff637f;
+  box-shadow:0 0 0 2px rgba(255,99,127,.13);
+}
+.group.valid{
+  border-color:#3f6e61;
 }
 .group-label{
-  margin:0 0 7px;
+  margin:0 0 8px;
   color:#aa9bb8;
   font-size:11px;
   font-weight:900;
 }
+.group.invalid .group-label{color:#ff8da1}
 .group-tiles{
   display:flex;
   flex-wrap:wrap;
@@ -172,10 +208,12 @@ button{font:inherit;color:inherit}
 }
 .group-actions{
   display:flex;
+  flex-wrap:wrap;
   justify-content:flex-end;
-  margin-top:8px;
+  gap:6px;
+  margin-top:9px;
 }
-.group-add{
+.group-action{
   min-height:34px;
   padding:0 10px;
   border:1px solid #5a4871;
@@ -186,20 +224,20 @@ button{font:inherit;color:inherit}
   font-weight:900;
   cursor:pointer;
 }
-.group-add:hover:not(:disabled){
+.group-action:hover:not(:disabled){
   border-color:#ff77ad;
   background:#38203c;
 }
-.group-add:disabled{
+.group-action:disabled{
   cursor:not-allowed;
-  opacity:.38;
+  opacity:.36;
 }
 .rack{
   display:flex;
   flex-wrap:wrap;
   gap:8px;
-  min-height:92px;
-  padding-top:14px;
+  min-height:98px;
+  padding-top:15px;
 }
 .tile{
   position:relative;
@@ -213,16 +251,28 @@ button{font:inherit;color:inherit}
   cursor:pointer;
   transition:.16s ease;
 }
-.tile:hover{transform:translateY(-3px)}
+.tile:hover:not(:disabled){transform:translateY(-3px)}
 .tile.selected{
   transform:translateY(-12px);
   border-color:#fff;
   box-shadow:0 0 0 3px var(--pink),0 14px 25px rgba(0,0,0,.45);
 }
+.tile.table-selected{
+  transform:translateY(-8px);
+  border-color:#ffd66b;
+  box-shadow:0 0 0 3px rgba(255,214,107,.3),0 12px 24px rgba(0,0,0,.45);
+}
+.tile.must-replay{
+  animation:jokerPulse .85s ease-in-out infinite alternate;
+}
+@keyframes jokerPulse{
+  from{box-shadow:0 0 0 3px rgba(255,214,107,.25),0 0 14px rgba(255,214,107,.35)}
+  to{box-shadow:0 0 0 5px rgba(255,214,107,.4),0 0 28px rgba(255,214,107,.65)}
+}
 .tile:disabled{
   cursor:not-allowed;
-  filter:saturate(.45);
-  opacity:.72;
+  filter:saturate(.42);
+  opacity:.7;
 }
 .tile strong{
   position:absolute;
@@ -234,25 +284,16 @@ button{font:inherit;color:inherit}
   position:absolute;
   right:7px;
   bottom:6px;
-  font-size:11px;
-  font-weight:900;
+  font-size:10px;
+  font-weight:950;
 }
 .tile.red{color:#f04462}
 .tile.blue{color:#288df0}
-.tile.yellow{color:#d39d19}
+.tile.yellow{color:#c58d0a}
 .tile.black{color:#24202b}
 .tile.joker{
   color:#7c43da;
   background:linear-gradient(145deg,#fff,#e7dcff);
-}
-.tile.pending-joker{
-  border-color:#ffd86b;
-  box-shadow:0 0 0 3px rgba(255,216,107,.28),0 0 24px rgba(255,216,107,.48);
-  animation:jokerPulse 1s ease-in-out infinite alternate;
-}
-@keyframes jokerPulse{
-  from{transform:translateY(-9px) scale(1)}
-  to{transform:translateY(-13px) scale(1.04)}
 }
 .controls{
   display:flex;
@@ -273,14 +314,26 @@ button{font:inherit;color:inherit}
   border:0;
   background:linear-gradient(135deg,#ff5f9d,#8c5cff);
 }
+.btn.success{
+  border:0;
+  background:linear-gradient(135deg,#29b678,#57d4a4);
+}
+.btn.warning{
+  border-color:#8e6f2f;
+  background:#302612;
+}
+.btn.danger{
+  border-color:#824054;
+  background:#321722;
+}
 .btn:hover:not(:disabled){filter:brightness(1.12)}
 .btn:disabled{
   cursor:not-allowed;
-  opacity:.43;
+  opacity:.4;
 }
 .rules{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:12px;
   margin-top:16px;
 }
@@ -309,7 +362,7 @@ button{font:inherit;color:inherit}
 }
 .overlay[hidden]{display:none}
 .overlay-card{
-  width:min(100%,480px);
+  width:min(100%,560px);
   padding:26px;
   border:1px solid #614c75;
   border-radius:22px;
@@ -325,7 +378,18 @@ button{font:inherit;color:inherit}
   color:#cabfd2;
   line-height:1.7;
 }
-@media(max-width:900px){
+.score-table{
+  width:100%;
+  margin:16px 0;
+  border-collapse:collapse;
+}
+.score-table th,.score-table td{
+  padding:9px 8px;
+  border-bottom:1px solid #3a2e49;
+  text-align:left;
+}
+.score-table td:last-child,.score-table th:last-child{text-align:right}
+@media(max-width:950px){
   .ai-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .rules{grid-template-columns:repeat(2,1fr)}
 }
@@ -335,6 +399,7 @@ button{font:inherit;color:inherit}
   .tile strong{font-size:18px}
   .panel{padding:14px}
   .top{padding:11px 12px}
+  .group{min-width:132px}
 }
 </style>
 </head>
@@ -346,63 +411,75 @@ button{font:inherit;color:inherit}
 
 <main class="wrap">
   <section class="hero">
-    <h1>櫻花拉密：五人對戰</h1>
+    <h1>櫻花拉密：完整桌面重組版</h1>
     <p>
-      你將同時面對 4 位電腦玩家。每位玩家各拿 14 張牌；
-      你的回合可以出一組合法牌，或抽一張牌。完成動作後，4 位 AI 會依序行動。
+      你將對戰 4 位 AI。破冰前只能使用自己的手牌，首次出牌總點數必須達到 30；
+      破冰後可以拆解、搬移、合併桌面上的任何牌，只要確認回合時所有牌組都合法。
     </p>
   </section>
 
   <div class="stats">
     <span class="pill">你的手牌 <b id="handCount">14</b></span>
-    <span class="pill">牌堆 <b id="deckCount">0</b></span>
-    <span class="pill">你的分數 <b id="score">0</b></span>
-    <span class="pill">最高分 <b id="best">0</b></span>
+    <span class="pill">牌庫 <b id="deckCount">0</b></span>
+    <span class="pill">本局出牌分 <b id="playScore">0</b></span>
+    <span class="pill">最高勝分 <b id="bestScore">0</b></span>
     <span class="pill">回合 <b id="round">1</b></span>
+    <span class="pill turn-pill">目前：<b id="turnName">決定中</b></span>
   </div>
+
+  <div class="start-draw" id="startDraw">正在抽牌決定起始玩家……</div>
 
   <section class="ai-grid" id="aiGrid"></section>
 
   <section class="panel">
-    <h2>桌面牌組</h2>
+    <div class="panel-title">
+      <h2>桌面牌組</h2>
+      <small id="boardStatus">所有牌組必須合法</small>
+    </div>
     <div class="table-groups" id="table"></div>
   </section>
 
   <section class="panel">
     <h2>你的牌架</h2>
-    <div class="message" id="message">輪到你：選牌出牌，或抽一張。</div>
+    <div class="message" id="message">準備開始。</div>
     <div class="rack" id="rack"></div>
 
     <div class="controls">
-      <button class="btn primary" id="play">檢查並出牌</button>
-      <button class="btn" id="draw">抽一張並結束回合</button>
+      <button class="btn primary" id="makeGroup">建立新牌組</button>
+      <button class="btn" id="clearSelection">取消選取</button>
+      <button class="btn success" id="confirmTurn">確認出牌並結束回合</button>
+      <button class="btn warning" id="drawTile">抽一張並結束回合</button>
+      <button class="btn danger" id="undoTurn">復原本回合</button>
       <button class="btn" id="sortColor">依顏色排序</button>
       <button class="btn" id="sortNumber">依數字排序</button>
-      <button class="btn" id="undoJoker" disabled>復原 Joker 替換</button>
       <button class="btn" id="newGame">重新洗牌</button>
     </div>
   </section>
 
   <div class="rules">
     <div class="rule">
-      <strong>五人輪流</strong>
-      你完成出牌或抽牌後，4 位 AI 會依序出牌或抽牌。
+      <strong>破冰 ≥ 30</strong>
+      第一次出牌只能使用自己的手牌，可同時建立多組，數字總和必須至少 30。
     </div>
     <div class="rule">
-      <strong>同數字組</strong>
-      至少 3 張相同數字，而且顏色不能重複。
+      <strong>完整桌面重組</strong>
+      破冰後可點選桌面牌，再建立新組或加入其他牌組。回合中可暫時不合法。
     </div>
     <div class="rule">
-      <strong>同色順組</strong>
-      至少 3 張相同顏色，而且數字必須連續。
+      <strong>確認時全部合法</strong>
+      每個順組至少 3 張；群組只能 3 至 4 張。不能留下任何不合法牌組。
     </div>
     <div class="rule">
-      <strong>破冰規則</strong>
-      每位玩家第一次成功出牌，牌面總和必須達到 30 分。
+      <strong>特殊數字 1</strong>
+      本版依你的規則：1 只能接在 12、13 後面，例如 12、13、1；不能組成 1、2、3。
     </div>
     <div class="rule">
       <strong>Joker 二次移動</strong>
-      用正確手牌替換場上 Joker 後，必須在同一回合把 Joker 放進另一個合法牌組。
+      可用正確手牌替換桌面 Joker；取出的 Joker 必須在同一回合重新放回桌面。
+    </div>
+    <div class="rule">
+      <strong>重組失敗罰則</strong>
+      確認時若桌面不合法，整個回合會復原，並從牌庫抽 3 張懲罰牌。
     </div>
   </div>
 </main>
@@ -411,6 +488,7 @@ button{font:inherit;color:inherit}
   <div class="overlay-card">
     <h2 id="overlayTitle">遊戲結束</h2>
     <p id="overlayText"></p>
+    <div id="scoreResult"></div>
     <button class="btn primary" id="overlayRestart">再玩一局</button>
   </div>
 </div>
@@ -418,31 +496,37 @@ button{font:inherit;color:inherit}
 <script>
 "use strict";
 
-const COLORS = [
+const COLORS=[
   {id:"red",label:"紅",order:0},
   {id:"blue",label:"藍",order:1},
   {id:"yellow",label:"黃",order:2},
   {id:"black",label:"黑",order:3}
 ];
 
-const AI_NAMES = ["小櫻 AI","星野 AI","米歐 AI","夜羽 AI"];
-const BEST_KEY = "serverbloom_best_rummy";
-const $ = selector => document.querySelector(selector);
-const sleep = ms => new Promise(resolve => setTimeout(resolve,ms));
+const PLAYER_NAMES=["你","小櫻 AI","星野 AI","米歐 AI","夜羽 AI"];
+const BEST_KEY="serverbloom_best_rummy_official";
+const $=selector=>document.querySelector(selector);
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
-let deck = [];
-let hand = [];
-let ais = [];
-let groups = [];
-let selected = new Set();
-let opened = false;
-let score = 0;
-let uid = 0;
-let round = 1;
-let playerTurn = true;
-let gameOver = false;
-let aiActing = -1;
-let pendingJokerMove = null;
+let deck=[];
+let players=[];
+let board=[];
+let uid=0;
+let groupUid=0;
+let turnIndex=0;
+let round=1;
+let gameOver=false;
+let aiActing=-1;
+let selectedHand=new Set();
+let selectedTable=new Set();
+let mustReplayJokers=new Set();
+let turnSnapshot=null;
+let turnDirty=false;
+let startDraws=[];
+
+function clone(value){
+  return structuredClone(value);
+}
 
 function shuffle(array){
   for(let i=array.length-1;i>0;i--){
@@ -455,6 +539,7 @@ function shuffle(array){
 function makeDeck(){
   uid=0;
   const tiles=[];
+
   for(let copy=0;copy<2;copy++){
     for(const color of COLORS){
       for(let number=1;number<=13;number++){
@@ -467,32 +552,27 @@ function makeDeck(){
       }
     }
   }
+
   tiles.push(
     {uid:++uid,color:"joker",number:0,joker:true},
     {uid:++uid,color:"joker",number:0,joker:true}
   );
+
   return shuffle(tiles);
 }
 
 function drawTo(target,count=1){
-  for(let i=0;i<count&&deck.length;i++){
+  for(let index=0;index<count&&deck.length;index++){
     target.push(deck.pop());
   }
 }
 
-function tileHTML(tile,selectable=false){
-  const disabled = selectable && (!playerTurn || gameOver) ? "disabled" : "";
-  return `
-    <button
-      class="tile ${tile.joker?"joker":tile.color} ${selected.has(tile.uid)?"selected":""} ${pendingJokerMove?.joker.uid===tile.uid?"pending-joker":""}"
-      data-id="${tile.uid}"
-      type="button"
-      ${selectable?"":"tabindex=\"-1\""}
-      ${disabled}
-    >
-      <strong>${tile.joker?"★":tile.number}</strong>
-      <span>${tile.joker?"JOKER":tile.color.toUpperCase()}</span>
-    </button>`;
+function colorOrder(color){
+  return COLORS.find(item=>item.id===color)?.order ?? 99;
+}
+
+function tilePenalty(tile){
+  return tile.joker?30:tile.number;
 }
 
 function setMessage(text,type=""){
@@ -501,8 +581,14 @@ function setMessage(text,type=""){
   message.className=`message ${type}`;
 }
 
-function groupValue(analysis){
-  return analysis ? analysis.value : 0;
+function makeGroupObject(tiles,owner){
+  const analysis=analyzeGroup(tiles);
+  return {
+    id:++groupUid,
+    owner,
+    tiles:analysis?[...analysis.orderedTiles]:[...tiles],
+    analysis
+  };
 }
 
 function analyzeSet(tiles){
@@ -516,11 +602,29 @@ function analyzeSet(tiles){
   if(new Set(normal.map(tile=>tile.color)).size!==normal.length)return null;
   if(normal.length+jokers.length>4)return null;
 
+  const number=normal[0].number;
+  const orderedTiles=[
+    ...normal.sort((a,b)=>colorOrder(a.color)-colorOrder(b.color)),
+    ...jokers
+  ];
+
   return {
     type:"set",
-    value:normal[0].number*tiles.length,
-    label:`${normal[0].number} 的異色組`
+    value:number*tiles.length,
+    label:`${number} 的異色群組`,
+    orderedTiles
   };
+}
+
+function allowedRunSequences(length){
+  const base=[2,3,4,5,6,7,8,9,10,11,12,13,1];
+  const sequences=[];
+
+  for(let start=0;start+length<=base.length;start++){
+    sequences.push(base.slice(start,start+length));
+  }
+
+  return sequences;
 }
 
 function analyzeRun(tiles){
@@ -532,603 +636,931 @@ function analyzeRun(tiles){
   if(!normal.length)return null;
   if(!normal.every(tile=>tile.color===normal[0].color))return null;
 
-  const numbers=normal.map(tile=>tile.number).sort((a,b)=>a-b);
-  if(new Set(numbers).size!==numbers.length)return null;
+  const normalNumbers=normal.map(tile=>tile.number);
+  if(new Set(normalNumbers).size!==normalNumbers.length)return null;
 
-  const length=tiles.length;
-  const minNumber=numbers[0];
-  const maxNumber=numbers[numbers.length-1];
-  const possibleStarts=[];
+  const candidates=[];
 
-  for(let start=Math.max(1,maxNumber-length+1);start<=Math.min(minNumber,14-length);start++){
-    const interval=Array.from({length},(_,index)=>start+index);
-    if(numbers.every(number=>interval.includes(number))){
-      const missing=interval.filter(number=>!numbers.includes(number)).length;
-      if(missing<=jokers.length){
-        possibleStarts.push({start,interval});
-      }
-    }
+  for(const sequence of allowedRunSequences(tiles.length)){
+    if(!normalNumbers.every(number=>sequence.includes(number)))continue;
+
+    const missing=sequence.filter(number=>!normalNumbers.includes(number));
+    if(missing.length!==jokers.length)continue;
+
+    const numberMap=new Map(normal.map(tile=>[tile.number,tile]));
+    const jokerPool=[...jokers];
+    const orderedTiles=sequence.map(number=>
+      numberMap.get(number) || jokerPool.shift()
+    );
+
+    candidates.push({
+      type:"run",
+      value:sequence.reduce((sum,number)=>sum+number,0),
+      label:`${normal[0].color.toUpperCase()} ${sequence.join("–")} 順組`,
+      orderedTiles,
+      sequence
+    });
   }
 
-  if(!possibleStarts.length)return null;
+  if(!candidates.length)return null;
 
-  possibleStarts.sort((a,b)=>{
-    const sumA=a.interval.reduce((sum,value)=>sum+value,0);
-    const sumB=b.interval.reduce((sum,value)=>sum+value,0);
-    return sumB-sumA;
-  });
-
-  const best=possibleStarts[0];
-  return {
-    type:"run",
-    value:best.interval.reduce((sum,value)=>sum+value,0),
-    label:`${normal[0].color.toUpperCase()} ${best.interval[0]}–${best.interval.at(-1)} 順組`
-  };
+  candidates.sort((a,b)=>b.value-a.value);
+  return candidates[0];
 }
 
 function analyzeGroup(tiles){
-  return analyzeSet(tiles) || analyzeRun(tiles);
+  return analyzeSet(tiles)||analyzeRun(tiles);
 }
 
-function selectedTiles(){
-  return hand.filter(tile=>selected.has(tile.uid));
-}
+function refreshBoardAnalyses(){
+  board=board.filter(group=>group.tiles.length>0);
 
-function sortGroupTiles(tiles,analysis){
-  const colorOrder=Object.fromEntries(
-    COLORS.map(color=>[color.id,color.order])
-  );
-
-  return [...tiles].sort((a,b)=>{
-    if(a.joker!==b.joker)return a.joker?1:-1;
-
-    if(analysis&&analysis.type==="run"){
-      return a.number-b.number;
+  for(const group of board){
+    group.analysis=analyzeGroup(group.tiles);
+    if(group.analysis){
+      group.tiles=[...group.analysis.orderedTiles];
     }
-
-    return colorOrder[a.color]-colorOrder[b.color];
-  });
+  }
 }
 
-function findSetCandidate(aiHand,needThirty){
-  const jokers=aiHand.filter(tile=>tile.joker);
+function isHumanTurn(){
+  return !gameOver&&turnIndex===0;
+}
 
-  for(let number=13;number>=1;number--){
-    const normals=aiHand.filter(tile=>!tile.joker&&tile.number===number);
-    const unique=[];
-    const seen=new Set();
+function handTileHTML(tile){
+  const selected=selectedHand.has(tile.uid);
+  const mustReplay=mustReplayJokers.has(tile.uid);
 
-    for(const tile of normals){
-      if(!seen.has(tile.color)){
-        seen.add(tile.color);
-        unique.push(tile);
-      }
-    }
+  return `
+    <button
+      class="tile ${tile.joker?"joker":tile.color} ${selected?"selected":""} ${mustReplay?"must-replay":""}"
+      data-hand-id="${tile.uid}"
+      type="button"
+      ${!isHumanTurn()?"disabled":""}
+    >
+      <strong>${tile.joker?"★":tile.number}</strong>
+      <span>${tile.joker?"JOKER":tile.color.toUpperCase()}</span>
+    </button>`;
+}
 
-    for(let size=4;size>=3;size--){
-      const requiredJokers=Math.max(0,size-unique.length);
-      if(requiredJokers>jokers.length)continue;
+function tableTileHTML(tile,group){
+  const key=`${group.id}:${tile.uid}`;
+  const selected=selectedTable.has(key);
+  const selectable=isHumanTurn()&&players[0].opened;
 
-      const candidate=[
-        ...unique.slice(0,size-requiredJokers),
-        ...jokers.slice(0,requiredJokers)
-      ];
+  return `
+    <button
+      class="tile ${tile.joker?"joker":tile.color} ${selected?"table-selected":""}"
+      data-table-group="${group.id}"
+      data-table-id="${tile.uid}"
+      type="button"
+      ${!selectable?"disabled":""}
+    >
+      <strong>${tile.joker?"★":tile.number}</strong>
+      <span>${tile.joker?"JOKER":tile.color.toUpperCase()}</span>
+    </button>`;
+}
 
-      if(candidate.length!==size)continue;
+function selectedHandTiles(){
+  return players[0].hand.filter(tile=>selectedHand.has(tile.uid));
+}
 
-      const analysis=analyzeSet(candidate);
-      if(analysis&&(!needThirty||analysis.value>=30)){
-        return {tiles:candidate,analysis};
+function selectedTableTiles(){
+  const result=[];
+
+  for(const group of board){
+    for(const tile of group.tiles){
+      if(selectedTable.has(`${group.id}:${tile.uid}`)){
+        result.push({groupId:group.id,tile});
       }
     }
   }
 
-  return null;
+  return result;
 }
 
-function findRunCandidate(aiHand,needThirty){
-  const jokers=aiHand.filter(tile=>tile.joker);
+function selectionTiles(){
+  return [
+    ...selectedHandTiles(),
+    ...selectedTableTiles().map(item=>item.tile)
+  ];
+}
 
-  for(const color of COLORS){
-    const colorTiles=aiHand
-      .filter(tile=>!tile.joker&&tile.color===color.id)
-      .sort((a,b)=>a.number-b.number);
+function clearSelection(){
+  selectedHand.clear();
+  selectedTable.clear();
+  render();
+}
 
-    const byNumber=new Map();
-    for(const tile of colorTiles){
-      if(!byNumber.has(tile.number))byNumber.set(tile.number,tile);
+function removeSelectedTableTiles(){
+  const selectedByGroup=new Map();
+
+  for(const item of selectedTableTiles()){
+    if(!selectedByGroup.has(item.groupId)){
+      selectedByGroup.set(item.groupId,new Set());
     }
-
-    for(let length=Math.min(8,13);length>=3;length--){
-      for(let start=1;start<=14-length;start++){
-        const interval=Array.from({length},(_,index)=>start+index);
-        const normals=interval
-          .filter(number=>byNumber.has(number))
-          .map(number=>byNumber.get(number));
-        const missing=length-normals.length;
-
-        if(missing>jokers.length)continue;
-
-        const candidate=[
-          ...normals,
-          ...jokers.slice(0,missing)
-        ];
-
-        if(candidate.length!==length)continue;
-
-        const analysis=analyzeRun(candidate);
-        if(analysis&&(!needThirty||analysis.value>=30)){
-          return {tiles:candidate,analysis};
-        }
-      }
-    }
+    selectedByGroup.get(item.groupId).add(item.tile.uid);
   }
 
-  return null;
+  for(const group of board){
+    const ids=selectedByGroup.get(group.id);
+    if(ids){
+      group.tiles=group.tiles.filter(tile=>!ids.has(tile.uid));
+    }
+  }
 }
 
-function chooseAiMove(ai){
-  const needThirty=!ai.opened;
-  const setCandidate=findSetCandidate(ai.hand,needThirty);
-  const runCandidate=findRunCandidate(ai.hand,needThirty);
-  const choices=[setCandidate,runCandidate].filter(Boolean);
+function removeSelectedHandTiles(){
+  players[0].hand=players[0].hand.filter(tile=>!selectedHand.has(tile.uid));
+}
 
-  if(!choices.length)return null;
+function calculateHumanPlayedValue(){
+  if(!turnSnapshot)return 0;
 
-  choices.sort((a,b)=>{
-    if(a.tiles.length!==b.tiles.length)return b.tiles.length-a.tiles.length;
-    return b.analysis.value-a.analysis.value;
-  });
+  const currentIds=new Set(players[0].hand.map(tile=>tile.uid));
+  return turnSnapshot.humanHand
+    .filter(tile=>!currentIds.has(tile.uid))
+    .reduce((sum,tile)=>sum+tilePenalty(tile),0);
+}
 
-  return choices[0];
+function boardIsValid(){
+  refreshBoardAnalyses();
+  return board.every(group=>Boolean(group.analysis));
 }
 
 function render(){
-  $("#rack").innerHTML=hand.map(tile=>tileHTML(tile,true)).join("");
+  refreshBoardAnalyses();
 
-  $("#table").innerHTML=groups.length
-    ? groups.map((group,index)=>`
-        <div class="group">
-          <p class="group-label">${group.owner} · ${group.analysis.label} · ${group.analysis.value} 分</p>
-          <div class="group-tiles">${group.tiles.map(tile=>tileHTML(tile,false)).join("")}</div>
+  $("#rack").innerHTML=players[0]
+    ? players[0].hand.map(handTileHTML).join("")
+    : "";
+
+  $("#table").innerHTML=board.length
+    ? board.map(group=>`
+        <article class="group ${group.analysis?"valid":"invalid"}">
+          <p class="group-label">
+            ${group.owner} · ${group.analysis?`${group.analysis.label} · ${group.analysis.value} 分`:"⚠ 暫時不合法"}
+          </p>
+          <div class="group-tiles">
+            ${group.tiles.map(tile=>tableTileHTML(tile,group)).join("")}
+          </div>
           <div class="group-actions">
             <button
-              class="group-add"
+              class="group-action"
               type="button"
-              data-extend-group="${index}"
-              ${!playerTurn||gameOver||!opened?"disabled":""}
+              data-add-to-group="${group.id}"
+              ${!isHumanTurn()||!players[0].opened?"disabled":""}
             >
-              ＋ 加入選取的牌
+              ＋ 將選取牌加入這組
             </button>
             ${group.tiles.some(tile=>tile.joker)?`
               <button
-                class="group-add"
+                class="group-action"
                 type="button"
-                data-replace-joker="${index}"
-                ${!playerTurn||gameOver||!opened||pendingJokerMove?"disabled":""}
+                data-replace-joker="${group.id}"
+                ${!isHumanTurn()||!players[0].opened?"disabled":""}
               >
                 ♻ 用手牌替換 Joker
               </button>
             `:""}
           </div>
-        </div>
+        </article>
       `).join("")
-    : '<span style="color:#887d96">尚未出牌</span>';
+    : '<span style="color:#887d96">桌面目前沒有牌組</span>';
 
-  $("#handCount").textContent=hand.length;
+  const human=players[0];
+
+  $("#handCount").textContent=human?human.hand.length:0;
   $("#deckCount").textContent=deck.length;
-  $("#score").textContent=score;
-  $("#best").textContent=Number(localStorage.getItem(BEST_KEY)||0);
+  $("#playScore").textContent=human?human.playScore:0;
+  $("#bestScore").textContent=Number(localStorage.getItem(BEST_KEY)||0);
   $("#round").textContent=round;
+  $("#turnName").textContent=players[turnIndex]?.name||"準備中";
 
-  $("#aiGrid").innerHTML=ais.map((ai,index)=>`
-    <article class="ai-card ${aiActing===index?"active":""} ${ai.winner?"winner":""}">
+  $("#aiGrid").innerHTML=players.slice(1).map((player,index)=>`
+    <article class="ai-card ${aiActing===index+1?"active":""} ${player.winner?"winner":""}">
       <div class="ai-name">
-        <span>🤖 ${ai.name}</span>
-        <span>${ai.opened?"已破冰":"未破冰"}</span>
+        <span>🤖 ${player.name}</span>
+        <span>${player.opened?"已破冰":"未破冰"}</span>
       </div>
-      <div class="ai-count">${ai.hand.length} 張</div>
-      <div class="ai-status">${ai.lastAction}</div>
+      <div class="ai-count">${player.hand.length} 張</div>
+      <div class="ai-status">${player.lastAction}</div>
     </article>
   `).join("");
 
-  const disabled=!playerTurn||gameOver;
-  $("#play").disabled=disabled;
-  $("#draw").disabled=disabled||Boolean(pendingJokerMove);
-  $("#sortColor").disabled=gameOver;
-  $("#sortNumber").disabled=gameOver;
-  $("#undoJoker").disabled=!pendingJokerMove||gameOver;
+  const validCount=board.filter(group=>group.analysis).length;
+  $("#boardStatus").textContent=board.length
+    ? `${validCount}/${board.length} 組合法`
+    : "桌面尚無牌組";
+
+  const humanTurn=isHumanTurn();
+  const selectionCount=selectionTiles().length;
+
+  $("#makeGroup").disabled=!humanTurn||selectionCount===0;
+  $("#clearSelection").disabled=!humanTurn||selectionCount===0;
+  $("#confirmTurn").disabled=!humanTurn;
+  $("#drawTile").disabled=!humanTurn||turnDirty||mustReplayJokers.size>0;
+  $("#undoTurn").disabled=!humanTurn||!turnDirty;
+  $("#sortColor").disabled=!humanTurn;
+  $("#sortNumber").disabled=!humanTurn;
 }
 
-function finishGame(winnerName,isHuman=false,aiIndex=-1){
-  gameOver=true;
-  playerTurn=false;
+function snapshotHumanTurn(){
+  turnSnapshot={
+    board:clone(board),
+    humanHand:clone(players[0].hand),
+    humanOpened:players[0].opened,
+    humanPlayScore:players[0].playScore
+  };
+  selectedHand.clear();
+  selectedTable.clear();
+  mustReplayJokers.clear();
+  turnDirty=false;
+}
+
+function restoreHumanTurn(){
+  if(!turnSnapshot)return;
+
+  board=clone(turnSnapshot.board);
+  players[0].hand=clone(turnSnapshot.humanHand);
+  players[0].opened=turnSnapshot.humanOpened;
+  players[0].playScore=turnSnapshot.humanPlayScore;
+
+  selectedHand.clear();
+  selectedTable.clear();
+  mustReplayJokers.clear();
+  turnDirty=false;
+  setMessage("已復原本回合的所有移動。");
+  render();
+}
+
+function makeNewGroup(){
+  if(!isHumanTurn())return;
+
+  const tiles=selectionTiles();
+  if(!tiles.length){
+    setMessage("請先選擇手牌或桌面牌。","bad");
+    return;
+  }
+
+  if(!players[0].opened&&selectedTable.size){
+    setMessage("破冰前不能使用桌面上的牌。","bad");
+    return;
+  }
+
+  removeSelectedTableTiles();
+  removeSelectedHandTiles();
+
+  board.push(makeGroupObject(tiles,"你"));
+  selectedHand.clear();
+  selectedTable.clear();
+  turnDirty=true;
+
+  setMessage("已建立新牌組。回合中可以暫時不合法，確認時會一次檢查。","good");
+  render();
+}
+
+function addSelectionToGroup(groupId){
+  if(!isHumanTurn()||!players[0].opened)return;
+
+  const tiles=selectionTiles();
+  if(!tiles.length){
+    setMessage("請先選擇要搬移或加入的牌。","bad");
+    return;
+  }
+
+  const target=board.find(group=>group.id===groupId);
+  if(!target){
+    setMessage("找不到目標牌組。","bad");
+    return;
+  }
+
+  removeSelectedTableTiles();
+  removeSelectedHandTiles();
+
+  const existingIds=new Set(target.tiles.map(tile=>tile.uid));
+  for(const tile of tiles){
+    if(!existingIds.has(tile.uid)){
+      target.tiles.push(tile);
+      existingIds.add(tile.uid);
+    }
+  }
+
+  selectedHand.clear();
+  selectedTable.clear();
+  turnDirty=true;
+
+  setMessage("已搬移選取牌。請繼續整理，最後按「確認出牌」。","good");
+  render();
+}
+
+function replaceJoker(groupId){
+  if(!isHumanTurn()||!players[0].opened)return;
+
+  const replacement=selectedHandTiles();
+
+  if(replacement.length!==1||replacement[0].joker){
+    setMessage("請先只選取 1 張普通手牌，用它替換場上的 Joker。","bad");
+    return;
+  }
+
+  const group=board.find(item=>item.id===groupId);
+  if(!group){
+    setMessage("找不到該牌組。","bad");
+    return;
+  }
+
+  const jokerIndexes=group.tiles
+    .map((tile,index)=>tile.joker?index:-1)
+    .filter(index=>index>=0);
+
+  if(!jokerIndexes.length){
+    setMessage("這組牌沒有 Joker。","bad");
+    return;
+  }
+
+  const replacementTile=replacement[0];
+  let successful=null;
+
+  for(const jokerIndex of jokerIndexes){
+    const candidate=group.tiles.map((tile,index)=>
+      index===jokerIndex?replacementTile:tile
+    );
+    const analysis=analyzeGroup(candidate);
+
+    if(analysis){
+      successful={
+        jokerIndex,
+        joker:group.tiles[jokerIndex],
+        analysis
+      };
+      break;
+    }
+  }
+
+  if(!successful){
+    setMessage("這張牌無法正確替換該牌組中的 Joker。","bad");
+    return;
+  }
+
+  group.tiles=group.tiles.map((tile,index)=>
+    index===successful.jokerIndex?replacementTile:tile
+  );
+  group.analysis=successful.analysis;
+  group.tiles=[...successful.analysis.orderedTiles];
+
+  players[0].hand=players[0].hand.filter(tile=>tile.uid!==replacementTile.uid);
+  players[0].hand.push(successful.joker);
+
+  selectedHand.clear();
+  selectedHand.add(successful.joker.uid);
+  mustReplayJokers.add(successful.joker.uid);
+  turnDirty=true;
+
+  setMessage(
+    "Joker 已取回並自動選取。必須在同一回合把它建立成新組或加入另一組。",
+    "good"
+  );
+  render();
+}
+
+function validateHumanTurn(){
+  const human=players[0];
+
+  if(!turnDirty){
+    return {ok:false,penalty:false,message:"本回合尚未出牌。無法出牌時請抽一張。"};
+  }
+
+  refreshBoardAnalyses();
+
+  const invalidGroups=board.filter(group=>!group.analysis);
+  if(invalidGroups.length){
+    return {
+      ok:false,
+      penalty:true,
+      message:`桌面仍有 ${invalidGroups.length} 組不合法，觸發復原並抽 3 張懲罰牌。`
+    };
+  }
+
+  const replayStillInHand=human.hand.some(tile=>mustReplayJokers.has(tile.uid));
+  if(replayStillInHand){
+    return {
+      ok:false,
+      penalty:true,
+      message:"取回的 Joker 尚未重新放回桌面，觸發復原並抽 3 張懲罰牌。"
+    };
+  }
+
+  const playedValue=calculateHumanPlayedValue();
+
+  if(!turnSnapshot.humanOpened){
+    const boardBeforeIds=new Set(
+      turnSnapshot.board.flatMap(group=>group.tiles.map(tile=>tile.uid))
+    );
+    const currentBoardOldTiles=board
+      .flatMap(group=>group.tiles)
+      .filter(tile=>boardBeforeIds.has(tile.uid));
+
+    if(currentBoardOldTiles.length!==boardBeforeIds.size){
+      return {
+        ok:false,
+        penalty:true,
+        message:"破冰時不能使用或搬動原本的桌面牌，觸發復原並抽 3 張。"
+      };
+    }
+
+    if(playedValue<30){
+      return {
+        ok:false,
+        penalty:false,
+        message:`本次破冰只有 ${playedValue} 點，尚未達到 30 點。`
+      };
+    }
+  }
+
+  if(playedValue<=0){
+    return {
+      ok:false,
+      penalty:false,
+      message:"你必須至少從自己的牌架打出 1 張牌，不能只整理桌面。"
+    };
+  }
+
+  return {ok:true,playedValue};
+}
+
+function applyPenaltyAndEnd(message){
+  restoreHumanTurn();
+  drawTo(players[0].hand,3);
+  players[0].lastAction="重組失敗，抽了 3 張懲罰牌";
+  setMessage(message,"bad");
+  render();
+  setTimeout(endCurrentTurn,850);
+}
+
+function confirmHumanTurn(){
+  if(!isHumanTurn())return;
+
+  const result=validateHumanTurn();
+
+  if(!result.ok){
+    setMessage(result.message,"bad");
+
+    if(result.penalty){
+      setTimeout(()=>applyPenaltyAndEnd(result.message),500);
+    }
+
+    return;
+  }
+
+  players[0].opened=true;
+  players[0].playScore+=result.playedValue;
+  players[0].lastAction=`成功出牌 ${result.playedValue} 點`;
+  turnDirty=false;
+  mustReplayJokers.clear();
+
+  setMessage(`出牌成功，本回合從牌架打出 ${result.playedValue} 點。`,"good");
+  render();
+
+  if(players[0].hand.length===0){
+    finishGame(0);
+    return;
+  }
+
+  setTimeout(endCurrentTurn,650);
+}
+
+function drawAndEndHumanTurn(){
+  if(!isHumanTurn())return;
+
+  if(turnDirty){
+    setMessage("你已經移動牌了；請先確認出牌，或按「復原本回合」。","bad");
+    return;
+  }
+
+  const before=players[0].hand.length;
+  drawTo(players[0].hand,1);
+  const drew=players[0].hand.length>before;
+  players[0].lastAction=drew?"抽了 1 張牌":"牌庫已空";
+  setMessage(drew?"你抽了一張牌，本回合結束。":"牌庫已空，本回合直接結束。");
+  render();
+  setTimeout(endCurrentTurn,500);
+}
+
+function sortHumanHand(mode){
+  const hand=players[0].hand;
+
+  hand.sort((a,b)=>{
+    if(a.joker!==b.joker)return a.joker?1:-1;
+
+    if(mode==="color"){
+      return colorOrder(a.color)-colorOrder(b.color)||a.number-b.number;
+    }
+
+    return a.number-b.number||colorOrder(a.color)-colorOrder(b.color);
+  });
+
+  render();
+}
+
+function generateCandidates(hand){
+  const candidates=[];
+  const seen=new Set();
+  const jokers=hand.filter(tile=>tile.joker);
+
+  for(let number=1;number<=13;number++){
+    const normals=hand.filter(tile=>!tile.joker&&tile.number===number);
+    const uniqueByColor=[];
+
+    for(const color of COLORS){
+      const tile=normals.find(item=>item.color===color.id);
+      if(tile)uniqueByColor.push(tile);
+    }
+
+    for(let size=3;size<=4;size++){
+      const combinations=chooseCombinations(uniqueByColor,Math.min(size,uniqueByColor.length));
+
+      for(const combo of combinations){
+        const missing=size-combo.length;
+        if(missing<0||missing>jokers.length)continue;
+
+        const tiles=[...combo,...jokers.slice(0,missing)];
+        if(tiles.length!==size)continue;
+
+        pushCandidate(tiles);
+      }
+    }
+  }
+
+  for(const color of COLORS){
+    const colorTiles=hand.filter(tile=>!tile.joker&&tile.color===color.id);
+    const byNumber=new Map();
+
+    for(const tile of colorTiles){
+      if(!byNumber.has(tile.number))byNumber.set(tile.number,tile);
+    }
+
+    for(let length=3;length<=Math.min(8,hand.length);length++){
+      for(const sequence of allowedRunSequences(length)){
+        const normals=sequence
+          .filter(number=>byNumber.has(number))
+          .map(number=>byNumber.get(number));
+        const missing=length-normals.length;
+
+        if(missing<0||missing>jokers.length)continue;
+
+        const tiles=[...normals,...jokers.slice(0,missing)];
+        if(tiles.length!==length)continue;
+
+        pushCandidate(tiles);
+      }
+    }
+  }
+
+  return candidates;
+
+  function pushCandidate(tiles){
+    const analysis=analyzeGroup(tiles);
+    if(!analysis)return;
+
+    const key=tiles.map(tile=>tile.uid).sort((a,b)=>a-b).join("-");
+    if(seen.has(key))return;
+
+    seen.add(key);
+    candidates.push({
+      tiles:[...tiles],
+      analysis
+    });
+  }
+}
+
+function chooseCombinations(items,size){
+  if(size===0)return [[]];
+  if(size>items.length)return [];
+
+  const result=[];
+
+  function walk(start,current){
+    if(current.length===size){
+      result.push([...current]);
+      return;
+    }
+
+    for(let index=start;index<items.length;index++){
+      current.push(items[index]);
+      walk(index+1,current);
+      current.pop();
+    }
+  }
+
+  walk(0,[]);
+  return result;
+}
+
+function chooseInitialAiMove(ai){
+  const candidates=generateCandidates(ai.hand)
+    .sort((a,b)=>b.tiles.length-a.tiles.length||b.analysis.value-a.analysis.value);
+
+  const single=candidates.find(candidate=>candidate.analysis.value>=30);
+  if(single)return [single];
+
+  for(let first=0;first<candidates.length;first++){
+    for(let second=first+1;second<candidates.length;second++){
+      const ids=new Set(candidates[first].tiles.map(tile=>tile.uid));
+      const disjoint=candidates[second].tiles.every(tile=>!ids.has(tile.uid));
+
+      if(
+        disjoint&&
+        candidates[first].analysis.value+candidates[second].analysis.value>=30
+      ){
+        return [candidates[first],candidates[second]];
+      }
+    }
+  }
+
+  return null;
+}
+
+function chooseOpenedAiMove(ai){
+  let bestExtension=null;
+
+  for(const group of board){
+    for(const tile of ai.hand){
+      const analysis=analyzeGroup([...group.tiles,tile]);
+      if(!analysis)continue;
+
+      const candidate={group,tile,analysis};
+
+      if(
+        !bestExtension||
+        analysis.value-group.analysis.value>
+        bestExtension.analysis.value-bestExtension.group.analysis.value
+      ){
+        bestExtension=candidate;
+      }
+    }
+  }
+
+  if(bestExtension){
+    return {
+      type:"extend",
+      ...bestExtension
+    };
+  }
+
+  const candidate=generateCandidates(ai.hand)
+    .sort((a,b)=>b.tiles.length-a.tiles.length||b.analysis.value-a.analysis.value)[0];
+
+  if(candidate){
+    return {
+      type:"groups",
+      groups:[candidate]
+    };
+  }
+
+  return null;
+}
+
+async function runAiTurn(index){
+  const ai=players[index];
+  aiActing=index;
+  ai.lastAction="思考中……";
+  render();
+  await sleep(650);
+
+  let move;
+
+  if(!ai.opened){
+    const groups=chooseInitialAiMove(ai);
+    move=groups?{type:"groups",groups}:null;
+  }else{
+    move=chooseOpenedAiMove(ai);
+  }
+
+  if(move?.type==="groups"){
+    let totalValue=0;
+    const usedIds=new Set();
+
+    for(const candidate of move.groups){
+      totalValue+=candidate.analysis.value;
+      candidate.tiles.forEach(tile=>usedIds.add(tile.uid));
+      board.push(makeGroupObject(candidate.tiles,ai.name));
+    }
+
+    ai.hand=ai.hand.filter(tile=>!usedIds.has(tile.uid));
+    ai.opened=true;
+    ai.playScore+=totalValue;
+    ai.lastAction=`打出 ${move.groups.length} 組，共 ${totalValue} 點`;
+  }else if(move?.type==="extend"){
+    move.group.tiles.push(move.tile);
+    move.group.analysis=move.analysis;
+    move.group.tiles=[...move.analysis.orderedTiles];
+    move.group.owner=`${move.group.owner}＋${ai.name}`;
+    ai.hand=ai.hand.filter(tile=>tile.uid!==move.tile.uid);
+    ai.playScore+=tilePenalty(move.tile);
+    ai.lastAction=`把 ${move.tile.joker?"Joker":move.tile.number} 加入桌面牌組`;
+  }else if(deck.length){
+    drawTo(ai.hand,1);
+    ai.lastAction="無法出牌，抽了 1 張";
+  }else{
+    ai.lastAction="無法出牌，牌庫已空";
+  }
+
+  refreshBoardAnalyses();
+  render();
+  await sleep(650);
+
+  if(ai.hand.length===0){
+    finishGame(index);
+    return;
+  }
+
   aiActing=-1;
+  endCurrentTurn();
+}
 
-  if(aiIndex>=0)ais[aiIndex].winner=true;
+function beginHumanTurn(){
+  snapshotHumanTurn();
+  players[0].lastAction="輪到你";
+  setMessage(
+    players[0].opened
+      ?"輪到你：可自由搬移桌面牌。完成後按「確認出牌」。"
+      :"輪到你：破冰前只能使用自己的手牌，總點數至少 30。",
+    ""
+  );
+  render();
+}
 
-  const best=Math.max(Number(localStorage.getItem(BEST_KEY)||0),score);
-  localStorage.setItem(BEST_KEY,String(best));
+function startCurrentTurn(){
+  if(gameOver)return;
 
-  $("#overlayTitle").textContent=isHuman?"你贏了！🌸":`${winnerName} 獲勝`;
-  $("#overlayText").textContent=isHuman
-    ? `你率先清空手牌，本局得到 ${score} 分。`
-    : `${winnerName} 率先清空手牌。你還剩下 ${hand.length} 張牌。`;
+  const player=players[turnIndex];
+
+  if(turnIndex===0){
+    beginHumanTurn();
+  }else{
+    runAiTurn(turnIndex);
+  }
+}
+
+function endCurrentTurn(){
+  if(gameOver)return;
+
+  turnIndex=(turnIndex+1)%players.length;
+  if(turnIndex===0)round++;
+
+  render();
+  setTimeout(startCurrentTurn,500);
+}
+
+function determineStarter(){
+  while(true){
+    startDraws=players.map(player=>({
+      name:player.name,
+      value:Math.floor(Math.random()*13)+1
+    }));
+
+    const highest=Math.max(...startDraws.map(item=>item.value));
+    const winners=startDraws.filter(item=>item.value===highest);
+
+    if(winners.length===1){
+      turnIndex=players.findIndex(player=>player.name===winners[0].name);
+      return;
+    }
+  }
+}
+
+function finishGame(winnerIndex){
+  gameOver=true;
+  aiActing=-1;
+  players.forEach((player,index)=>player.winner=index===winnerIndex);
+
+  const penalties=players.map(player=>
+    player.hand.reduce((sum,tile)=>sum+tilePenalty(tile),0)
+  );
+  const winnerScore=penalties.reduce((sum,value,index)=>
+    index===winnerIndex?sum:sum+value
+  ,0);
+
+  const scores=players.map((player,index)=>({
+    name:player.name,
+    score:index===winnerIndex?winnerScore:-penalties[index],
+    remaining:player.hand.length
+  }));
+
+  if(winnerIndex===0){
+    localStorage.setItem(
+      BEST_KEY,
+      String(Math.max(Number(localStorage.getItem(BEST_KEY)||0),winnerScore))
+    );
+  }
+
+  $("#overlayTitle").textContent=winnerIndex===0
+    ?"你贏了！🌸"
+    :`${players[winnerIndex].name} 獲勝`;
+
+  $("#overlayText").textContent=
+    `勝者得到其他玩家剩餘手牌負分總和：${winnerScore} 分。Joker 留在手上以 30 分計算。`;
+
+  $("#scoreResult").innerHTML=`
+    <table class="score-table">
+      <thead><tr><th>玩家</th><th>剩餘牌</th><th>本局得分</th></tr></thead>
+      <tbody>
+        ${scores.map(item=>`
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.remaining}</td>
+            <td>${item.score>0?"+":""}${item.score}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>`;
 
   $("#overlay").hidden=false;
   setMessage("本局已結束。","good");
   render();
 }
 
-async function runAiTurns(){
-  if(gameOver)return;
-
-  playerTurn=false;
-  selected.clear();
-  render();
-
-  for(let index=0;index<ais.length;index++){
-    if(gameOver)return;
-
-    aiActing=index;
-    const ai=ais[index];
-    setMessage(`輪到 ${ai.name} 思考……`,"busy");
-    render();
-    await sleep(650);
-
-    const move=chooseAiMove(ai);
-
-    if(move){
-      ai.hand=ai.hand.filter(tile=>!move.tiles.some(chosen=>chosen.uid===tile.uid));
-      ai.opened=true;
-      ai.score+=move.analysis.value+move.tiles.length*10;
-      ai.lastAction=`出了 ${move.tiles.length} 張牌：${move.analysis.label}`;
-
-      groups.push({
-        owner:ai.name,
-        tiles:move.tiles,
-        analysis:move.analysis
-      });
-
-      if(!ai.hand.length){
-        finishGame(ai.name,false,index);
-        return;
-      }
-    }else if(deck.length){
-      drawTo(ai.hand,1);
-      ai.lastAction="沒有合法牌組，抽了 1 張牌";
-    }else{
-      ai.lastAction="沒有合法牌組，牌堆也空了";
-    }
-
-    render();
-    await sleep(700);
-  }
-
-  aiActing=-1;
-  round++;
-  playerTurn=true;
-  setMessage("輪到你：選牌出牌，或抽一張。");
-  render();
-}
-
-function replaceTableJoker(groupIndex){
-  if(!playerTurn||gameOver)return;
-
-  if(!opened){
-    setMessage("你必須先完成 30 分破冰，才能移動場上的 Joker。","bad");
-    return;
-  }
-
-  if(pendingJokerMove){
-    setMessage("你已經拿出一張 Joker，請先把它重新出牌或按「復原 Joker 替換」。","bad");
-    return;
-  }
-
-  const replacementTiles=selectedTiles();
-
-  if(replacementTiles.length!==1||replacementTiles[0].joker){
-    setMessage("請先只選取 1 張普通手牌，用它替換場上的 Joker。","bad");
-    return;
-  }
-
-  const group=groups[groupIndex];
-  if(!group){
-    setMessage("找不到這組桌面牌。","bad");
-    return;
-  }
-
-  const jokerIndex=group.tiles.findIndex(tile=>tile.joker);
-  if(jokerIndex<0){
-    setMessage("這個牌組裡沒有 Joker。","bad");
-    return;
-  }
-
-  const replacementTile=replacementTiles[0];
-  const joker=group.tiles[jokerIndex];
-  const candidate=group.tiles.map((tile,index)=>
-    index===jokerIndex?replacementTile:tile
-  );
-  const analysis=analyzeGroup(candidate);
-
-  if(!analysis){
-    setMessage("這張牌不能取代該 Joker；替換後必須仍是合法順組或同數字組。","bad");
-    return;
-  }
-
-  pendingJokerMove={
-    joker,
-    replacementTile,
-    groupIndex,
-    previousGroup:{
-      owner:group.owner,
-      tiles:[...group.tiles],
-      analysis:{...group.analysis}
-    }
-  };
-
-  group.tiles=sortGroupTiles(candidate,analysis);
-  group.analysis=analysis;
-  group.owner=`${group.owner}＋你替換 Joker`;
-
-  hand=hand.filter(tile=>tile.uid!==replacementTile.uid);
-  hand.push(joker);
-  selected=new Set([joker.uid]);
-
-  setMessage(
-    `Joker 已被取出並自動選取。請在同一回合把它加入另一個合法牌組，不能抽牌結束回合。`,
-    "good"
-  );
-  render();
-}
-
-function undoJokerReplacement(){
-  if(!pendingJokerMove||gameOver)return;
-
-  const {joker,replacementTile,groupIndex,previousGroup}=pendingJokerMove;
-  const group=groups[groupIndex];
-
-  if(group){
-    group.owner=previousGroup.owner;
-    group.tiles=[...previousGroup.tiles];
-    group.analysis={...previousGroup.analysis};
-  }
-
-  hand=hand.filter(tile=>tile.uid!==joker.uid);
-  hand.push(replacementTile);
-  selected.clear();
-  pendingJokerMove=null;
-
-  setMessage("已復原 Joker 替換，桌面與手牌回到替換前狀態。");
-  sortBy("number");
-}
-
-function extendTableGroup(groupIndex){
-  if(!playerTurn||gameOver)return;
-
-  if(!opened){
-    setMessage("你必須先完成 30 分破冰，才能把手牌加入桌面既有牌組。","bad");
-    return;
-  }
-
-  const tiles=selectedTiles();
-
-  if(!tiles.length){
-    setMessage("請先在你的牌架選取要加入的牌。","bad");
-    return;
-  }
-
-  if(pendingJokerMove&&!tiles.some(tile=>tile.uid===pendingJokerMove.joker.uid)){
-    setMessage("你已取出場上 Joker，這次出牌必須包含該 Joker。","bad");
-    return;
-  }
-
-  const group=groups[groupIndex];
-  if(!group){
-    setMessage("找不到這組桌面牌。","bad");
-    return;
-  }
-
-  const oldValue=group.analysis.value;
-  const combined=[...group.tiles,...tiles];
-  const analysis=analyzeGroup(combined);
-
-  if(!analysis){
-    setMessage("加入後會變成不合法的牌組。請確認顏色與數字是否能接續。","bad");
-    return;
-  }
-
-  group.tiles=sortGroupTiles(combined,analysis);
-  group.analysis=analysis;
-  group.owner=`${group.owner}＋你`;
-
-  hand=hand.filter(tile=>!selected.has(tile.uid));
-  selected.clear();
-
-  if(pendingJokerMove){
-    pendingJokerMove=null;
-  }
-
-  const addedValue=Math.max(
-    tiles.reduce((sum,tile)=>sum+(tile.joker?0:tile.number),0),
-    analysis.value-oldValue
-  );
-
-  score+=Math.max(0,addedValue)+tiles.length*10;
-
-  localStorage.setItem(
-    BEST_KEY,
-    String(Math.max(Number(localStorage.getItem(BEST_KEY)||0),score))
-  );
-
-  setMessage(`成功加入 ${tiles.length} 張牌：${analysis.label}。`,"good");
-  render();
-
-  if(!hand.length){
-    finishGame("你",true);
-    return;
-  }
-
-  setTimeout(runAiTurns,500);
-}
-
-function submitGroup(){
-  if(!playerTurn||gameOver)return;
-
-  const tiles=selectedTiles();
-
-  if(pendingJokerMove&&!tiles.some(tile=>tile.uid===pendingJokerMove.joker.uid)){
-    setMessage("你已取出場上 Joker，這次出牌必須包含該 Joker。","bad");
-    return;
-  }
-
-  const analysis=analyzeGroup(tiles);
-
-  if(!analysis){
-    setMessage("這組牌不合法：至少 3 張，必須是同數字異色組，或同色連續順組。","bad");
-    return;
-  }
-
-  if(!opened&&analysis.value<30){
-    setMessage(`第一次出牌只有 ${analysis.value} 分，還沒達到 30 分。`,"bad");
-    return;
-  }
-
-  opened=true;
-  groups.push({
-    owner:"你",
-    tiles,
-    analysis
-  });
-
-  hand=hand.filter(tile=>!selected.has(tile.uid));
-  selected.clear();
-
-  if(pendingJokerMove){
-    pendingJokerMove=null;
-  }
-
-  score+=analysis.value+tiles.length*10;
-  localStorage.setItem(
-    BEST_KEY,
-    String(Math.max(Number(localStorage.getItem(BEST_KEY)||0),score))
-  );
-
-  setMessage(`合法出牌！${analysis.label}，牌面 ${analysis.value} 分。`,"good");
-  render();
-
-  if(!hand.length){
-    finishGame("你",true);
-    return;
-  }
-
-  setTimeout(runAiTurns,500);
-}
-
-function drawAndEndTurn(){
-  if(!playerTurn||gameOver)return;
-
-  if(pendingJokerMove){
-    setMessage("你已取出場上 Joker，必須先把它重新放入合法牌組，或按「復原 Joker 替換」。","bad");
-    return;
-  }
-
-  selected.clear();
-
-  if(deck.length){
-    drawTo(hand,1);
-    setMessage("你抽了一張牌，接著輪到 4 位 AI。");
-  }else{
-    setMessage("牌堆已空，你跳過本回合。");
-  }
-
-  render();
-  setTimeout(runAiTurns,450);
-}
-
-function sortBy(mode){
-  const colorOrder=Object.fromEntries(
-    COLORS.map(color=>[color.id,color.order])
-  );
-
-  hand.sort((a,b)=>{
-    if(a.joker!==b.joker)return a.joker?1:-1;
-
-    if(mode==="color"){
-      return colorOrder[a.color]-colorOrder[b.color] || a.number-b.number;
-    }
-
-    return a.number-b.number || colorOrder[a.color]-colorOrder[b.color];
-  });
-
-  render();
-}
-
-function start(){
+function startGame(){
   deck=makeDeck();
-  hand=[];
-  groups=[];
-  selected.clear();
-  opened=false;
-  score=0;
+  board=[];
+  groupUid=0;
   round=1;
-  playerTurn=true;
   gameOver=false;
   aiActing=-1;
-  pendingJokerMove=null;
+  selectedHand.clear();
+  selectedTable.clear();
+  mustReplayJokers.clear();
+  turnSnapshot=null;
+  turnDirty=false;
   $("#overlay").hidden=true;
 
-  drawTo(hand,14);
+  players=PLAYER_NAMES.map((name,index)=>({
+    name,
+    human:index===0,
+    hand:[],
+    opened:false,
+    playScore:0,
+    winner:false,
+    lastAction:"等待開始"
+  }));
 
-  ais=AI_NAMES.map(name=>{
-    const ai={
-      name,
-      hand:[],
-      opened:false,
-      score:0,
-      winner:false,
-      lastAction:"等待第一回合"
-    };
-    drawTo(ai.hand,14);
-    return ai;
-  });
+  for(const player of players){
+    drawTo(player.hand,14);
+  }
 
-  sortBy("number");
-  setMessage("新局開始：你先行。第一次出牌必須達到 30 分。");
+  determineStarter();
+
+  $("#startDraw").textContent=
+    `決定先後：${startDraws.map(item=>`${item.name} 抽到 ${item.value}`).join("｜")}。`+
+    `由 ${players[turnIndex].name} 先開始。`;
+
+  sortHumanHand("number");
   render();
+  setTimeout(startCurrentTurn,700);
 }
 
 $("#rack").addEventListener("click",event=>{
-  const button=event.target.closest("[data-id]");
-  if(!button||!playerTurn||gameOver)return;
+  const tileButton=event.target.closest("[data-hand-id]");
+  if(!tileButton||!isHumanTurn())return;
 
-  const id=Number(button.dataset.id);
-  selected.has(id)?selected.delete(id):selected.add(id);
+  const id=Number(tileButton.dataset.handId);
+  selectedHand.has(id)?selectedHand.delete(id):selectedHand.add(id);
   render();
 });
 
 $("#table").addEventListener("click",event=>{
   const replaceButton=event.target.closest("[data-replace-joker]");
   if(replaceButton){
-    replaceTableJoker(Number(replaceButton.dataset.replaceJoker));
+    replaceJoker(Number(replaceButton.dataset.replaceJoker));
     return;
   }
 
-  const extendButton=event.target.closest("[data-extend-group]");
-  if(extendButton){
-    extendTableGroup(Number(extendButton.dataset.extendGroup));
+  const addButton=event.target.closest("[data-add-to-group]");
+  if(addButton){
+    addSelectionToGroup(Number(addButton.dataset.addToGroup));
+    return;
   }
+
+  const tileButton=event.target.closest("[data-table-id]");
+  if(!tileButton||!isHumanTurn()||!players[0].opened)return;
+
+  const key=`${tileButton.dataset.tableGroup}:${tileButton.dataset.tableId}`;
+  selectedTable.has(key)?selectedTable.delete(key):selectedTable.add(key);
+  render();
 });
 
-$("#play").addEventListener("click",submitGroup);
-$("#draw").addEventListener("click",drawAndEndTurn);
-$("#sortColor").addEventListener("click",()=>sortBy("color"));
-$("#sortNumber").addEventListener("click",()=>sortBy("number"));
-$("#undoJoker").addEventListener("click",undoJokerReplacement);
-$("#newGame").addEventListener("click",start);
-$("#overlayRestart").addEventListener("click",start);
+$("#makeGroup").addEventListener("click",makeNewGroup);
+$("#clearSelection").addEventListener("click",clearSelection);
+$("#confirmTurn").addEventListener("click",confirmHumanTurn);
+$("#drawTile").addEventListener("click",drawAndEndHumanTurn);
+$("#undoTurn").addEventListener("click",restoreHumanTurn);
+$("#sortColor").addEventListener("click",()=>sortHumanHand("color"));
+$("#sortNumber").addEventListener("click",()=>sortHumanHand("number"));
+$("#newGame").addEventListener("click",startGame);
+$("#overlayRestart").addEventListener("click",startGame);
 
-start();
+startGame();
 </script>
 </body>
 </html>
