@@ -688,7 +688,7 @@
               <span class="rule-icon">👾</span>
               <div>
                 <strong>小兵：1 點傷害</strong>
-                <p>碰撞、漏掉敵機或吃到普通子彈，都扣 1 格血。</p>
+                <p>碰撞或吃到普通子彈會扣 1 格血；成功閃過、讓敵機飛出畫面不扣血。</p>
               </div>
             </div>
             <div class="rule">
@@ -699,7 +699,7 @@
               </div>
             </div>
           </div>
-          <div class="balance"><strong>難度會慢慢長大：</strong>小兵血量隨時間提高；每一隻新 Boss 都比上一隻更厚、更會召喚援軍，但不會突然一槍把滿血玩家送回大廳。</div>
+          <div class="balance"><strong>難度會慢慢長大：</strong>前 15 秒是新手保護期，敵人少、血量低；之後每 15～30 秒逐步增加數量、血量與射擊能力。櫻花會固定補給，閃過敵機也不扣血。</div>
         </section>
       </aside>
     </div>
@@ -717,7 +717,7 @@
         <div class="help-row"><strong>📱 手機操作</strong><span>直接在遊戲畫面拖曳戰機，或長按下方方向鍵。中央「Ⅱ」可暫停。</span></div>
         <div class="help-row"><strong>✿ 深紫櫻花</strong><span>每吃一朵，武器等級與單發傷害＋1。LV.3 解鎖雙發，LV.6 解鎖三發。</span></div>
         <div class="help-row"><strong>✿ 金色櫻花</strong><span>血量上限＋2，同時恢復 2 格血；Boss 被擊破後一定會掉一朵。</span></div>
-        <div class="help-row"><strong>💡 生存提示</strong><span>平常待在畫面下半部較好閃；看到金色櫻花時先收花，再貪 Boss 尾刀。</span></div>
+        <div class="help-row"><strong>💡 生存提示</strong><span>前 15 秒先熟悉移動並收下保證出現的深紫櫻花；敵機飛出畫面不扣血，不需要冒險追擊。</span></div>
       </div>
     </section>
   </div>
@@ -763,7 +763,9 @@
       let bossWave = 0;
       let score = 0;
       let enemyClock = 0;
-      let flowerClock = 18;
+      let flowerClock = 6;
+      let flowerStage = 0;
+      let announcedStage = "";
       let shootClock = 0;
       let killsSinceFlower = 0;
       let screenFlash = 0;
@@ -896,8 +898,10 @@
         nextBossAt = 120;
         bossWave = 0;
         score = 0;
-        enemyClock = .8;
-        flowerClock = 18;
+        enemyClock = 1.2;
+        flowerClock = 6;
+        flowerStage = 0;
+        announcedStage = "";
         shootClock = .1;
         killsSinceFlower = 0;
         screenFlash = 0;
@@ -917,12 +921,12 @@
           maxHp:3,
           hp:3,
           weapon:1,
-          invincible:0,
+          invincible:2.5,
           tilt:0
         };
         createBackdrop();
         updateHud();
-        statusStrip.textContent = "SB-01 已升空。深紫櫻花強化武器，金色櫻花提高血量上限。";
+        statusStrip.textContent = "新手保護期 15 秒：敵人少、血量低，先收下深紫櫻花。";
       }
 
       function startGame(){
@@ -933,6 +937,7 @@
         lastTime = performance.now();
         canvas.focus({preventScroll:true});
         tone(440,.08,"triangle",.025,180);
+        showBanner("新手保護期","前 15 秒敵人少、血量低；第 6 秒會出現深紫櫻花。","#75d8ff",3.2);
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(loop);
       }
@@ -1012,11 +1017,54 @@
         texts.push({x,y,text,color,size,life:1,max:1,vy:-28});
       }
 
+      function getEnemyStage(){
+        if(elapsed < 15){
+          return {name:"新手保護",maxEnemies:2,spawnInterval:3.25,hpBonus:0,speedBonus:0,gunnerChance:0,dartChance:0};
+        }
+        if(elapsed < 30){
+          return {name:"暖身",maxEnemies:3,spawnInterval:2.35,hpBonus:0,speedBonus:6,gunnerChance:0,dartChance:.24};
+        }
+        if(elapsed < 60){
+          return {name:"第一波",maxEnemies:4,spawnInterval:1.75,hpBonus:1,speedBonus:12,gunnerChance:.10,dartChance:.28};
+        }
+        if(elapsed < 90){
+          return {name:"第二波",maxEnemies:5,spawnInterval:1.38,hpBonus:1,speedBonus:20,gunnerChance:.16,dartChance:.31};
+        }
+        if(elapsed < 120){
+          return {name:"Boss 前夕",maxEnemies:6,spawnInterval:1.12,hpBonus:2,speedBonus:28,gunnerChance:.21,dartChance:.33};
+        }
+        const lateLevel = Math.floor((elapsed - 120) / 60);
+        return {
+          name:`進階波次 ${lateLevel + 1}`,
+          maxEnemies:Math.min(8,6 + Math.floor(lateLevel / 2)),
+          spawnInterval:Math.max(.72,1.03 - lateLevel * .055),
+          hpBonus:2 + Math.floor(lateLevel / 2),
+          speedBonus:32 + Math.min(42,lateLevel * 5),
+          gunnerChance:Math.min(.34,.22 + lateLevel * .025),
+          dartChance:.34
+        };
+      }
+
+      function chooseEnemyType(stage){
+        if(elapsed < 15) return "scout";
+        const roll = Math.random();
+        if(roll < stage.gunnerChance) return "gunner";
+        if(roll < stage.gunnerChance + stage.dartChance) return "dart";
+        return "scout";
+      }
+
       function spawnEnemy(forceType = ""){
-        const progress = Math.floor(elapsed / 42) + bossWave;
-        const type = forceType || (elapsed > 55 && chance(.22) ? "gunner" : chance(.28) ? "dart" : "scout");
+        const stage = getEnemyStage();
+        const activeLimit = boss ? Math.min(3,stage.maxEnemies) : stage.maxEnemies;
+        if(enemies.length >= activeLimit) return false;
+
+        const type = forceType || chooseEnemyType(stage);
         const r = type === "gunner" ? 18 : type === "dart" ? 13 : 15;
-        const hp = (type === "gunner" ? 5 : type === "dart" ? 2 : 3) + progress;
+        const baseHp = type === "gunner" ? 2 : 1;
+        const bossBonus = Math.floor(Math.max(0,bossWave - 1) * .6);
+        const hp = Math.max(1,baseHp + stage.hpBonus + bossBonus);
+        const baseSpeed = type === "dart" ? 78 : type === "gunner" ? 42 : 54;
+
         enemies.push({
           type,
           x:random(r + 10,W - r - 10),
@@ -1025,12 +1073,13 @@
           r,
           hp,
           maxHp:hp,
-          speed:(type === "dart" ? 112 : type === "gunner" ? 54 : 76) + Math.min(80,elapsed * .2),
+          speed:baseSpeed + stage.speedBonus,
           age:0,
           phase:random(0,TAU),
-          shoot:random(1.3,3.2),
+          shoot:random(1.8,3.4),
           hit:0
         });
+        return true;
       }
 
       function spawnBoss(){
@@ -1072,18 +1121,37 @@
         powerups.push({
           type,
           x:clamp(x,26,W - 26),
-          y:clamp(y,22,H * .75),
+          y:clamp(y,22,H * .72),
           r:type === "gold" ? 15 : 13,
-          vy:type === "gold" ? 34 : 46,
+          vy:type === "gold" ? 22 : 28,
           age:0,
-          ttl:type === "gold" ? 18 : 14,
+          ttl:type === "gold" ? 24 : 20,
           guaranteed
         });
       }
 
       function spawnRegularFlower(){
-        dropPowerup("purple",random(40,W - 40),24,true);
-        showBanner("深紫櫻花進入戰場","接住它，武器傷害就會永久＋1。","#a96cff",1.8);
+        const nearPlayerX = player
+          ? clamp(player.x + random(-Math.min(130,W * .18),Math.min(130,W * .18)),40,W - 40)
+          : random(40,W - 40);
+
+        let type = "purple";
+        let message = "接住它，武器傷害就會永久＋1。";
+        let color = "#a96cff";
+
+        if(flowerStage === 2){
+          type = "gold";
+          message = "新手補給：接住它，血量上限＋2並恢復 2 格血。";
+          color = "#ffd66e";
+        }else if(flowerStage > 2 && chance(.07)){
+          type = "gold";
+          message = "稀有金色櫻花出現：血量上限＋2。";
+          color = "#ffd66e";
+        }
+
+        dropPowerup(type,nearPlayerX,24,true);
+        showBanner(type === "gold" ? "金色櫻花補給" : "深紫櫻花進入戰場",message,color,1.9);
+        flowerStage += 1;
       }
 
       function firePlayer(){
@@ -1180,6 +1248,14 @@
         updateBackdrop(dt);
         updatePlayer(dt);
 
+        const currentStage = getEnemyStage();
+        if(currentStage.name !== announcedStage){
+          announcedStage = currentStage.name;
+          if(elapsed >= 14.8){
+            showBanner(currentStage.name,`同時最多 ${currentStage.maxEnemies} 架敵機，敵人會逐步變強。`,"#75d8ff",2.2);
+          }
+        }
+
         shootClock -= dt;
         if(shootClock <= 0){
           firePlayer();
@@ -1188,15 +1264,18 @@
 
         enemyClock -= dt;
         if(enemyClock <= 0){
+          const stage = getEnemyStage();
           spawnEnemy();
-          const bossSlowdown = boss ? 1.65 : 1;
-          enemyClock = Math.max(.34,1.05 - elapsed * .0035) * bossSlowdown;
+          const bossSlowdown = boss ? 1.7 : 1;
+          enemyClock = stage.spawnInterval * bossSlowdown;
         }
 
         flowerClock -= dt;
         if(flowerClock <= 0){
           spawnRegularFlower();
-          flowerClock = random(20,27);
+          if(flowerStage === 1) flowerClock = 12;
+          else if(flowerStage === 2) flowerClock = 17;
+          else flowerClock = random(16,22);
         }
 
         if(elapsed >= nextBossAt){
@@ -1284,7 +1363,6 @@
           }
           if(enemy.y > H + enemy.r + 8 && !enemy.gone){
             enemy.gone = true;
-            damagePlayer(1,"有一架小兵從防線溜過去了");
           }
         });
         enemies = enemies.filter(enemy => !enemy.gone && enemy.hp > 0);
@@ -1342,8 +1420,8 @@
           item.y += item.vy * dt;
           item.x += Math.sin(item.age * 2.3) * 16 * dt;
           const distance = Math.hypot(player.x - item.x,player.y - item.y);
-          if(distance < 92){
-            const pull = (1 - distance / 92) * 190;
+          if(distance < 130){
+            const pull = (1 - distance / 130) * 245;
             item.x += (player.x - item.x) / Math.max(1,distance) * pull * dt;
             item.y += (player.y - item.y) / Math.max(1,distance) * pull * dt;
           }
@@ -1433,11 +1511,11 @@
         score += points;
         burst(enemy.x,enemy.y,enemy.type === "gunner" ? "#bd82ff" : "#ff83b5",12,95);
         floatingText(enemy.x,enemy.y,`+${points}`,"#a9e9ff",12);
-        const mustDrop = killsSinceFlower >= 12;
-        if(mustDrop || chance(.085)){
+        const mustDrop = killsSinceFlower >= 7;
+        if(mustDrop || chance(.12)){
           dropPowerup("purple",enemy.x,enemy.y);
           killsSinceFlower = 0;
-        }else if(chance(.004)){
+        }else if(elapsed > 35 && chance(.012)){
           dropPowerup("gold",enemy.x,enemy.y);
         }
       }
@@ -1485,7 +1563,7 @@
       function damagePlayer(amount,reason){
         if(mode !== "running" || player.invincible > 0) return;
         player.hp = Math.max(0,player.hp - amount);
-        player.invincible = amount === 2 ? 1.25 : .9;
+        player.invincible = amount === 2 ? 2 : 1.5;
         screenFlash = Math.max(screenFlash,.45);
         burst(player.x,player.y,amount === 2 ? "#ff466f" : "#ff8db2",16,115);
         floatingText(player.x,player.y - 15,`-${amount} HP`,"#ff8aa8",17);
