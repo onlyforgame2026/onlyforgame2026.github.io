@@ -170,6 +170,30 @@ button{font:inherit;color:inherit}
   flex-wrap:wrap;
   gap:6px;
 }
+.group-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:8px;
+}
+.group-add{
+  min-height:34px;
+  padding:0 10px;
+  border:1px solid #5a4871;
+  border-radius:9px;
+  color:#f5eaff;
+  background:#241a31;
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+}
+.group-add:hover:not(:disabled){
+  border-color:#ff77ad;
+  background:#38203c;
+}
+.group-add:disabled{
+  cursor:not-allowed;
+  opacity:.38;
+}
 .rack{
   display:flex;
   flex-wrap:wrap;
@@ -535,6 +559,22 @@ function selectedTiles(){
   return hand.filter(tile=>selected.has(tile.uid));
 }
 
+function sortGroupTiles(tiles,analysis){
+  const colorOrder=Object.fromEntries(
+    COLORS.map(color=>[color.id,color.order])
+  );
+
+  return [...tiles].sort((a,b)=>{
+    if(a.joker!==b.joker)return a.joker?1:-1;
+
+    if(analysis&&analysis.type==="run"){
+      return a.number-b.number;
+    }
+
+    return colorOrder[a.color]-colorOrder[b.color];
+  });
+}
+
 function findSetCandidate(aiHand,needThirty){
   const jokers=aiHand.filter(tile=>tile.joker);
 
@@ -632,10 +672,20 @@ function render(){
   $("#rack").innerHTML=hand.map(tile=>tileHTML(tile,true)).join("");
 
   $("#table").innerHTML=groups.length
-    ? groups.map(group=>`
+    ? groups.map((group,index)=>`
         <div class="group">
           <p class="group-label">${group.owner} · ${group.analysis.label} · ${group.analysis.value} 分</p>
           <div class="group-tiles">${group.tiles.map(tile=>tileHTML(tile,false)).join("")}</div>
+          <div class="group-actions">
+            <button
+              class="group-add"
+              type="button"
+              data-extend-group="${index}"
+              ${!playerTurn||gameOver||!opened?"disabled":""}
+            >
+              ＋ 加入選取的牌
+            </button>
+          </div>
         </div>
       `).join("")
     : '<span style="color:#887d96">尚未出牌</span>';
@@ -734,6 +784,66 @@ async function runAiTurns(){
   playerTurn=true;
   setMessage("輪到你：選牌出牌，或抽一張。");
   render();
+}
+
+function extendTableGroup(groupIndex){
+  if(!playerTurn||gameOver)return;
+
+  if(!opened){
+    setMessage("你必須先完成 30 分破冰，才能把手牌加入桌面既有牌組。","bad");
+    return;
+  }
+
+  const tiles=selectedTiles();
+
+  if(!tiles.length){
+    setMessage("請先在你的牌架選取要加入的牌。","bad");
+    return;
+  }
+
+  const group=groups[groupIndex];
+  if(!group){
+    setMessage("找不到這組桌面牌。","bad");
+    return;
+  }
+
+  const oldValue=group.analysis.value;
+  const combined=[...group.tiles,...tiles];
+  const analysis=analyzeGroup(combined);
+
+  if(!analysis){
+    setMessage("加入後會變成不合法的牌組。請確認顏色與數字是否能接續。","bad");
+    return;
+  }
+
+  group.tiles=sortGroupTiles(combined,analysis);
+  group.analysis=analysis;
+  group.owner=`${group.owner}＋你`;
+
+  hand=hand.filter(tile=>!selected.has(tile.uid));
+  selected.clear();
+
+  const addedValue=Math.max(
+    tiles.reduce((sum,tile)=>sum+(tile.joker?0:tile.number),0),
+    analysis.value-oldValue
+  );
+
+  score+=Math.max(0,addedValue)+tiles.length*10;
+
+  localStorage.setItem(
+    BEST_KEY,
+    String(Math.max(Number(localStorage.getItem(BEST_KEY)||0),score))
+  );
+
+  setMessage(`成功加入 ${tiles.length} 張牌：${analysis.label}。`,"good");
+  render();
+
+  if(!hand.length){
+    finishGame("你",true);
+    return;
+  }
+
+  setTimeout(runAiTurns,500);
 }
 
 function submitGroup(){
@@ -853,6 +963,12 @@ $("#rack").addEventListener("click",event=>{
   const id=Number(button.dataset.id);
   selected.has(id)?selected.delete(id):selected.add(id);
   render();
+});
+
+$("#table").addEventListener("click",event=>{
+  const button=event.target.closest("[data-extend-group]");
+  if(!button)return;
+  extendTableGroup(Number(button.dataset.extendGroup));
 });
 
 $("#play").addEventListener("click",submitGroup);
