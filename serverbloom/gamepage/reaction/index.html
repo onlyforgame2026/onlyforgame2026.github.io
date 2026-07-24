@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#180818">
+<title>櫻花反應測試｜ServerBloom</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:#fff;background:radial-gradient(circle at 80% 0,#48133f,transparent 38%),radial-gradient(circle at 15% 80%,#17384c,transparent 36%),#090710}
+button{font:inherit;color:inherit}.top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #35223a;background:rgba(9,7,16,.9)}
+.back{padding:9px 14px;border:1px solid #51344e;border-radius:999px;color:#fff;text-decoration:none;background:#1b1220}.wrap{width:min(980px,calc(100% - 24px));margin:auto;padding:26px 0 60px}
+h1{margin:0;font-size:clamp(31px,5vw,56px)}.lead{color:#cdb9ca;line-height:1.7}.stats{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}.pill{padding:8px 12px;border:1px solid #4b314a;border-radius:999px;background:#1b1220;font-weight:850}
+.pad{position:relative;width:100%;min-height:min(64vh,560px);overflow:hidden;border:1px solid #4f3550;border-radius:24px;background:linear-gradient(145deg,#201322,#0c0a12);cursor:pointer;user-select:none;touch-action:manipulation;box-shadow:0 25px 70px rgba(0,0,0,.35);transition:.18s ease}
+.pad.waiting{background:radial-gradient(circle at 50% 45%,#33253d,#120d18 65%)}.pad.go{background:radial-gradient(circle at 50% 45%,#fff4bc 0,#ff91bd 18%,#d64e9c 43%,#47133f 100%);box-shadow:0 0 55px rgba(255,104,170,.5)}
+.content{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px}.flower{font-size:clamp(80px,18vw,180px);filter:drop-shadow(0 0 24px rgba(255,255,255,.38));transition:.18s ease}.go .flower{transform:scale(1.18) rotate(8deg);filter:drop-shadow(0 0 34px #fff)}
+.title{margin:10px 0 5px;font-size:clamp(27px,5vw,50px);font-weight:1000}.subtitle{color:#d3c3d0;font-size:clamp(14px,2.2vw,19px)}.go .subtitle{color:#fff}
+.results{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:14px}.result{min-height:66px;display:grid;place-items:center;padding:8px;border:1px solid #402b42;border-radius:13px;color:#bbaebc;background:#140e18;font-weight:900}.result.done{color:#fff;border-color:#ff73ae;background:#39142f}
+.hint{text-align:center;margin-top:14px;color:#9f8f9f}.petal{position:absolute;top:-30px;font-size:20px;pointer-events:none;animation:fall linear forwards}@keyframes fall{to{transform:translate(var(--drift),calc(100vh + 80px)) rotate(420deg);opacity:0}}
+@media(max-width:600px){.pad{min-height:58vh}.top{padding:11px 12px}.results{gap:5px}.result{font-size:12px}}
+</style>
+</head>
+<body>
+<header class="top"><strong>⚡ ServerBloom · Sakura Reflex</strong><a class="back" href="../">← 遊戲大廳</a></header>
+<main class="wrap">
+<h1>櫻花反應速度測試</h1>
+<p class="lead">等待櫻花真正綻放後再點擊。太早點會判定偷跑；完成 5 回合後計算平均反應速度。</p>
+<div class="stats"><span class="pill">回合 <b id="round">0</b>/5</span><span class="pill">目前平均 <b id="average">—</b></span><span class="pill">最快反應 <b id="fastest">—</b></span><span class="pill">個人最佳 <b id="best">—</b></span></div>
+<section class="pad" id="pad" tabindex="0" role="button" aria-label="反應測試區">
+<div class="content"><div><div class="flower" id="flower">🌸</div><div class="title" id="title">點一下開始</div><div class="subtitle" id="subtitle">開始後先等待，不要預判。</div></div></div>
+</section>
+<div class="results" id="results"></div>
+<p class="hint">電腦可用滑鼠或 Space；手機直接觸碰中央區域。</p>
+</main>
+<script>
+"use strict";
+const BEST_MS_KEY="serverbloom_fastest_reaction_ms";
+const SCORE_KEY="serverbloom_best_reaction";
+const $=s=>document.querySelector(s);
+let state="idle",round=0,values=[],timer=0,goAt=0;
+function render(){
+  $("#round").textContent=round;
+  $("#average").textContent=values.length?`${Math.round(values.reduce((a,b)=>a+b,0)/values.length)} ms`:"—";
+  $("#fastest").textContent=values.length?`${Math.min(...values)} ms`:"—";
+  const best=Number(localStorage.getItem(BEST_MS_KEY)||0);
+  $("#best").textContent=best?`${best} ms`:"—";
+  $("#results").innerHTML=Array.from({length:5},(_,i)=>`<div class="result ${values[i]?"done":""}">第 ${i+1} 回合<br>${values[i]?values[i]+" ms":"—"}</div>`).join("");
+}
+function setScreen(next,title,subtitle,flower="🌸"){
+  state=next;$("#pad").className=`pad ${next==="waiting"?"waiting":next==="go"?"go":""}`;
+  $("#title").textContent=title;$("#subtitle").textContent=subtitle;$("#flower").textContent=flower;
+}
+function scheduleRound(){
+  clearTimeout(timer);
+  setScreen("waiting","等待櫻花綻放…","現在點擊會判定偷跑。","🌸");
+  const delay=1500+Math.random()*3200;
+  timer=setTimeout(()=>{
+    goAt=performance.now();
+    setScreen("go","現在！","立刻點擊櫻花！","🌺");
+    bloomPetals();
+  },delay);
+}
+function start(){
+  clearTimeout(timer);round=0;values=[];render();scheduleRound();
+}
+function finish(){
+  const average=Math.round(values.reduce((a,b)=>a+b,0)/values.length);
+  const fastest=Math.min(...values);
+  const oldBest=Number(localStorage.getItem(BEST_MS_KEY)||0);
+  if(!oldBest||fastest<oldBest)localStorage.setItem(BEST_MS_KEY,String(fastest));
+  const score=Math.max(0,Math.round(2000-average));
+  localStorage.setItem(SCORE_KEY,String(Math.max(Number(localStorage.getItem(SCORE_KEY)||0),score)));
+  render();
+  const rank=average<220?"神速櫻花":average<300?"反應高手":average<400?"穩定發揮":"繼續暖身";
+  setScreen("finished",`${average} ms · ${rank}`,"點一下重新測試。","🏆");
+}
+function activate(){
+  if(state==="idle"||state==="finished"){start();return}
+  if(state==="waiting"){
+    clearTimeout(timer);
+    setScreen("false","太早了！","這回合不計分，稍後重新開始。","💥");
+    timer=setTimeout(scheduleRound,1100);
+    return;
+  }
+  if(state==="go"){
+    const reaction=Math.max(1,Math.round(performance.now()-goAt));
+    values.push(reaction);round++;render();
+    if(round>=5){finish();return}
+    setScreen("between",`${reaction} ms`,"準備下一回合…","✨");
+    timer=setTimeout(scheduleRound,1000);
+  }
+}
+function bloomPetals(){
+  for(let i=0;i<18;i++){
+    const petal=document.createElement("span");
+    petal.className="petal";petal.textContent=i%3?"🌸":"✨";
+    petal.style.left=`${Math.random()*100}%`;
+    petal.style.setProperty("--drift",`${-100+Math.random()*200}px`);
+    petal.style.animationDuration=`${2.2+Math.random()*2}s`;
+    document.body.appendChild(petal);
+    setTimeout(()=>petal.remove(),4500);
+  }
+}
+$("#pad").addEventListener("pointerdown",event=>{event.preventDefault();activate()});
+document.addEventListener("keydown",event=>{if(event.code==="Space"){event.preventDefault();activate()}});
+render();
+</script>
+</body>
+</html>
