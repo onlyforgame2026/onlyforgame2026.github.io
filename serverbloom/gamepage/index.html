@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#050914">
-  <meta name="description" content="ServerBloom 復古遊戲大廳：21 Points、貪吃蛇、Bloom Beat、俄羅斯方塊、射飛機與 2048。">
+  <meta name="description" content="ServerBloom 復古遊戲大廳：21 Points、貪吃蛇、Bloom Beat、俄羅斯方塊、射飛機、2048、櫻花拉密、記憶地磚與櫻花反應測試。">
   <title>復古遊戲｜ServerBloom</title>
   <style>
     :root{
@@ -455,7 +455,7 @@
         <header class="hero">
           <p class="eyebrow">ServerBloom Arcade</p>
           <h1>選一台遊戲機，<span class="gradient">現在就開玩</span></h1>
-          <p>六款經典遊戲重新開張。點封面進入遊戲；不確定怎麼玩，就按卡片右上角的 ❓。</p>
+          <p>九款經典遊戲重新開張。點封面進入遊戲；不確定怎麼玩，就按卡片右上角的 ❓。</p>
         </header>
 
         <div class="category-row" id="categoryRow" role="group" aria-label="遊戲分類"></div>
@@ -587,6 +587,46 @@
         desktop:"使用方向鍵或 W／A／S／D 推動全部方塊。",
         mobile:"在數字棋盤上往上、下、左、右滑動，也能使用方向按鈕。",
         tip:"盡量把最大數字固定在同一個角落；成功移動後才會出現新的 2 或 4。"
+      },
+
+      {
+        id:"rummy",
+        title:"Bloom Rummy",
+        zh:"櫻花拉密",
+        icon:"🀄",
+        category:"卡牌",
+        accent:"#ff8d5b",
+        tagline:"抽取 14 張拉密牌，組成同色順組或異色同數字組。",
+        goal:"點選至少 3 張牌，組成同色連續數字，或相同數字但不同顏色的合法牌組。第一次出牌總點數必須達到 30。",
+        desktop:"用滑鼠點牌選取，再按「檢查並出牌」。可使用排序、抽牌與重新開始。",
+        mobile:"直接點選牌面，再使用畫面下方的功能按鈕。",
+        tip:"先找 3 張同數字異色牌，通常比湊長順組更容易完成 30 分破冰。"
+      },
+      {
+        id:"memory",
+        title:"Bloom Memory",
+        zh:"櫻花記憶地磚",
+        icon:"🧠",
+        category:"益智",
+        accent:"#54d9bd",
+        tagline:"記住哪些地磚曾經發光，點選順序完全不重要。",
+        goal:"每關會增加棋盤大小與發光格數。看完示範後，把所有曾經發光的格子選出來；點擊順序不影響答案。",
+        desktop:"用滑鼠點擊地磚，完成後按「提交答案」。",
+        mobile:"直接觸碰地磚；可以再次點擊取消選取。",
+        tip:"不要硬記順序，把發光位置想成一個圖形，通常會比逐格背誦更容易。"
+      },
+      {
+        id:"reaction",
+        title:"Sakura Reflex",
+        zh:"櫻花反應測試",
+        icon:"⚡",
+        category:"動作",
+        accent:"#ff5d98",
+        tagline:"等櫻花真正綻放再點擊，五回合計算平均反應速度。",
+        goal:"畫面顯示等待時不能偷點；櫻花綻放後立刻點擊。完成 5 回合後會計算平均毫秒與最快成績。",
+        desktop:"用滑鼠點擊中央反應區，也可以按 Space。",
+        mobile:"直接觸碰中央反應區。",
+        tip:"眼睛盯著中央，不要預判時間；太早點擊會被判定偷跑。"
       }
     ];
 
@@ -679,7 +719,10 @@
         rhythm:"rhythm/",
         tetris:"tetris/",
         shooter:"shooter/",
-        game2048:"2048/"
+        game2048:"2048/",
+        rummy:"rummy/",
+        memory:"memory/",
+        reaction:"reaction/"
       };
       if(standaloneRoutes[id]){
         window.location.href = standaloneRoutes[id];
@@ -729,7 +772,10 @@
         rhythm:"rhythm/",
         tetris:"tetris/",
         shooter:"shooter/",
-        game2048:"2048/"
+        game2048:"2048/",
+        rummy:"rummy/",
+        memory:"memory/",
+        reaction:"reaction/"
       };
       if(standaloneRoutes[id]){
         window.location.replace(standaloneRoutes[id]);
