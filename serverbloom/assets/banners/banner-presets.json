@@ -1263,5 +1263,19 @@
       "歷史背景",
       "圖片"
     ]
+  },
+  {
+    "id": "100-lee-da-hye",
+    "name": "Lee Da Hye",
+    "file": "100-lee-da-hye.png",
+    "category": "character",
+    "color": "pink",
+    "tags": [
+      "人物",
+      "啦啦隊",
+      "棒球",
+      "韓系",
+      "粉色"
+    ]
   }
 ]
