@@ -64,10 +64,7 @@ edit.innerHTML = `<form novalidate>
       <option value="30">置頂 30 天後回原位</option>
       <option value="clear">清除排程</option>
     </select></label>
-    <label>到期處理<select name="expiry_action">
-      <option value="normal">到期回原位</option>
-      <option value="unpublish">到期自動下架</option>
-    </select></label>
+    <p class="sb-admin-expiry-note">到期後會自動回到原始位置，不會下架。</p>
     <label>開始時間<input name="starts_at" type="datetime-local"></label>
     <label>到期日<input name="expires_at" type="datetime-local"></label>
     <label class="sb-admin-check"><span>鎖定前 3 格</span><input name="locked" type="checkbox"></label>
@@ -122,10 +119,10 @@ function normalizeRow(row, index) {
     position: Number(row.position || index + 1),
     original_position: originalPosition,
     status: row.status || 'published',
-    expiry_action: row.expiry_action || 'normal',
+    expiry_action: 'normal',
     starts_at: safeTimestamp(row.starts_at),
-    // End-time scheduling was removed. Expiry is the single source of truth
-    // for either unpublishing a card or returning it to its original position.
+    // End-time scheduling and unpublishing were retired. Expiry always returns
+    // a card to its original position.
     ends_at: null,
     expires_at: safeTimestamp(row.expires_at),
     locked: !!row.locked
@@ -214,7 +211,7 @@ function statusText(server) {
   if (server.locked) parts.push('鎖定');
   if (server.starts_at) parts.push(`開始 ${new Date(server.starts_at).toLocaleString()}`);
   if (server.expires_at) {
-    parts.push(`${server.expiry_action === 'normal' ? '到期回原位' : '到期下架'} ${new Date(server.expires_at).toLocaleString()}`);
+    parts.push(`到期回原位 ${new Date(server.expires_at).toLocaleString()}`);
   }
   return parts.join('｜');
 }
@@ -302,7 +299,6 @@ function openEdit(index) {
   form.position.value = String(index + 1);
   form.status.value = server.status || 'published';
   form.duration.value = '';
-  form.expiry_action.value = server.expiry_action || 'normal';
   form.starts_at.value = toLocalDateTime(server.starts_at);
   form.expires_at.value = toLocalDateTime(server.expires_at);
   form.locked.checked = !!server.locked;
@@ -329,7 +325,7 @@ edit.querySelector('form').onsubmit = event => {
   server.starts_at = automaticDuration ? null : fromLocalDateTime(form.starts_at.value);
   server.ends_at = null;
   server.expires_at = automaticDuration ? null : fromLocalDateTime(form.expires_at.value);
-  server.expiry_action = form.expiry_action.value;
+  server.expiry_action = 'normal';
   server.locked = form.locked.checked;
 
   if (automaticDuration) {
@@ -366,7 +362,7 @@ async function publish() {
     ends_at: null,
     expires_at: server.expires_at,
     locked: !!server.locked && index < 3,
-    expiry_action: server.expiry_action || 'normal'
+    expiry_action: 'normal'
   }));
   const { error } = await client().rpc('publish_server_cards', { card_changes: payload });
   if (error) throw error;

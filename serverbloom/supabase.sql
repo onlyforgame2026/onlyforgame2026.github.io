@@ -21,7 +21,7 @@ create table if not exists public.server_cards (
   ends_at timestamptz,
   expires_at timestamptz,
   locked boolean not null default false,
-  expiry_action text not null default 'unpublish' check (expiry_action in ('unpublish','normal')),
+  expiry_action text not null default 'normal' check (expiry_action in ('unpublish','normal')),
   updated_at timestamptz not null default now(),
   updated_by uuid
 );
@@ -48,8 +48,11 @@ create table if not exists public.server_card_history (
   created_by uuid not null
 );
 
--- End-time scheduling has been retired; expiry_action is now the only expiry rule.
+-- End-time scheduling and unpublishing have been retired. Expiry always returns
+-- a card to its original position.
 update public.server_cards set ends_at = null where ends_at is not null;
+update public.server_cards set expiry_action = 'normal' where expiry_action <> 'normal';
+alter table public.server_cards alter column expiry_action set default 'normal';
 
 alter table public.server_cards enable row level security;
 alter table public.server_card_history enable row level security;
@@ -59,7 +62,6 @@ create policy "public reads active published cards" on public.server_cards for s
 using (
   status = 'published'
   and (starts_at is null or starts_at <= now())
-  and (expires_at is null or expires_at > now() or expiry_action = 'normal')
 );
 
 drop policy if exists "admin manages cards" on public.server_cards;
@@ -126,7 +128,7 @@ begin
       starts_at=(change->>'starts_at')::timestamptz, ends_at=null,
       expires_at=(change->>'expires_at')::timestamptz,
       locked=coalesce((change->>'locked')::boolean,false) and (change->>'position')::integer <= 3,
-      expiry_action=case when change->>'expiry_action' in ('unpublish','normal') then change->>'expiry_action' else 'unpublish' end,
+      expiry_action='normal',
       updated_at=now(),updated_by=auth.uid()
     where id=(change->>'id')::uuid;
   end loop;
@@ -147,7 +149,7 @@ begin
   )
   select
     id,server_id,name,category,invite_url,tags,description,color,icon,banner,custom_banner,banner_preset,
-    position,coalesce(original_position,position),status,starts_at,null,expires_at,locked,expiry_action,updated_at,updated_by
+    position,coalesce(original_position,position),status,starts_at,null,expires_at,locked,'normal',updated_at,updated_by
   from jsonb_populate_recordset(null::server_cards,previous);
   delete from server_card_history where id=(select id from server_card_history where created_by=auth.uid() order by id desc limit 1);
 end $$;
