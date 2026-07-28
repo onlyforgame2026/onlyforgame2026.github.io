@@ -80,16 +80,21 @@ as $$ select coalesce(auth.jwt() ->> 'email','') = 'alyonayona0801@gmail.com' $$
 create or replace function public.bootstrap_server_cards(initial_cards jsonb) returns void
 language plpgsql security definer set search_path = public
 as $$
-declare card jsonb; n integer := 0;
+declare card jsonb; n integer := 0; safe_server_id text;
 begin
   if not public.is_serverbloom_admin() then raise exception 'not authorized'; end if;
   if exists(select 1 from server_cards) then return; end if;
   if jsonb_typeof(initial_cards) <> 'array' or jsonb_array_length(initial_cards) > 200 then raise exception 'invalid payload'; end if;
   for card in select * from jsonb_array_elements(initial_cards) loop
     n := n + 1;
+    safe_server_id := left(nullif(trim(both '-' from regexp_replace(lower(coalesce(nullif(card->>'id',''),'server-'||n)), '[^a-z0-9_-]+', '-', 'g')), ''), 80);
+    if safe_server_id is null then safe_server_id := 'server-'||n; end if;
+    if exists(select 1 from server_cards where server_id = safe_server_id) then
+      safe_server_id := left(safe_server_id,70) || '-' || n;
+    end if;
     insert into server_cards(server_id,name,category,invite_url,tags,description,color,icon,banner,custom_banner,banner_preset,position,original_position,status,updated_by)
     values (
-      left(coalesce(nullif(card->>'id',''),'server-'||n),80),
+      safe_server_id,
       left(card->>'name',80), left(coalesce(card->>'category','其他'),30), card->>'inviteUrl',
       coalesce(card->'tags','[]'::jsonb), left(coalesce(card->>'description',''),1000),
       case when coalesce(card->>'color',card->>'primaryColor','#755cff') ~ '^#[0-9A-Fa-f]{6}$' then coalesce(card->>'color',card->>'primaryColor','#755cff') else '#755cff' end,

@@ -121,6 +121,30 @@ function normalizeRow(row, index) {
   };
 }
 
+function safeServerId(value, index) {
+  const normalized = String(value || `server-${index + 1}`)
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+  return normalized || `server-${index + 1}`;
+}
+
+function prepareBootstrapCards(cards) {
+  const seen = new Set();
+  return cards.map((card, index) => {
+    const base = safeServerId(card.id || card.slug || card.name, index);
+    let id = base;
+    if (seen.has(id)) id = `${base.slice(0, 70) || 'server'}-${index + 1}`;
+    seen.add(id);
+    return {
+      ...card,
+      id
+    };
+  });
+}
+
 async function load() {
   await assertAdmin();
   say('讀取後台資料中...');
@@ -130,7 +154,7 @@ async function load() {
 
   if (!servers.length && window.ServerBloomData) {
     const current = await window.ServerBloomData.loadServers();
-    const { error: bootstrapError } = await client().rpc('bootstrap_server_cards', { initial_cards: current });
+    const { error: bootstrapError } = await client().rpc('bootstrap_server_cards', { initial_cards: prepareBootstrapCards(current) });
     if (bootstrapError) throw bootstrapError;
     const { data: imported, error: importReadError } = await client().from('server_cards').select('*').order('position', { ascending: true });
     if (importReadError) throw importReadError;
