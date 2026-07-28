@@ -100,6 +100,7 @@
 
 .sb-admin-list {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin-top: 18px;
 }
@@ -114,7 +115,7 @@
 
 .sb-admin-row {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   padding: 12px;
@@ -162,10 +163,16 @@
 }
 
 .sb-admin-row-actions {
-  display: flex;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+}
+
+@media (max-width: 980px) {
+  .sb-admin-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .sb-admin-edit {
@@ -239,14 +246,16 @@
     padding: 14px;
   }
 
+  .sb-admin-list {
+    grid-template-columns: 1fr;
+  }
+
   .sb-admin-row {
     grid-template-columns: 34px minmax(0, 1fr);
   }
 
   .sb-admin-row-actions {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .sb-admin-actions {
