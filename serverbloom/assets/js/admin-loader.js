@@ -12,7 +12,7 @@
     loading = true;
     const css = document.createElement('link');
     css.rel = 'stylesheet';
-    css.href = 'assets/css/admin.css?v=2';
+    css.href = 'assets/css/admin.css?v=3';
     document.head.appendChild(css);
     const script = document.createElement('script');
     script.type = 'module';
