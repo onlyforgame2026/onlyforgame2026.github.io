@@ -121,16 +121,20 @@ async function load() {
 }
 
 function sortDraft() {
-  servers.sort((a, b) => a.target_rank - b.target_rank || b.lock_top_three - a.lock_top_three || a.original_rank - b.original_rank);
-  servers.forEach((server, index) => { server.target_rank = index + 1; });
+  return servers
+    .map((server, dataIndex) => ({ server, dataIndex }))
+    .sort((a, b) =>
+      a.server.target_rank - b.server.target_rank ||
+      Number(b.server.lock_top_three) - Number(a.server.lock_top_three) ||
+      a.server.original_rank - b.server.original_rank
+    );
 }
 
 function move(from, to) {
-  to = Math.max(0, Math.min(servers.length - 1, Number(to)));
-  if (!Number.isInteger(from) || from === to) return;
-  const [item] = servers.splice(from, 1);
-  servers.splice(to, 0, item);
-  servers.forEach((server, index) => { server.target_rank = index + 1; });
+  if (!Number.isInteger(from) || !servers[from]) return;
+  const targetRank = Math.max(1, Math.min(servers.length, Number(to) + 1));
+  if (servers[from].target_rank === targetRank) return;
+  servers[from].target_rank = targetRank;
   render();
 }
 
@@ -144,31 +148,30 @@ function statusText(server) {
 }
 
 function render() {
-  sortDraft();
   const list = overlay.querySelector('.sb-admin-list');
   list.replaceChildren();
-  servers.forEach((server, index) => {
+  sortDraft().forEach(({ server, dataIndex }, displayIndex) => {
     const row = document.createElement('div');
     row.className = 'sb-admin-row';
     row.draggable = true;
-    row.innerHTML = `<strong>${index + 1}</strong><div class="sb-admin-row-main"><b></b><small></small></div>
+    row.innerHTML = `<strong>${displayIndex + 1}</strong><div class="sb-admin-row-main"><b></b><small></small></div>
       <div class="sb-admin-row-actions"><button data-up>↑</button><button data-down>↓</button><button data-move>移至</button><button data-edit>編輯</button></div>`;
     row.querySelector('b').textContent = server.name || server.server_id;
     row.querySelector('small').textContent = statusText(server);
-    row.ondragstart = event => event.dataTransfer.setData('text/plain', String(index));
+    row.ondragstart = event => event.dataTransfer.setData('text/plain', String(dataIndex));
     row.ondragover = event => event.preventDefault();
-    row.ondrop = event => { event.preventDefault(); move(Number(event.dataTransfer.getData('text/plain')), index); };
-    row.oncontextmenu = event => { event.preventDefault(); openEdit(index); };
+    row.ondrop = event => { event.preventDefault(); move(Number(event.dataTransfer.getData('text/plain')), displayIndex); };
+    row.oncontextmenu = event => { event.preventDefault(); openEdit(dataIndex); };
     let timer;
-    row.ontouchstart = () => { timer = setTimeout(() => openEdit(index), 650); };
+    row.ontouchstart = () => { timer = setTimeout(() => openEdit(dataIndex), 650); };
     row.ontouchend = row.ontouchmove = () => clearTimeout(timer);
-    row.querySelector('[data-up]').onclick = () => move(index, index - 1);
-    row.querySelector('[data-down]').onclick = () => move(index, index + 1);
+    row.querySelector('[data-up]').onclick = () => move(dataIndex, displayIndex - 1);
+    row.querySelector('[data-down]').onclick = () => move(dataIndex, displayIndex + 1);
     row.querySelector('[data-move]').onclick = () => {
-      const rank = Number.parseInt(prompt('移至第幾格？', String(index + 1)), 10);
-      if (Number.isInteger(rank)) move(index, rank - 1);
+      const rank = Number.parseInt(prompt('移至第幾格？', String(server.target_rank)), 10);
+      if (Number.isInteger(rank)) move(dataIndex, rank - 1);
     };
-    row.querySelector('[data-edit]').onclick = () => openEdit(index);
+    row.querySelector('[data-edit]').onclick = () => openEdit(dataIndex);
     list.appendChild(row);
   });
 }
@@ -234,7 +237,23 @@ async function publish() {
   if (Date.now() - lastWrite < 3000) throw new Error('操作太頻繁，請 3 秒後再發布。');
   lastWrite = Date.now();
   await assertAdmin();
-  const payload = servers.map(server => ({
+  const baselineById = new Map(baseline.map(server => [server.id, server]));
+  const comparable = server => JSON.stringify({
+    target_rank: Number(server.target_rank),
+    starts_at: server.starts_at || null,
+    ends_at: server.ends_at || null,
+    expiry_action: server.expiry_action,
+    published: Boolean(server.published),
+    lock_top_three: Boolean(server.lock_top_three)
+  });
+  const changed = servers.filter(server =>
+    !baselineById.has(server.id) || comparable(server) !== comparable(baselineById.get(server.id))
+  );
+  if (!changed.length) {
+    say('沒有需要發布的變更。');
+    return;
+  }
+  const payload = changed.map(server => ({
     id: server.id, target_rank: server.target_rank, starts_at: server.starts_at,
     ends_at: server.ends_at, expiry_action: server.expiry_action,
     published: server.published, lock_top_three: server.lock_top_three

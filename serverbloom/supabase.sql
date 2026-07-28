@@ -1,5 +1,7 @@
 -- ServerBloom ranking scheduler. Run the whole file in Supabase SQL Editor.
 -- Never put a service_role key in the website.
+begin;
+
 create extension if not exists pgcrypto;
 
 create table if not exists public.server_cards (
@@ -32,6 +34,9 @@ alter table public.server_cards add column if not exists original_rank integer;
 alter table public.server_cards add column if not exists target_rank integer;
 alter table public.server_cards add column if not exists published boolean;
 alter table public.server_cards add column if not exists lock_top_three boolean;
+-- The legacy constraint accepts only normal/unpublish. It must be removed
+-- before any legacy value is converted to restore.
+alter table public.server_cards drop constraint if exists server_cards_expiry_action_check;
 do $$
 begin
   if exists(select 1 from information_schema.columns where table_schema='public' and table_name='server_cards' and column_name='position') then
@@ -42,6 +47,17 @@ begin
   end if;
   if exists(select 1 from information_schema.columns where table_schema='public' and table_name='server_cards' and column_name='locked') then
     execute 'update public.server_cards set lock_top_three=coalesce(lock_top_three,locked,false)';
+  end if;
+  -- Legacy columns remain readable for rollback compatibility, but may no
+  -- longer block inserts made by the new schema.
+  if exists(select 1 from information_schema.columns where table_schema='public' and table_name='server_cards' and column_name='position') then
+    execute 'alter table public.server_cards alter column position drop not null';
+  end if;
+  if exists(select 1 from information_schema.columns where table_schema='public' and table_name='server_cards' and column_name='original_position') then
+    execute 'alter table public.server_cards alter column original_position drop not null';
+  end if;
+  if exists(select 1 from information_schema.columns where table_schema='public' and table_name='server_cards' and column_name='status') then
+    execute 'alter table public.server_cards alter column status drop not null';
   end if;
 end $$;
 update public.server_cards set
@@ -56,7 +72,7 @@ alter table public.server_cards alter column published set default true;
 alter table public.server_cards alter column published set not null;
 alter table public.server_cards alter column lock_top_three set default false;
 alter table public.server_cards alter column lock_top_three set not null;
-alter table public.server_cards drop constraint if exists server_cards_expiry_action_check;
+alter table public.server_cards alter column expiry_action set default 'restore';
 alter table public.server_cards add constraint server_cards_expiry_action_check
   check (expiry_action in ('restore','keep','unpublish'));
 alter table public.server_cards drop constraint if exists valid_schedule_window;
@@ -100,10 +116,8 @@ returns table (
 )
 language sql stable security definer set search_path = public
 as $$
-  with state as (
+  with recursive state as (
     select c.*,
-      (c.starts_at is null or c.starts_at <= now()) as has_started,
-      (c.ends_at is not null and c.ends_at <= now()) as has_ended,
       case
         when c.ends_at is not null and c.ends_at <= now() and c.expiry_action = 'unpublish' then false
         else c.published
@@ -119,18 +133,52 @@ as $$
         else c.lock_top_three
       end as active_lock
     from public.server_cards c
-  ), ordered as (
-    select s.*, row_number() over (
-      order by
-        case when active_lock then least(desired_rank,3) else desired_rank end,
-        active_lock desc, updated_at desc, original_rank, server_id
-    ) as effective_rank
-    from state s where is_visible
+  ), visible as (
+    select * from state where is_visible
+  ), locked_order as (
+    select v.*, row_number() over (
+      order by desired_rank, updated_at desc, original_rank, server_id
+    ) as lock_order
+    from visible v where active_lock
+  ), lock_slots(lock_order,id,used,slot) as (
+    select 0::bigint, null::uuid, array[]::integer[], null::integer
+    union all
+    select candidate.lock_order, candidate.id, previous.used || choice.slot, choice.slot
+    from lock_slots previous
+    join locked_order candidate on candidate.lock_order = previous.lock_order + 1
+    cross join lateral (
+      select proposed.slot
+      from (
+        select least(candidate.desired_rank, (select count(*)::integer from visible)) as slot, 0 as fallback
+        union all
+        select generate_series(1, least(3, (select count(*)::integer from visible))), 1
+      ) proposed
+      where proposed.slot <> all(previous.used)
+      order by proposed.fallback, proposed.slot
+      limit 1
+    ) choice
+  ), assigned_locks as (
+    select lo.*, ls.slot::bigint as effective_rank
+    from locked_order lo join lock_slots ls using (lock_order)
+  ), general_order as (
+    select v.*, row_number() over (
+      order by desired_rank, updated_at desc, original_rank, server_id
+    ) as general_order
+    from visible v where not active_lock
+  ), available_slots as (
+    select slot, row_number() over (order by slot) as general_order
+    from generate_series(1, (select count(*)::integer from visible)) slot
+    where slot not in (select effective_rank::integer from assigned_locks)
+  ), ranked as (
+    select al.* from assigned_locks al
+    union all
+    select go.*, slots.slot::bigint as effective_rank
+    from general_order go join available_slots slots using (general_order)
   )
   select id,server_id,name,category,invite_url,tags,description,color,icon,banner,
     custom_banner,banner_preset,original_rank,target_rank,starts_at,ends_at,
     expiry_action,published,active_lock,effective_rank
-  from ordered order by effective_rank;
+  from ranked order by effective_rank;
 $$;
 revoke all on function public.public_serverbloom_cards() from public;
 grant execute on function public.public_serverbloom_cards() to anon, authenticated;
@@ -161,28 +209,51 @@ end $$;
 create or replace function public.publish_server_cards(card_changes jsonb) returns void
 language plpgsql security definer set search_path = public
 as $$
-declare change jsonb; start_time timestamptz; end_time timestamptz;
+declare change jsonb; start_time timestamptz; end_time timestamptz; change_order integer := 0;
 begin
   if not public.is_serverbloom_admin() then raise exception '未授權'; end if;
   if jsonb_typeof(card_changes) <> 'array' or jsonb_array_length(card_changes) > 200 then raise exception '資料格式無效'; end if;
+  if jsonb_array_length(card_changes) = 0 then return; end if;
   if exists(select 1 from server_card_history where created_by=auth.uid() and created_at>now()-interval '3 seconds') then raise exception '操作太頻繁'; end if;
   insert into server_card_history(snapshot,created_by)
     select coalesce(jsonb_agg(to_jsonb(c) order by original_rank),'[]'::jsonb),auth.uid() from server_cards c;
   for change in select * from jsonb_array_elements(card_changes) loop
+    change_order := change_order + 1;
     start_time := nullif(change->>'starts_at','')::timestamptz;
     end_time := nullif(change->>'ends_at','')::timestamptz;
     if start_time is not null and end_time is not null and end_time <= start_time then
       raise exception '結束時間必須晚於開始時間';
+    end if;
+    if coalesce((change->>'lock_top_three')::boolean,false)
+       and (change->>'target_rank')::integer not between 1 and 3 then
+      raise exception '鎖定前 3 格的指定位置必須介於 1 到 3';
     end if;
     update server_cards set
       target_rank=greatest(1,least(10000,(change->>'target_rank')::integer)),
       starts_at=start_time, ends_at=end_time,
       expiry_action=case when change->>'expiry_action' in ('restore','keep','unpublish') then change->>'expiry_action' else 'restore' end,
       published=coalesce((change->>'published')::boolean,false),
-      lock_top_three=coalesce((change->>'lock_top_three')::boolean,false) and (change->>'target_rank')::integer <= 3,
-      updated_at=now(),updated_by=auth.uid()
+      lock_top_three=coalesce((change->>'lock_top_three')::boolean,false),
+      updated_at=clock_timestamp() + change_order * interval '1 microsecond',updated_by=auth.uid()
     where id=(change->>'id')::uuid;
   end loop;
+  if exists (
+    with points as (
+      select now() as point
+      union
+      select starts_at from server_cards
+      where published and lock_top_three and starts_at is not null
+    )
+    select 1 from points p
+    where (
+      select count(*) from server_cards c
+      where c.published and c.lock_top_three
+        and (c.starts_at is null or c.starts_at <= p.point)
+        and (c.ends_at is null or c.ends_at > p.point)
+    ) > 3
+  ) then
+    raise exception '同一時間不可有超過 3 張有效的鎖定卡片';
+  end if;
 end $$;
 
 create or replace function public.reset_server_card_schedules() returns void
@@ -217,3 +288,5 @@ grant execute on function public.bootstrap_server_cards(jsonb) to authenticated;
 grant execute on function public.publish_server_cards(jsonb) to authenticated;
 grant execute on function public.reset_server_card_schedules() to authenticated;
 grant execute on function public.restore_previous_server_cards() to authenticated;
+
+commit;
