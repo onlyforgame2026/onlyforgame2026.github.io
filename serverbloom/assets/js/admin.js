@@ -48,7 +48,7 @@ document.body.appendChild(overlay);
 const edit = document.createElement('div');
 edit.className = 'sb-admin-edit';
 edit.hidden = true;
-edit.innerHTML = `<form>
+edit.innerHTML = `<form novalidate>
   <h3>編輯卡片位置與排程</h3>
   <p class="sb-admin-edit-name"></p>
   <div class="sb-admin-edit-grid">
@@ -85,7 +85,9 @@ const say = message => statusEls.forEach(el => { el.textContent = message || '';
 const toLocalDateTime = value => {
   if (!value) return '';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
+  // A malformed value such as year 0026 makes Chrome's native date control
+  // impossible to submit. Treat it as empty instead of trapping the editor.
+  if (Number.isNaN(date.getTime()) || date.getFullYear() < 2020 || date.getFullYear() > 2100) return '';
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
@@ -307,14 +309,23 @@ edit.querySelector('form').onsubmit = event => {
   const server = servers[editing];
   const duration = form.duration.value;
 
+  const automaticDuration = duration === '7' || duration === '30';
+  const invalidManualDate = !automaticDuration && [form.starts_at, form.ends_at, form.expires_at]
+    .some(input => input.value && !input.validity.valid);
+  if (invalidManualDate) {
+    window.alert('請把日期與時間都填完整，例如 2026/07/29 12:00；不需要手動排程時請清空該欄位。');
+    return;
+  }
+
   server.status = form.status.value;
-  server.starts_at = fromLocalDateTime(form.starts_at.value);
-  server.ends_at = fromLocalDateTime(form.ends_at.value);
-  server.expires_at = fromLocalDateTime(form.expires_at.value);
+  // Quick 7/30-day schedules deliberately ignore incomplete manual date fields.
+  server.starts_at = automaticDuration ? null : fromLocalDateTime(form.starts_at.value);
+  server.ends_at = automaticDuration ? null : fromLocalDateTime(form.ends_at.value);
+  server.expires_at = automaticDuration ? null : fromLocalDateTime(form.expires_at.value);
   server.expiry_action = form.expiry_action.value;
   server.locked = form.locked.checked;
 
-  if (duration === '7' || duration === '30') {
+  if (automaticDuration) {
     const days = Number(duration);
     server.status = 'published';
     server.starts_at = new Date().toISOString();
