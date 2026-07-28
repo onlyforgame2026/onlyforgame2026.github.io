@@ -77,6 +77,21 @@ grant select on public.server_cards to anon, authenticated;
 grant insert, update, delete on public.server_cards to authenticated;
 grant select on public.server_card_history to authenticated;
 
+-- Public visitors use this deliberately limited read path. Draft cards and
+-- cards whose start time has not arrived can never be returned.
+create or replace function public.public_serverbloom_cards()
+returns setof public.server_cards
+language sql stable security definer set search_path = public
+as $$
+  select *
+  from public.server_cards
+  where status = 'published'
+    and (starts_at is null or starts_at <= now())
+  order by locked desc, position asc;
+$$;
+revoke all on function public.public_serverbloom_cards() from public, anon, authenticated;
+grant execute on function public.public_serverbloom_cards() to anon, authenticated;
+
 create or replace function public.is_serverbloom_admin() returns boolean
 language sql stable security definer set search_path = public
 as $$ select coalesce(auth.jwt() ->> 'email','') = 'alyonayona0801@gmail.com' $$;

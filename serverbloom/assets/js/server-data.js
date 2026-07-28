@@ -6,8 +6,19 @@
   async function loadSupabaseServers() {
     const config = window.SERVERBLOOM_SUPABASE || {};
     if (!/^https:\/\/[^.]+\.supabase\.co$/.test(config.url || '') || !config.anonKey || config.anonKey.includes('YOUR_')) return [];
-    const response = await fetch(`${config.url}/rest/v1/server_cards?select=*&order=locked.desc,position.asc`, {
-      headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}` },
+    const headers = { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}` };
+    // This RPC exposes only published cards that have started. It keeps the
+    // public page working even if table-level RLS is made stricter later.
+    let response = await fetch(`${config.url}/rest/v1/rpc/public_serverbloom_cards`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: '{}',
+      cache: 'no-store'
+    });
+    // Existing installations continue to work until the one-time SQL update
+    // is run in Supabase.
+    if (!response.ok) response = await fetch(`${config.url}/rest/v1/server_cards?select=*&order=locked.desc,position.asc`, {
+      headers,
       cache: 'no-store'
     });
     if (!response.ok) throw new Error('Supabase cards unavailable');
