@@ -4,39 +4,31 @@ const ADMIN = 'alyonayona0801@gmail.com';
 const config = window.SERVERBLOOM_SUPABASE || {};
 const configured = /^https:\/\/[^.]+\.supabase\.co$/.test(config.url || '') &&
   config.anonKey && !config.anonKey.includes('YOUR_');
-
 let supabase;
 let servers = [];
-let original = [];
-let editing = null;
-let dragIndex = null;
+let baseline = [];
+let editing = -1;
 let lastWrite = 0;
 
 const overlay = document.createElement('div');
 overlay.className = 'sb-admin-overlay';
 overlay.hidden = true;
 overlay.innerHTML = `<section class="sb-admin" role="dialog" aria-modal="true" aria-labelledby="sbAdminTitle">
-  <header class="sb-admin-head">
-    <h2 id="sbAdminTitle">ServerBloom 管理後台</h2>
-    <button data-close aria-label="關閉">✕</button>
-  </header>
+  <header class="sb-admin-head"><h2 id="sbAdminTitle">ServerBloom 管理後台</h2><button data-close aria-label="關閉">×</button></header>
   <div class="sb-admin-body">
     <div class="sb-admin-login">
-      <p>僅限指定管理員，以 Email 六位數驗證碼登入。</p>
-      <label>Email<input id="sbEmail" type="email" autocomplete="email" value="${ADMIN}" readonly></label>
+      <p>管理員使用 Email 六位數驗證碼登入。</p>
+      <label>Email<input id="sbEmail" type="email" value="${ADMIN}" readonly></label>
       <button class="primary" data-send>寄送驗證碼</button>
-      <label>6 位數驗證碼<input id="sbOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
+      <label>6 位數驗證碼<input id="sbOtp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}"></label>
       <button class="primary" data-verify>驗證並登入</button>
       <p class="sb-admin-status" role="status"></p>
     </div>
     <div class="sb-admin-console" hidden>
       <div class="sb-admin-actions">
-        <button class="primary" data-publish>發布變更</button>
-        <button data-preview>預覽</button>
-        <button data-cancel>取消變更</button>
-        <button data-reset-original>回原始排序</button>
-        <button data-restore>復原上一版</button>
-        <button data-logout>登出</button>
+        <button class="primary" data-publish>發布變更</button><button data-preview>預覽</button>
+        <button data-cancel>取消變更</button><button data-reset-original>回原始排序</button>
+        <button data-restore>復原上一版</button><button data-logout>登出</button>
       </div>
       <p class="sb-admin-status" role="status"></p>
       <div class="sb-admin-list" aria-label="Server 排序清單"></div>
@@ -49,242 +41,132 @@ const edit = document.createElement('div');
 edit.className = 'sb-admin-edit';
 edit.hidden = true;
 edit.innerHTML = `<form novalidate>
-  <h3>編輯卡片位置與排程</h3>
-  <p class="sb-admin-edit-name"></p>
+  <h3>編輯排名排程</h3><p class="sb-admin-edit-name"></p>
   <div class="sb-admin-edit-grid">
-    <label>指定格數<input name="position" type="number" min="1" required></label>
-    <label>狀態<select name="status">
-      <option value="published">已發布</option>
-      <option value="draft">草稿</option>
-      <option value="archived">下架</option>
+    <label>指定位置<input name="target_rank" type="number" min="1" required></label>
+    <label>發布狀態<select name="published"><option value="true">已發布</option><option value="false">未發布</option></select></label>
+    <label>快速排程<select name="quick">
+      <option value="unchanged">不變更時間</option><option value="now">立即開始</option>
+      <option value="1">1 天</option><option value="3">3 天</option><option value="7">7 天</option>
+      <option value="14">14 天</option><option value="30">30 天</option><option value="custom">自訂時間</option>
     </select></label>
-    <label>快速排程<select name="duration">
-      <option value="">不變更到期時間</option>
-      <option value="7">置頂 7 天後回原位</option>
-      <option value="30">置頂 30 天後回原位</option>
-      <option value="clear">清除排程</option>
+    <label>開始時間（Asia/Taipei）<input name="starts_at" type="datetime-local"></label>
+    <label>結束時間（Asia/Taipei）<input name="ends_at" type="datetime-local"></label>
+    <label>結束後處理<select name="expiry_action">
+      <option value="restore">回到原始位置</option><option value="keep">保持排程位置</option><option value="unpublish">自動下架</option>
     </select></label>
-    <p class="sb-admin-expiry-note">到期後會自動回到原始位置，不會下架。</p>
-    <label>開始時間<input name="starts_at" type="datetime-local"></label>
-    <label>到期日<input name="expires_at" type="datetime-local"></label>
-    <label class="sb-admin-check"><span>鎖定前 3 格</span><input name="locked" type="checkbox"></label>
+    <label class="sb-admin-check"><span>鎖定前 3 格</span><input name="lock_top_three" type="checkbox"></label>
   </div>
-  <div class="sb-admin-form-actions">
-    <button class="primary" type="submit">套用</button>
-    <button type="button" data-edit-close>取消</button>
-  </div>
+  <div class="sb-admin-form-actions"><button class="primary" type="submit">套用</button><button type="button" data-edit-close>取消</button></div>
 </form>`;
 document.body.appendChild(edit);
 
 const statusEls = overlay.querySelectorAll('.sb-admin-status');
 const say = message => statusEls.forEach(el => { el.textContent = message || ''; });
-const safeTimestamp = value => {
-  if (!value) return null;
+const clone = value => structuredClone(value);
+const toLocal = value => {
+  if (!value) return '';
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) || date.getFullYear() < 2020 || date.getFullYear() > 2100 ? null : value;
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).format(date).replace(' ', 'T');
 };
-const toLocalDateTime = value => {
-  const safeValue = safeTimestamp(value);
-  if (!safeValue) return '';
-  const date = new Date(safeValue);
-  // A malformed value such as year 0026 makes Chrome's native date control
-  // impossible to submit. Treat it as empty instead of trapping the editor.
-  const offset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+const taipeiToUtc = value => {
+  if (!value) return null;
+  const utc = new Date(`${value}:00+08:00`);
+  if (Number.isNaN(utc.getTime())) throw new Error('時間格式無效。');
+  return utc.toISOString();
 };
-const fromLocalDateTime = value => value ? new Date(value).toISOString() : null;
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const formatTaipei = value => value ? new Date(value).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }) : '無';
 
 function client() {
   if (!configured) throw new Error('請先在 supabase-config.js 填入 Supabase URL 與 anon key。');
   return supabase ||= createClient(config.url, config.anonKey, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      storageKey: 'serverbloom-admin-auth'
-    }
+    auth: { persistSession: true, autoRefreshToken: true, storageKey: 'serverbloom-admin-auth' }
   });
 }
 
 async function assertAdmin() {
   const { data, error } = await client().auth.getUser();
-  if (error || data.user?.email?.toLowerCase() !== ADMIN) throw new Error('目前登入帳號不是指定管理員。');
-  return data.user;
+  if (error || data.user?.email?.toLowerCase() !== ADMIN) throw new Error('目前帳號不是指定管理員。');
 }
 
-function normalizeRow(row, index) {
-  const originalPosition = Number(row.original_position || row.originalPosition || row.position || index + 1);
+function normalize(row, index) {
   return {
     ...row,
-    position: Number(row.position || index + 1),
-    original_position: originalPosition,
-    status: row.status || 'published',
-    expiry_action: 'normal',
-    starts_at: safeTimestamp(row.starts_at),
-    // End-time scheduling and unpublishing were retired. Expiry always returns
-    // a card to its original position.
-    ends_at: null,
-    expires_at: safeTimestamp(row.expires_at),
-    locked: !!row.locked
+    original_rank: Number(row.original_rank || row.original_position || row.position || index + 1),
+    target_rank: Number(row.target_rank || row.position || index + 1),
+    published: row.published ?? row.status === 'published',
+    lock_top_three: row.lock_top_three ?? row.locked ?? false,
+    expiry_action: ['restore', 'keep', 'unpublish'].includes(row.expiry_action) ? row.expiry_action : 'restore'
   };
-}
-
-function safeServerId(value, index) {
-  const normalized = String(value || `server-${index + 1}`)
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-  return normalized || `server-${index + 1}`;
-}
-
-function prepareBootstrapCards(cards) {
-  const seen = new Set();
-  return cards.map((card, index) => {
-    const base = safeServerId(card.id || card.slug || card.name, index);
-    let id = base;
-    if (seen.has(id)) id = `${base.slice(0, 70) || 'server'}-${index + 1}`;
-    seen.add(id);
-    return {
-      ...card,
-      id
-    };
-  });
 }
 
 async function load() {
   await assertAdmin();
-  say('讀取後台資料中...');
-  const { data, error } = await client().from('server_cards').select('*').order('position', { ascending: true });
+  const { data, error } = await client().from('server_cards').select('*').order('original_rank');
   if (error) throw error;
-  servers = (data || []).map(normalizeRow);
-
+  servers = (data || []).map(normalize);
   if (!servers.length && window.ServerBloomData) {
-    const current = await window.ServerBloomData.loadServers();
-    const { error: bootstrapError } = await client().rpc('bootstrap_server_cards', { initial_cards: prepareBootstrapCards(current) });
-    if (bootstrapError) throw bootstrapError;
-    const { data: imported, error: importReadError } = await client().from('server_cards').select('*').order('position', { ascending: true });
-    if (importReadError) throw importReadError;
-    servers = (imported || []).map(normalizeRow);
+    const initial = await window.ServerBloomData.loadServers();
+    const { error: importError } = await client().rpc('bootstrap_server_cards', { initial_cards: initial });
+    if (importError) throw importError;
+    return load();
   }
-
-  normalizePositions();
-  original = structuredClone(servers);
+  baseline = clone(servers);
   render();
-  say(servers.length ? `已載入 ${servers.length} 張 Server 卡片。` : '目前沒有 Server 卡片資料。');
+  say(`已載入 ${servers.length} 張 Server 卡片。`);
 }
 
-function normalizePositions() {
-  servers.forEach((server, index) => {
-    server.position = index + 1;
-    if (!Number.isFinite(Number(server.original_position))) server.original_position = index + 1;
-  });
+function sortDraft() {
+  servers.sort((a, b) => a.target_rank - b.target_rank || b.lock_top_three - a.lock_top_three || a.original_rank - b.original_rank);
+  servers.forEach((server, index) => { server.target_rank = index + 1; });
 }
 
 function move(from, to) {
-  to = clamp(Number(to), 0, servers.length - 1);
+  to = Math.max(0, Math.min(servers.length - 1, Number(to)));
   if (!Number.isInteger(from) || from === to) return;
   const [item] = servers.splice(from, 1);
   servers.splice(to, 0, item);
-  normalizePositions();
+  servers.forEach((server, index) => { server.target_rank = index + 1; });
   render();
-}
-
-function resetOriginalOrder() {
-  servers.sort((a, b) => Number(a.original_position || a.position) - Number(b.original_position || b.position));
-  servers.forEach((server, index) => {
-    server.position = index + 1;
-    server.status = 'published';
-    server.starts_at = null;
-    server.ends_at = null;
-    server.expires_at = null;
-    server.expiry_action = 'normal';
-    server.locked = index < 3 && !!server.locked;
-  });
-  render();
-  say('已回到原始排序。按「發布變更」後才會更新前台。');
 }
 
 function statusText(server) {
-  const parts = [server.status === 'published' ? '已發布' : server.status === 'draft' ? '草稿' : '下架'];
-  if (server.locked) parts.push('鎖定');
-  if (server.starts_at) parts.push(`開始 ${new Date(server.starts_at).toLocaleString()}`);
-  if (server.expires_at) {
-    parts.push(`到期回原位 ${new Date(server.expires_at).toLocaleString()}`);
-  }
+  const parts = [server.published ? '已發布' : '未發布', `原始 ${server.original_rank}`, `指定 ${server.target_rank}`];
+  if (server.lock_top_three) parts.push('鎖定前 3');
+  if (server.starts_at) parts.push(`開始 ${formatTaipei(server.starts_at)}`);
+  if (server.ends_at) parts.push(`結束 ${formatTaipei(server.ends_at)}`);
+  parts.push({ restore: '到期恢復', keep: '到期保留', unpublish: '到期下架' }[server.expiry_action]);
   return parts.join('｜');
 }
 
 function render() {
+  sortDraft();
   const list = overlay.querySelector('.sb-admin-list');
-  list.innerHTML = '';
-  if (!servers.length) {
-    list.innerHTML = '<p class="sb-admin-empty">沒有資料。請確認 SQL 已執行，或重新登入後再試。</p>';
-    return;
-  }
-
+  list.replaceChildren();
   servers.forEach((server, index) => {
     const row = document.createElement('div');
     row.className = 'sb-admin-row';
     row.draggable = true;
-    row.dataset.index = String(index);
-    row.innerHTML = `<strong>${index + 1}</strong>
-      <div class="sb-admin-row-main">
-        <b></b>
-        <small></small>
-      </div>
-      <div class="sb-admin-row-actions">
-        <button type="button" data-up aria-label="上移">↑</button>
-        <button type="button" data-down aria-label="下移">↓</button>
-        <button type="button" data-move>移至</button>
-        <button type="button" data-edit>編輯</button>
-      </div>`;
-    row.querySelector('b').textContent = server.name || server.server_id || '未命名 Server';
-    row.querySelector('small').textContent = `原始第 ${server.original_position || index + 1} 格｜${statusText(server)}`;
-
-    row.addEventListener('dragstart', event => {
-      dragIndex = index;
-      row.classList.add('dragging');
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', String(index));
-    });
-    row.addEventListener('dragover', event => {
-      event.preventDefault();
-      row.classList.add('drag-over');
-      event.dataTransfer.dropEffect = 'move';
-    });
-    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
-    row.addEventListener('drop', event => {
-      event.preventDefault();
-      row.classList.remove('drag-over');
-      const from = Number(event.dataTransfer.getData('text/plain') || dragIndex);
-      move(from, index);
-    });
-    row.addEventListener('dragend', () => {
-      dragIndex = null;
-      row.classList.remove('dragging');
-      list.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-    });
-    row.oncontextmenu = event => {
-      event.preventDefault();
-      openEdit(index);
-    };
-
-    let holdTimer = 0;
-    row.addEventListener('touchstart', () => {
-      holdTimer = window.setTimeout(() => openEdit(index), 650);
-    }, { passive: true });
-    row.addEventListener('touchend', () => window.clearTimeout(holdTimer));
-    row.addEventListener('touchmove', () => window.clearTimeout(holdTimer), { passive: true });
-
+    row.innerHTML = `<strong>${index + 1}</strong><div class="sb-admin-row-main"><b></b><small></small></div>
+      <div class="sb-admin-row-actions"><button data-up>↑</button><button data-down>↓</button><button data-move>移至</button><button data-edit>編輯</button></div>`;
+    row.querySelector('b').textContent = server.name || server.server_id;
+    row.querySelector('small').textContent = statusText(server);
+    row.ondragstart = event => event.dataTransfer.setData('text/plain', String(index));
+    row.ondragover = event => event.preventDefault();
+    row.ondrop = event => { event.preventDefault(); move(Number(event.dataTransfer.getData('text/plain')), index); };
+    row.oncontextmenu = event => { event.preventDefault(); openEdit(index); };
+    let timer;
+    row.ontouchstart = () => { timer = setTimeout(() => openEdit(index), 650); };
+    row.ontouchend = row.ontouchmove = () => clearTimeout(timer);
     row.querySelector('[data-up]').onclick = () => move(index, index - 1);
     row.querySelector('[data-down]').onclick = () => move(index, index + 1);
     row.querySelector('[data-move]').onclick = () => {
-      const value = window.prompt('移到第幾格？', String(index + 1));
-      if (!value) return;
-      const next = Number.parseInt(value, 10);
-      if (Number.isInteger(next)) move(index, next - 1);
+      const rank = Number.parseInt(prompt('移至第幾格？', String(index + 1)), 10);
+      if (Number.isInteger(rank)) move(index, rank - 1);
     };
     row.querySelector('[data-edit]').onclick = () => openEdit(index);
     list.appendChild(row);
@@ -295,56 +177,56 @@ function openEdit(index) {
   editing = index;
   const server = servers[index];
   const form = edit.querySelector('form');
-  edit.querySelector('.sb-admin-edit-name').textContent = `${server.name || server.server_id}：目前第 ${index + 1} 格，原始第 ${server.original_position || index + 1} 格`;
-  form.position.value = String(index + 1);
-  form.status.value = server.status || 'published';
-  form.duration.value = '';
-  form.starts_at.value = toLocalDateTime(server.starts_at);
-  form.expires_at.value = toLocalDateTime(server.expires_at);
-  form.locked.checked = !!server.locked;
+  edit.querySelector('.sb-admin-edit-name').textContent = `${server.name || server.server_id}（原始第 ${server.original_rank} 名）`;
+  form.target_rank.value = server.target_rank;
+  form.published.value = String(server.published);
+  form.quick.value = 'unchanged';
+  form.starts_at.value = toLocal(server.starts_at);
+  form.ends_at.value = toLocal(server.ends_at);
+  form.expiry_action.value = server.expiry_action;
+  form.lock_top_three.checked = server.lock_top_three;
   edit.hidden = false;
 }
 
+edit.querySelector('[name=quick]').onchange = event => {
+  const form = edit.querySelector('form');
+  const value = event.target.value;
+  if (value === 'unchanged' || value === 'custom') return;
+  const now = new Date();
+  form.starts_at.value = toLocal(now.toISOString());
+  form.ends_at.value = /^\d+$/.test(value) ? toLocal(new Date(now.getTime() + Number(value) * 86400000).toISOString()) : '';
+};
+
 edit.querySelector('form').onsubmit = event => {
   event.preventDefault();
-  if (!Number.isInteger(editing) || !servers[editing]) return;
-  const form = event.currentTarget;
   const server = servers[editing];
-  const duration = form.duration.value;
-
-  const automaticDuration = duration === '7' || duration === '30';
-  const invalidManualDate = !automaticDuration && [form.starts_at, form.expires_at]
-    .some(input => input.value && !input.validity.valid);
-  if (invalidManualDate) {
-    window.alert('請把日期與時間都填完整，例如 2026/07/29 12:00；不需要手動排程時請清空該欄位。');
+  if (!server) return;
+  const form = event.currentTarget;
+  const startsAt = taipeiToUtc(form.starts_at.value);
+  const endsAt = taipeiToUtc(form.ends_at.value);
+  if (startsAt && endsAt && Date.parse(endsAt) <= Date.parse(startsAt)) {
+    alert('結束時間必須晚於開始時間。');
     return;
   }
-
-  server.status = form.status.value;
-  // Quick 7/30-day schedules deliberately ignore incomplete manual date fields.
-  server.starts_at = automaticDuration ? null : fromLocalDateTime(form.starts_at.value);
-  server.ends_at = null;
-  server.expires_at = automaticDuration ? null : fromLocalDateTime(form.expires_at.value);
-  server.expiry_action = 'normal';
-  server.locked = form.locked.checked;
-
-  if (automaticDuration) {
-    const days = Number(duration);
-    server.status = 'published';
-    server.starts_at = new Date().toISOString();
-    server.expires_at = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-    server.expiry_action = 'normal';
-  } else if (duration === 'clear') {
-    server.starts_at = null;
-    server.ends_at = null;
-    server.expires_at = null;
-    server.expiry_action = 'normal';
+  const targetRank = Number.parseInt(form.target_rank.value, 10);
+  if (!Number.isInteger(targetRank) || targetRank < 1 || targetRank > servers.length) {
+    alert(`指定位置必須介於 1 到 ${servers.length}。`);
+    return;
   }
-
-  const nextPosition = Number.parseInt(form.position.value, 10);
-  if (Number.isInteger(nextPosition)) move(editing, nextPosition - 1);
+  Object.assign(server, {
+    published: form.published.value === 'true',
+    starts_at: startsAt,
+    ends_at: endsAt,
+    expiry_action: form.expiry_action.value,
+    lock_top_three: form.lock_top_three.checked
+  });
+  if (server.lock_top_three && targetRank > 3) {
+    alert('鎖定前 3 格時，指定位置必須是 1、2 或 3。');
+    return;
+  }
+  move(editing, targetRank - 1);
   edit.hidden = true;
-  say('已套用到暫存清單。按「發布變更」後才會更新前台。');
+  say('已套用到預覽資料，尚未寫入 Supabase。');
 };
 edit.querySelector('[data-edit-close]').onclick = () => { edit.hidden = true; };
 
@@ -352,60 +234,31 @@ async function publish() {
   if (Date.now() - lastWrite < 3000) throw new Error('操作太頻繁，請 3 秒後再發布。');
   lastWrite = Date.now();
   await assertAdmin();
-  normalizePositions();
-  const payload = servers.map((server, index) => ({
-    id: server.id,
-    position: index + 1,
-    original_position: Number(server.original_position || index + 1),
-    status: server.status,
-    starts_at: server.starts_at,
-    ends_at: null,
-    expires_at: server.expires_at,
-    locked: !!server.locked && index < 3,
-    expiry_action: 'normal'
+  const payload = servers.map(server => ({
+    id: server.id, target_rank: server.target_rank, starts_at: server.starts_at,
+    ends_at: server.ends_at, expiry_action: server.expiry_action,
+    published: server.published, lock_top_three: server.lock_top_three
   }));
   const { error } = await client().rpc('publish_server_cards', { card_changes: payload });
   if (error) throw error;
-  original = structuredClone(servers);
-  say('發布完成。重新整理前台即可看到有效資料。');
-}
-
-async function restore() {
-  await assertAdmin();
-  const { error } = await client().rpc('restore_previous_server_cards');
-  if (error) throw error;
   await load();
-  say('已復原上一版。');
+  say('發布完成，已重新讀取 Supabase。');
 }
 
 function preview() {
-  window.ServerBloomAdminPreview = structuredClone(servers);
-  document.documentElement.classList.add('sb-admin-mode');
-  window.dispatchEvent(new CustomEvent('serverbloom:admin-preview', { detail: servers }));
+  window.ServerBloomAdminPreview = clone(servers);
+  window.dispatchEvent(new CustomEvent('serverbloom:admin-preview', { detail: servers.map(s => ({ ...s, position: s.target_rank })) }));
   overlay.hidden = true;
 }
 
 async function show() {
   overlay.hidden = false;
-  say('');
-  if (!configured) {
-    say('請先在 supabase-config.js 填入 Supabase URL 與 anon key。');
-    return;
-  }
+  if (!configured) return say('請先在 supabase-config.js 填入 Supabase URL 與 anon key。');
   const { data } = await client().auth.getSession();
-  const email = data.session?.user?.email?.toLowerCase();
-  if (email === ADMIN) {
-    overlay.querySelector('.sb-admin-login').hidden = true;
-    overlay.querySelector('.sb-admin-console').hidden = false;
-    try {
-      await load();
-    } catch (error) {
-      say(error.message);
-    }
-  } else {
-    overlay.querySelector('.sb-admin-login').hidden = false;
-    overlay.querySelector('.sb-admin-console').hidden = true;
-  }
+  const loggedIn = data.session?.user?.email?.toLowerCase() === ADMIN;
+  overlay.querySelector('.sb-admin-login').hidden = loggedIn;
+  overlay.querySelector('.sb-admin-console').hidden = !loggedIn;
+  if (loggedIn) await load();
 }
 
 overlay.querySelector('[data-close]').onclick = () => { overlay.hidden = true; };
@@ -413,10 +266,8 @@ overlay.querySelector('[data-send]').onclick = async () => {
   try {
     const { error } = await client().auth.signInWithOtp({ email: ADMIN, options: { shouldCreateUser: false } });
     if (error) throw error;
-    say('驗證碼已寄出，10 分鐘內輸入。');
-  } catch (error) {
-    say(error.message);
-  }
+    say('驗證碼已寄出，有效時間依 Supabase 設定為 10 分鐘。');
+  } catch (error) { say(error.message); }
 };
 overlay.querySelector('[data-verify]').onclick = async () => {
   try {
@@ -424,28 +275,30 @@ overlay.querySelector('[data-verify]').onclick = async () => {
     if (!/^\d{6}$/.test(token)) throw new Error('請輸入 6 位數驗證碼。');
     const { data, error } = await client().auth.verifyOtp({ email: ADMIN, token, type: 'email' });
     if (error) throw error;
-    if (data.user?.email?.toLowerCase() !== ADMIN) {
-      await client().auth.signOut();
-      throw new Error('登入帳號不是指定管理員。');
-    }
+    if (data.user?.email?.toLowerCase() !== ADMIN) throw new Error('目前帳號不是指定管理員。');
     await show();
-  } catch (error) {
-    say(error.message);
-  }
+  } catch (error) { say(error.message); }
 };
 overlay.querySelector('[data-publish]').onclick = () => publish().catch(error => say(error.message));
 overlay.querySelector('[data-preview]').onclick = preview;
-overlay.querySelector('[data-cancel]').onclick = () => {
-  servers = structuredClone(original);
-  normalizePositions();
-  render();
-  say('已取消尚未發布的變更。');
+overlay.querySelector('[data-cancel]').onclick = () => { servers = clone(baseline); render(); say('已取消尚未發布的修改。'); };
+overlay.querySelector('[data-reset-original]').onclick = async () => {
+  try {
+    await assertAdmin();
+    const { error } = await client().rpc('reset_server_card_schedules');
+    if (error) throw error;
+    await load();
+    say('已清除所有排名排程並恢復 original_rank。');
+  } catch (error) { say(error.message); }
 };
-overlay.querySelector('[data-reset-original]').onclick = resetOriginalOrder;
-overlay.querySelector('[data-restore]').onclick = () => restore().catch(error => say(error.message));
-overlay.querySelector('[data-logout]').onclick = async () => {
-  await client().auth.signOut();
-  location.reload();
+overlay.querySelector('[data-restore]').onclick = async () => {
+  try {
+    await assertAdmin();
+    const { error } = await client().rpc('restore_previous_server_cards');
+    if (error) throw error;
+    await load();
+    say('已復原上一版。');
+  } catch (error) { say(error.message); }
 };
-
-window.ServerBloomAdmin = Object.freeze({ open: show });
+overlay.querySelector('[data-logout]').onclick = async () => { await client().auth.signOut(); location.reload(); };
+window.ServerBloomAdmin = Object.freeze({ open: () => show().catch(error => say(error.message)) });
