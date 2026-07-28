@@ -69,7 +69,6 @@ edit.innerHTML = `<form novalidate>
       <option value="unpublish">到期自動下架</option>
     </select></label>
     <label>開始時間<input name="starts_at" type="datetime-local"></label>
-    <label>結束時間<input name="ends_at" type="datetime-local"></label>
     <label>到期日<input name="expires_at" type="datetime-local"></label>
     <label class="sb-admin-check"><span>鎖定前 3 格</span><input name="locked" type="checkbox"></label>
   </div>
@@ -125,7 +124,9 @@ function normalizeRow(row, index) {
     status: row.status || 'published',
     expiry_action: row.expiry_action || 'normal',
     starts_at: safeTimestamp(row.starts_at),
-    ends_at: safeTimestamp(row.ends_at),
+    // End-time scheduling was removed. Expiry is the single source of truth
+    // for either unpublishing a card or returning it to its original position.
+    ends_at: null,
     expires_at: safeTimestamp(row.expires_at),
     locked: !!row.locked
   };
@@ -212,7 +213,6 @@ function statusText(server) {
   const parts = [server.status === 'published' ? '已發布' : server.status === 'draft' ? '草稿' : '下架'];
   if (server.locked) parts.push('鎖定');
   if (server.starts_at) parts.push(`開始 ${new Date(server.starts_at).toLocaleString()}`);
-  if (server.ends_at) parts.push(`結束 ${new Date(server.ends_at).toLocaleString()}`);
   if (server.expires_at) {
     parts.push(`${server.expiry_action === 'normal' ? '到期回原位' : '到期下架'} ${new Date(server.expires_at).toLocaleString()}`);
   }
@@ -304,7 +304,6 @@ function openEdit(index) {
   form.duration.value = '';
   form.expiry_action.value = server.expiry_action || 'normal';
   form.starts_at.value = toLocalDateTime(server.starts_at);
-  form.ends_at.value = toLocalDateTime(server.ends_at);
   form.expires_at.value = toLocalDateTime(server.expires_at);
   form.locked.checked = !!server.locked;
   edit.hidden = false;
@@ -318,7 +317,7 @@ edit.querySelector('form').onsubmit = event => {
   const duration = form.duration.value;
 
   const automaticDuration = duration === '7' || duration === '30';
-  const invalidManualDate = !automaticDuration && [form.starts_at, form.ends_at, form.expires_at]
+  const invalidManualDate = !automaticDuration && [form.starts_at, form.expires_at]
     .some(input => input.value && !input.validity.valid);
   if (invalidManualDate) {
     window.alert('請把日期與時間都填完整，例如 2026/07/29 12:00；不需要手動排程時請清空該欄位。');
@@ -328,7 +327,7 @@ edit.querySelector('form').onsubmit = event => {
   server.status = form.status.value;
   // Quick 7/30-day schedules deliberately ignore incomplete manual date fields.
   server.starts_at = automaticDuration ? null : fromLocalDateTime(form.starts_at.value);
-  server.ends_at = automaticDuration ? null : fromLocalDateTime(form.ends_at.value);
+  server.ends_at = null;
   server.expires_at = automaticDuration ? null : fromLocalDateTime(form.expires_at.value);
   server.expiry_action = form.expiry_action.value;
   server.locked = form.locked.checked;
@@ -337,7 +336,6 @@ edit.querySelector('form').onsubmit = event => {
     const days = Number(duration);
     server.status = 'published';
     server.starts_at = new Date().toISOString();
-    server.ends_at = null;
     server.expires_at = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
     server.expiry_action = 'normal';
   } else if (duration === 'clear') {
@@ -365,7 +363,7 @@ async function publish() {
     original_position: Number(server.original_position || index + 1),
     status: server.status,
     starts_at: server.starts_at,
-    ends_at: server.ends_at,
+    ends_at: null,
     expires_at: server.expires_at,
     locked: !!server.locked && index < 3,
     expiry_action: server.expiry_action || 'normal'
