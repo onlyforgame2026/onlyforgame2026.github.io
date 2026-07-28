@@ -16,7 +16,7 @@
     document.head.appendChild(css);
     const script = document.createElement('script');
     script.type = 'module';
-    script.src = 'assets/js/admin.js?v=3';
+    script.src = 'assets/js/admin.js?v=4';
     script.onload = () => window.ServerBloomAdmin?.open();
     script.onerror = () => { loading = false; };
     document.body.appendChild(script);
