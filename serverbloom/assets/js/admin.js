@@ -82,12 +82,17 @@ document.body.appendChild(edit);
 
 const statusEls = overlay.querySelectorAll('.sb-admin-status');
 const say = message => statusEls.forEach(el => { el.textContent = message || ''; });
-const toLocalDateTime = value => {
-  if (!value) return '';
+const safeTimestamp = value => {
+  if (!value) return null;
   const date = new Date(value);
+  return Number.isNaN(date.getTime()) || date.getFullYear() < 2020 || date.getFullYear() > 2100 ? null : value;
+};
+const toLocalDateTime = value => {
+  const safeValue = safeTimestamp(value);
+  if (!safeValue) return '';
+  const date = new Date(safeValue);
   // A malformed value such as year 0026 makes Chrome's native date control
   // impossible to submit. Treat it as empty instead of trapping the editor.
-  if (Number.isNaN(date.getTime()) || date.getFullYear() < 2020 || date.getFullYear() > 2100) return '';
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
@@ -119,6 +124,9 @@ function normalizeRow(row, index) {
     original_position: originalPosition,
     status: row.status || 'published',
     expiry_action: row.expiry_action || 'normal',
+    starts_at: safeTimestamp(row.starts_at),
+    ends_at: safeTimestamp(row.ends_at),
+    expires_at: safeTimestamp(row.expires_at),
     locked: !!row.locked
   };
 }
