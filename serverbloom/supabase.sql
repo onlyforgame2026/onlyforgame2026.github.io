@@ -106,6 +106,9 @@ as $$ select lower(coalesce(auth.jwt() ->> 'email','')) = 'alyonayona0801@gmail.
 
 -- Returns only public cards. It computes active/expired state at query time,
 -- resolves rank collisions by stable insertion, then emits ranks 1..N.
+-- DROP is required because PostgreSQL cannot replace the legacy
+-- RETURNS SETOF server_cards signature with the new RETURNS TABLE signature.
+drop function if exists public.public_serverbloom_cards();
 create or replace function public.public_serverbloom_cards()
 returns table (
   id uuid, server_id text, name text, category text, invite_url text, tags jsonb,

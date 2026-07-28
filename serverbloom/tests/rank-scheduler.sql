@@ -22,6 +22,22 @@ select pg_temp.assert_true(
   (select bool_and(expiry_action in ('restore','keep','unpublish')) from legacy_server_cards),
   'old schema migration'
 );
+select pg_temp.assert_true(
+  exists (
+    select 1
+    from pg_proc p
+    join pg_namespace n on n.oid=p.pronamespace
+    where n.nspname='public'
+      and p.proname='public_serverbloom_cards'
+      and 'effective_rank'=any(p.proargnames)
+  ),
+  'upgraded public_serverbloom_cards exposes effective_rank'
+);
+select pg_temp.assert_true(
+  has_function_privilege('anon','public.public_serverbloom_cards()','EXECUTE')
+  and has_function_privilege('authenticated','public.public_serverbloom_cards()','EXECUTE'),
+  'upgraded RPC grants EXECUTE to anon and authenticated'
+);
 
 truncate public.server_card_history, public.server_cards restart identity;
 insert into public.server_cards (
