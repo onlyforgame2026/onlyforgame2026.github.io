@@ -627,11 +627,13 @@ body.sakura-modal-open {
     </div>
   </main>
   <footer>© 2026 ServerBloom · 台港澳 Discord 社群探索平台</footer>
-  <script src="assets/js/server-data.js?v=banner-sync-v5"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/server-data.js?v=supabase-admin-v1"></script>
 <script src="assets/js/server-banner.js?v=banner-sync-v1"></script>
 <script src="assets/js/banner-admin.js?v=banner-sync-v2" defer></script>
 <script src="assets/js/discord-app.js?v=hotfix-v1" defer></script>
 <script src="assets/js/knowledge.js"></script>
+<script src="assets/js/admin-loader.js?v=1" defer></script>
 <script>
   (()=>{'use strict';
     const API='https://script.google.com/macros/s/AKfycbwsU40XuJqCBFzCZjH_Mp57y05OIIFp3RAtxFD1HisM_she08o2951ajf4ovzA1Q1gW/exec';
@@ -998,6 +1000,7 @@ function setupSakuraControls() {
 }
     function normalize(s){return{id:String(s.id||''),slug:String(s.slug||''),name:String(s.name||'').trim(),category:String(s.category||'其他').trim(),inviteUrl:String(s.inviteUrl||'').trim(),tags:tags(s.tags),banner:String(s.banner||''),customBanner:String(s.customBanner||''),bannerPreset:String(s.bannerPreset||''),icon:String(s.icon||''),description:String(s.description||'').trim(),color:color(s.primaryColor||s.color),secondaryColor:color(s.secondaryColor||'#111a2b'),textColor:color(s.textColor||'#ffffff'),members:s.countsUnknown?null:Number(s.members??s.memberCount??0),online:s.countsUnknown?null:Number(s.online??s.onlineCount??0),countsUnknown:s.countsUnknown===true,isNew:s.isNew===true}}
     async function load(){const [servers]=await Promise.all([ServerBloomData.loadServers(),ServerBloomBanner.loadBannerPresets().catch(()=>[])]);remote=servers.map(normalize).filter(s=>s.name&&s.inviteUrl);render();return remote}
+    window.addEventListener('serverbloom:admin-preview',event=>{remote=(event.detail||[]).map(s=>normalize({...s,id:s.server_id||s.id,inviteUrl:s.invite_url||s.inviteUrl,customBanner:s.custom_banner||s.customBanner,bannerPreset:s.banner_preset||s.bannerPreset})).filter(s=>s.name&&s.inviteUrl);render()});
     async function submit(s){const body=new URLSearchParams;Object.entries(s).forEach(([k,v])=>body.set(k,Array.isArray(v)?v.join(','):v));await fetch(API,{method:'POST',mode:'no-cors',body})}
     search.addEventListener('input',render);$('#serverForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('#submitButton');if(btn.disabled)return;const s={name:$('#serverName').value.trim(),category:$('#serverCategory').value,inviteUrl:$('#serverInvite').value.trim(),tags:tags($('#serverTags').value),description:$('#serverDescription').value.trim(),color:$('#serverColor').value};if(!s.name||!s.category||!s.description){status.className='status error';status.textContent='請完整填寫社群名稱、分類與簡介。';return}if(!/^https:\/\/(www\.)?(discord\.gg\/[A-Za-z0-9-]+|discord\.com\/invite\/[A-Za-z0-9-]+)\/?$/i.test(s.inviteUrl)){status.className='status error';status.textContent='請輸入有效的 Discord 邀請網址。';return}btn.disabled=true;btn.textContent='正在提交…';try{await submit(s);status.className='status success';status.textContent='投稿已送出並等待人工審核，審核通過後才會上架。';e.target.reset();$('#serverColor').value='#755cff'}catch{status.className='status error';status.textContent='投稿失敗，請稍後再試。'}finally{btn.disabled=false;btn.textContent='送出審核'}});
     renderCategories();

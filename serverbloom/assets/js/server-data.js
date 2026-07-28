@@ -3,6 +3,25 @@
 
   const API_URL = 'https://script.google.com/macros/s/AKfycbwsU40XuJqCBFzCZjH_Mp57y05OIIFp3RAtxFD1HisM_she08o2951ajf4ovzA1Q1gW/exec';
 
+  async function loadSupabaseServers() {
+    const config = window.SERVERBLOOM_SUPABASE || {};
+    if (!/^https:\/\/[^.]+\.supabase\.co$/.test(config.url || '') || !config.anonKey || config.anonKey.includes('YOUR_')) return [];
+    const response = await fetch(`${config.url}/rest/v1/server_cards?select=*&order=locked.desc,position.asc`, {
+      headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}` },
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error('Supabase cards unavailable');
+    const now = Date.now();
+    return (await response.json()).map(card => normalizeRemote({
+      id: card.server_id, name: card.name, category: card.category, inviteUrl: card.invite_url,
+      tags: card.tags, description: card.description, color: card.color, icon: card.icon,
+      banner: card.banner, customBanner: card.custom_banner, bannerPreset: card.banner_preset,
+      position: card.expires_at && Date.parse(card.expires_at) <= now && card.expiry_action === 'normal'
+        ? 10000 + card.position : card.position,
+      locked: card.locked
+    })).sort((a, b) => Number(b.locked) - Number(a.locked) || Number(a.position) - Number(b.position));
+  }
+
   function jsonp(url) {
     return new Promise((resolve, reject) => {
       const callback = `serverBloomData_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -103,6 +122,14 @@
       onlineCount: null,
       countsUnknown: true
     }));
+
+    let managed = [];
+    try {
+      managed = await loadSupabaseServers();
+    } catch (error) {
+      console.warn(error.message);
+    }
+    if (managed.length) return managed;
 
     let submitted = [];
     try {
