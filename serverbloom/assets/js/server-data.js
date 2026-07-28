@@ -12,13 +12,13 @@
     });
     if (!response.ok) throw new Error('Supabase cards unavailable');
     const now = Date.now();
+    const originalOrder = await loadOriginalOrder();
     return (await response.json()).map(card => normalizeRemote({
       id: card.server_id, name: card.name, category: card.category, inviteUrl: card.invite_url,
       tags: card.tags, description: card.description, color: card.color, icon: card.icon,
       banner: card.banner, customBanner: card.custom_banner, bannerPreset: card.banner_preset,
-      position: card.expires_at && Date.parse(card.expires_at) <= now && card.expiry_action === 'normal'
-        ? 10000 + card.position : card.position,
-      locked: card.locked
+      position: effectivePosition(card, originalOrder, now),
+      locked: isExpiredReturn(card, now) ? false : card.locked
     })).sort((a, b) => Number(b.locked) - Number(a.locked) || Number(a.position) - Number(b.position));
   }
 
@@ -82,6 +82,43 @@
       invite: String(server.inviteUrl || '').trim().toLowerCase(),
       name: normalizeIdentity(server.name)
     };
+  }
+
+  function originalOrderKey(server) {
+    const key = identity(server || {});
+    return key.id || key.invite || key.name;
+  }
+
+  async function loadOriginalOrder() {
+    try {
+      const response = await fetch('data/servers.json', { cache: 'no-store' });
+      if (!response.ok) return new Map();
+      const payload = await response.json();
+      const list = Array.isArray(payload) ? payload : (payload.servers || []);
+      const order = new Map();
+      list.forEach((server, index) => {
+        const key = originalOrderKey(server);
+        if (key && !order.has(key)) order.set(key, index + 1);
+      });
+      return order;
+    } catch (error) {
+      console.warn(error.message);
+      return new Map();
+    }
+  }
+
+  function isExpiredReturn(card, now) {
+    return card.expires_at && Date.parse(card.expires_at) <= now && card.expiry_action === 'normal';
+  }
+
+  function effectivePosition(card, originalOrder, now) {
+    if (!isExpiredReturn(card, now)) return Number(card.position || 10000);
+    const key = originalOrderKey({
+      id: card.server_id,
+      inviteUrl: card.invite_url,
+      name: card.name
+    });
+    return Number(card.original_position || originalOrder.get(key) || card.position || 10000);
   }
 
   async function loadRemoteServers() {

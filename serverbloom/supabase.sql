@@ -15,6 +15,7 @@ create table if not exists public.server_cards (
   custom_banner text not null default '' check (char_length(custom_banner) <= 500 and custom_banner !~* '^(javascript|data):'),
   banner_preset text not null default '' check (char_length(banner_preset) <= 100),
   position integer not null check (position between 1 and 10000),
+  original_position integer not null check (original_position between 1 and 10000),
   status text not null default 'draft' check (status in ('draft','published','archived')),
   starts_at timestamptz,
   ends_at timestamptz,
@@ -24,6 +25,21 @@ create table if not exists public.server_cards (
   updated_at timestamptz not null default now(),
   updated_by uuid
 );
+
+alter table public.server_cards add column if not exists original_position integer;
+update public.server_cards set original_position = position where original_position is null;
+alter table public.server_cards alter column original_position set not null;
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'server_cards_original_position_check'
+      and conrelid = 'public.server_cards'::regclass
+  ) then
+    alter table public.server_cards add constraint server_cards_original_position_check
+      check (original_position between 1 and 10000);
+  end if;
+end $$;
 
 create table if not exists public.server_card_history (
   id bigint generated always as identity primary key,
@@ -71,7 +87,7 @@ begin
   if jsonb_typeof(initial_cards) <> 'array' or jsonb_array_length(initial_cards) > 200 then raise exception 'invalid payload'; end if;
   for card in select * from jsonb_array_elements(initial_cards) loop
     n := n + 1;
-    insert into server_cards(server_id,name,category,invite_url,tags,description,color,icon,banner,custom_banner,banner_preset,position,status,updated_by)
+    insert into server_cards(server_id,name,category,invite_url,tags,description,color,icon,banner,custom_banner,banner_preset,position,original_position,status,updated_by)
     values (
       left(coalesce(nullif(card->>'id',''),'server-'||n),80),
       left(card->>'name',80), left(coalesce(card->>'category','其他'),30), card->>'inviteUrl',
@@ -79,7 +95,7 @@ begin
       case when coalesce(card->>'color',card->>'primaryColor','#755cff') ~ '^#[0-9A-Fa-f]{6}$' then coalesce(card->>'color',card->>'primaryColor','#755cff') else '#755cff' end,
       left(coalesce(card->>'icon',''),500), left(coalesce(card->>'banner',''),500),
       left(coalesce(card->>'customBanner',''),500), left(coalesce(card->>'bannerPreset',''),100),
-      n, 'published', auth.uid()
+      n, n, 'published', auth.uid()
     );
   end loop;
 end $$;
@@ -98,6 +114,7 @@ begin
   for change in select * from jsonb_array_elements(card_changes) loop
     update server_cards set
       position=greatest(1,least(10000,(change->>'position')::integer)),
+      original_position=coalesce(original_position, greatest(1,least(10000,coalesce((change->>'original_position')::integer,(change->>'position')::integer)))),
       status=case when change->>'status' in ('draft','published','archived') then change->>'status' else status end,
       starts_at=(change->>'starts_at')::timestamptz, ends_at=(change->>'ends_at')::timestamptz,
       expires_at=(change->>'expires_at')::timestamptz,
@@ -117,7 +134,14 @@ begin
   select snapshot into previous from server_card_history where created_by=auth.uid() order by id desc limit 1;
   if previous is null then raise exception 'no previous version'; end if;
   delete from server_cards;
-  insert into server_cards select * from jsonb_populate_recordset(null::server_cards,previous);
+  insert into server_cards(
+    id,server_id,name,category,invite_url,tags,description,color,icon,banner,custom_banner,banner_preset,
+    position,original_position,status,starts_at,ends_at,expires_at,locked,expiry_action,updated_at,updated_by
+  )
+  select
+    id,server_id,name,category,invite_url,tags,description,color,icon,banner,custom_banner,banner_preset,
+    position,coalesce(original_position,position),status,starts_at,ends_at,expires_at,locked,expiry_action,updated_at,updated_by
+  from jsonb_populate_recordset(null::server_cards,previous);
   delete from server_card_history where id=(select id from server_card_history where created_by=auth.uid() order by id desc limit 1);
 end $$;
 

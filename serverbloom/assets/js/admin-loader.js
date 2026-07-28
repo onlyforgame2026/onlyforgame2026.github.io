@@ -12,11 +12,11 @@
     loading = true;
     const css = document.createElement('link');
     css.rel = 'stylesheet';
-    css.href = 'assets/css/admin.css?v=1';
+    css.href = 'assets/css/admin.css?v=2';
     document.head.appendChild(css);
     const script = document.createElement('script');
     script.type = 'module';
-    script.src = 'assets/js/admin.js?v=1';
+    script.src = 'assets/js/admin.js?v=2';
     script.onload = () => window.ServerBloomAdmin?.open();
     script.onerror = () => { loading = false; };
     document.body.appendChild(script);
