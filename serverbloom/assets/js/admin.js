@@ -10,6 +10,7 @@ let servers = [];
 let baseline = [];
 let editing = -1;
 let lastWrite = 0;
+let searchQuery = '';
 
 const overlay = document.createElement('div');
 overlay.className = 'sb-admin-overlay';
@@ -29,7 +30,9 @@ overlay.innerHTML = `<section class="sb-admin" role="dialog" aria-modal="true" a
       <div class="sb-admin-actions">
         <button class="primary" data-publish>發布變更</button><button data-preview>預覽</button>
         <button data-cancel>取消變更</button><button data-reset-original>回原始排序</button>
-        <button data-restore>復原上一版</button><button data-logout>登出</button>
+        <button data-restore>復原上一版</button>
+        <label class="sb-admin-search"><span>Server Search</span><input data-server-search type="search" placeholder="搜尋 Server…" autocomplete="off"><button data-clear-search type="button" aria-label="清除 Server 搜尋">×</button></label>
+        <button data-logout>登出</button>
       </div>
       <p class="sb-admin-status" role="status"></p>
       <div class="sb-admin-list" aria-label="Server 排序清單"></div>
@@ -148,34 +151,61 @@ function statusText(server) {
   return parts.join('｜');
 }
 
+function searchableText(server) {
+  return [
+    server.name,
+    server.server_id,
+    server.id,
+    server.category,
+    server.description,
+    server.short_description,
+    server.long_description,
+    ...(Array.isArray(server.tags) ? server.tags : [])
+  ].filter(Boolean).join(' ').toLocaleLowerCase();
+}
+
 function render() {
   const list = overlay.querySelector('.sb-admin-list');
   list.replaceChildren();
-  sortDraft().forEach(({ server, dataIndex }, displayIndex) => {
+  const query = searchQuery.trim().toLocaleLowerCase();
+  const visible = sortDraft()
+    .map((item, draftIndex) => ({ ...item, draftIndex }))
+    .filter(({ server }) => !query || searchableText(server).includes(query));
+  visible.forEach(({ server, dataIndex, draftIndex }) => {
     const row = document.createElement('div');
     row.className = 'sb-admin-row';
-    row.draggable = true;
-    row.innerHTML = `<strong>${displayIndex + 1}</strong><div class="sb-admin-row-main"><b></b><small></small></div>
+    row.draggable = !query;
+    row.innerHTML = `<strong>${draftIndex + 1}</strong><div class="sb-admin-row-main"><b></b><small></small></div>
       <div class="sb-admin-row-actions"><button data-up>↑</button><button data-down>↓</button><button data-move>移至</button><button data-edit>編輯</button><button data-name>改名稱</button></div>`;
     row.querySelector('b').textContent = server.name || server.server_id;
     row.querySelector('small').textContent = statusText(server);
     row.ondragstart = event => event.dataTransfer.setData('text/plain', String(dataIndex));
     row.ondragover = event => event.preventDefault();
-    row.ondrop = event => { event.preventDefault(); move(Number(event.dataTransfer.getData('text/plain')), displayIndex); };
+    row.ondrop = event => { event.preventDefault(); move(Number(event.dataTransfer.getData('text/plain')), draftIndex); };
     row.oncontextmenu = event => { event.preventDefault(); openEdit(dataIndex); };
     let timer;
     row.ontouchstart = () => { timer = setTimeout(() => openEdit(dataIndex), 650); };
     row.ontouchend = row.ontouchmove = () => clearTimeout(timer);
-    row.querySelector('[data-up]').onclick = () => move(dataIndex, displayIndex - 1);
-    row.querySelector('[data-down]').onclick = () => move(dataIndex, displayIndex + 1);
+    row.querySelector('[data-up]').onclick = () => move(dataIndex, draftIndex - 1);
+    row.querySelector('[data-down]').onclick = () => move(dataIndex, draftIndex + 1);
     row.querySelector('[data-move]').onclick = () => {
       const rank = Number.parseInt(prompt('移至第幾格？', String(server.target_rank)), 10);
       if (Number.isInteger(rank)) move(dataIndex, rank - 1);
     };
+    if (query) row.querySelectorAll('[data-up], [data-down], [data-move]').forEach(button => {
+      button.disabled = true;
+      button.title = '請清除搜尋後再調整排序';
+    });
     row.querySelector('[data-edit]').onclick = () => openEdit(dataIndex);
     row.querySelector('[data-name]').onclick = () => renameServer(dataIndex);
     list.appendChild(row);
   });
+  if (!visible.length) {
+    const empty = document.createElement('p');
+    empty.className = 'sb-admin-empty';
+    empty.textContent = query ? `找不到符合「${searchQuery.trim()}」的 Server。` : '目前沒有 Server 卡片。';
+    list.appendChild(empty);
+  }
 }
 
 async function renameServer(index) {
@@ -347,6 +377,17 @@ overlay.querySelector('[data-restore]').onclick = async () => {
     await load();
     say('已復原上一版。');
   } catch (error) { say(error.message); }
+};
+const searchInput = overlay.querySelector('[data-server-search]');
+searchInput.oninput = event => {
+  searchQuery = event.target.value;
+  render();
+};
+overlay.querySelector('[data-clear-search]').onclick = () => {
+  searchQuery = '';
+  searchInput.value = '';
+  searchInput.focus();
+  render();
 };
 overlay.querySelector('[data-logout]').onclick = async () => { await client().auth.signOut(); location.reload(); };
 window.ServerBloomAdmin = Object.freeze({ open: () => show().catch(error => say(error.message)) });
