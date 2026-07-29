@@ -31,10 +31,40 @@ function doPost(e) {
     if (data.action === 'updateBanner') {
       return jsonOutput_(updateBanner_(data));
     }
+    if (data.action === 'updateServerName') {
+      return jsonOutput_(updateServerName_(data));
+    }
     return jsonOutput_(createServer_(data));
   } catch (error) {
     console.error('doPost failed', error);
     return jsonOutput_({ ok: false, error: errorMessage_(error) });
+  }
+}
+
+function updateServerName_(data) {
+  const id = clean_(data.id);
+  const name = clean_(data.name);
+  if (!id) throw new Error('缺少社群 ID');
+  if (!name) throw new Error('社群名稱不可為空');
+  if (name.length > 80) throw new Error('社群名稱不可超過 80 個字元');
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const sheet = getServerSheet_();
+    const table = readTable_(sheet);
+    const idColumn = requireColumn_(table.columns, 'id');
+    const nameColumn = requireColumn_(table.columns, 'name');
+    const rowIndex = table.values.findIndex(function (row, index) {
+      return index > 0 && clean_(row[idColumn]) === id;
+    });
+    if (rowIndex < 1) throw new Error('Google Sheet 找不到指定社群');
+
+    sheet.getRange(rowIndex + 1, nameColumn + 1).setValue(name);
+    SpreadsheetApp.flush();
+    return { ok: true, action: 'updateServerName', id: id, name: name };
+  } finally {
+    lock.releaseLock();
   }
 }
 
