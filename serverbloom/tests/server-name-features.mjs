@@ -8,6 +8,7 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const appsScript = fs.readFileSync(path.join(root, 'apps-script', 'Code.gs'), 'utf8');
 const admin = fs.readFileSync(path.join(root, 'assets', 'js', 'admin.js'), 'utf8');
 const adminPage = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+const setup = fs.readFileSync(path.join(root, 'SETUP.md'), 'utf8');
 
 function searchableText(server) {
   const values = [server.name, server.category, server.description, ...(server.tags || [])];
@@ -24,8 +25,16 @@ assert.equal(servers.filter(server => searchableText(server).includes('市'))[0]
 assert.equal(servers.filter(server => searchableText(server).includes('蒐集'))[0].name, '市集');
 assert.equal(servers.filter(server => searchableText(server).includes('水'))[0].name, '水晶花園');
 assert.doesNotMatch(index, /server-name-(?:admin|input|save|status)/);
-assert.doesNotMatch(index, /action:'updateServerName'/);
+assert.doesNotMatch(index, /改名稱/);
+assert.doesNotMatch(index, /updateServerName/);
 assert.doesNotMatch(index, /assets\/js\/admin-loader\.js/);
+assert.doesNotMatch(index, /assets\/js\/admin\.js/);
+assert.match(index, /class="admin-gate"/);
+assert.match(index, /href="\/serverbloom\/admin\.html"/);
+assert.match(index, /event\.ctrlKey && event\.altKey && !event\.shiftKey && !event\.metaKey && key === 'b'/);
+assert.doesNotMatch(index, /ctrlKey && event\.shiftKey/);
+assert.doesNotMatch(index, /key === 'a'/);
+assert.doesNotMatch(setup, /Ctrl\+Shift\+A|Ctrl \+ Shift \+ A|Ctrl\+Shift\+B|Ctrl \+ Shift \+ B/);
 assert.match(adminPage, /assets\/js\/admin\.js/);
 assert.match(admin, /data-name/);
 assert.match(admin, /action: 'updateServerName'/);

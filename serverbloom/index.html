@@ -626,14 +626,54 @@ body.sakura-modal-open {
       <section class="submit-section" id="submit"><div class="submit-shell"><div class="submit-copy"><h2>讓你的社群被看見</h2><p>填寫社群名稱、分類、邀請網址與介紹，即可免費提交到 ServerBloom。</p><div class="notice">投稿送出後仍需人工審核，不會自動上架。ServerBloom 並非 Discord 官方網站，請勿投稿詐騙、色情、仇恨或違法社群。</div></div><form class="form" id="serverForm"><div class="form-row"><label><span class="sr-only">社群名稱（必填）</span><input class="field" id="serverName" maxlength="60" placeholder="社群名稱（必填）" required></label><label><span class="sr-only">分類（必填）</span><select class="field" id="serverCategory" required><option value="">選擇分類（必填）</option><option>遊戲</option><option>聊天交友</option><option>創作</option><option>技術</option><option>學習</option><option>其他</option></select></label></div><label><span class="sr-only">Discord 邀請網址（必填）</span><input class="field" id="serverInvite" type="url" placeholder="https://discord.gg/你的邀請碼（必填）" required></label><label><span class="sr-only">標籤</span><input class="field" id="serverTags" maxlength="100" placeholder="標籤，例如：LOL、Minecraft、台港澳"></label><label><span class="sr-only">社群簡介（必填）</span><textarea class="field" id="serverDescription" maxlength="500" placeholder="社群理念、特色與介紹（必填）" required></textarea></label><div class="form-tools"><span>社群代表色</span><input id="serverColor" type="color" value="#755cff"></div><button class="submit-btn" id="submitButton" type="submit">送出審核</button><p class="status" id="status" role="status" aria-live="polite"></p></form></div></section>
     </div>
   </main>
+  <div class="admin-gate" data-admin-gate>
+    <button class="admin-gate-toggle" type="button" aria-label="開啟後台入口" aria-expanded="false">
+      <span aria-hidden="true">◇</span>
+    </button>
+    <div class="admin-gate-menu" hidden>
+      <a href="/serverbloom/admin.html">進入後台</a>
+    </div>
+  </div>
   <footer>© 2026 ServerBloom · 台港澳 Discord 社群探索平台</footer>
   <script src="assets/js/supabase-config.js"></script>
   <script src="assets/js/server-data.js?v=rank-scheduler-v1"></script>
 <script src="assets/js/server-banner.js?v=banner-sync-v1"></script>
 <script src="assets/js/banner-admin.js?v=banner-sync-v2" defer></script>
 <script src="assets/js/discord-app.js?v=hotfix-v1" defer></script>
-<script src="assets/js/knowledge.js"></script>
+  <script src="assets/js/knowledge.js"></script>
 <script>
+  (() => {
+    'use strict';
+    const adminUrl = '/serverbloom/admin.html';
+    const gate = document.querySelector('[data-admin-gate]');
+    const toggle = gate?.querySelector('.admin-gate-toggle');
+    const menu = gate?.querySelector('.admin-gate-menu');
+
+    function setOpen(open) {
+      if (!toggle || !menu) return;
+      toggle.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+    }
+
+    toggle?.addEventListener('click', event => {
+      event.stopPropagation();
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+
+    document.addEventListener('click', event => {
+      if (gate && !gate.contains(event.target)) setOpen(false);
+    });
+
+    document.addEventListener('keydown', event => {
+      const key = event.key.toLowerCase();
+      if (event.ctrlKey && event.altKey && !event.shiftKey && !event.metaKey && key === 'b') {
+        event.preventDefault();
+        window.location.href = adminUrl;
+      }
+      if (event.key === 'Escape') setOpen(false);
+    });
+  })();
+
   (()=>{'use strict';
     const API='https://script.google.com/macros/s/AKfycbwsU40XuJqCBFzCZjH_Mp57y05OIIFp3RAtxFD1HisM_she08o2951ajf4ovzA1Q1gW/exec';
     const builtin={id:'only-for-game',name:'Only for Game',category:'遊戲',inviteUrl:'https://discord.gg/bWTKbMzct3',tags:['LOL','Minecraft','Steam','台港澳'],description:'台港澳玩家為主的遊戲交流社群，聊天、語音、找隊友與日常互動都能慢慢找到固定圈子。',color:'#755cff',pinned:true,countsUnknown:true};
