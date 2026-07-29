@@ -666,7 +666,7 @@ body.sakura-modal-open {
 
     document.addEventListener('keydown', event => {
       const key = event.key.toLowerCase();
-      if (event.ctrlKey && event.altKey && !event.shiftKey && !event.metaKey && key === 'b') {
+      if (event.ctrlKey && event.shiftKey && !event.altKey && !event.metaKey && key === 'b') {
         event.preventDefault();
         window.location.href = adminUrl;
       }
