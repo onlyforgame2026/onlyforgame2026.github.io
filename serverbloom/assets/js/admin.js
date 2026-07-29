@@ -1,6 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const ADMIN = 'alyonayona0801@gmail.com';
+const NAME_API = window.ServerBloomData?.API_URL;
 const config = window.SERVERBLOOM_SUPABASE || {};
 const configured = /^https:\/\/[^.]+\.supabase\.co$/.test(config.url || '') &&
   config.anonKey && !config.anonKey.includes('YOUR_');
@@ -155,7 +156,7 @@ function render() {
     row.className = 'sb-admin-row';
     row.draggable = true;
     row.innerHTML = `<strong>${displayIndex + 1}</strong><div class="sb-admin-row-main"><b></b><small></small></div>
-      <div class="sb-admin-row-actions"><button data-up>↑</button><button data-down>↓</button><button data-move>移至</button><button data-edit>編輯</button></div>`;
+      <div class="sb-admin-row-actions"><button data-up>↑</button><button data-down>↓</button><button data-move>移至</button><button data-edit>編輯</button><button data-name>改名稱</button></div>`;
     row.querySelector('b').textContent = server.name || server.server_id;
     row.querySelector('small').textContent = statusText(server);
     row.ondragstart = event => event.dataTransfer.setData('text/plain', String(dataIndex));
@@ -172,8 +173,36 @@ function render() {
       if (Number.isInteger(rank)) move(dataIndex, rank - 1);
     };
     row.querySelector('[data-edit]').onclick = () => openEdit(dataIndex);
+    row.querySelector('[data-name]').onclick = () => renameServer(dataIndex);
     list.appendChild(row);
   });
+}
+
+async function renameServer(index) {
+  const server = servers[index];
+  if (!server) return;
+  const id = String(server.server_id || server.id || '').trim();
+  const name = prompt('輸入新的 Server 名稱：', server.name || '');
+  if (name === null) return;
+  const normalizedName = name.trim();
+  if (!normalizedName) return say('Server 名稱不可為空。');
+  if (normalizedName.length > 80) return say('Server 名稱不可超過 80 個字元。');
+  if (!id) return say('缺少 Server ID，無法更新名稱。');
+  if (!NAME_API) return say('找不到 Google Apps Script API 設定。');
+
+  try {
+    await assertAdmin();
+    say('正在更新 Server 名稱…');
+    const body = new URLSearchParams({ action: 'updateServerName', id, name: normalizedName });
+    await fetch(NAME_API, { method: 'POST', mode: 'no-cors', body });
+    server.name = normalizedName;
+    const baselineServer = baseline.find(item => item.id === server.id);
+    if (baselineServer) baselineServer.name = normalizedName;
+    render();
+    say(`Server 名稱已更新為「${normalizedName}」。`);
+  } catch (error) {
+    say(error.message || 'Server 名稱更新失敗。');
+  }
 }
 
 function openEdit(index) {
