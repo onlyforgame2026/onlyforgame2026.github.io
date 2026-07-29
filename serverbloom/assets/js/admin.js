@@ -1,6 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const ADMIN = 'alyonayona0801@gmail.com';
+const ADMIN_KEY_STORAGE = 'serverbloomAdminApiKey';
 const NAME_API = window.ServerBloomData?.API_URL;
 const config = window.SERVERBLOOM_SUPABASE || {};
 const configured = /^https:\/\/[^.]+\.supabase\.co$/.test(config.url || '') &&
@@ -84,6 +85,21 @@ const taipeiToUtc = value => {
   return utc.toISOString();
 };
 const formatTaipei = value => value ? new Date(value).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }) : '無';
+const wait = milliseconds => new Promise(resolve => window.setTimeout(resolve, milliseconds));
+
+function getAdminKey() {
+  const saved = sessionStorage.getItem(ADMIN_KEY_STORAGE);
+  if (saved) return saved;
+  const key = prompt('請輸入 ServerBloom 管理密碼');
+  const cleaned = String(key || '').trim();
+  if (!cleaned) throw new Error('已取消管理操作。');
+  sessionStorage.setItem(ADMIN_KEY_STORAGE, cleaned);
+  return cleaned;
+}
+
+function clearAdminKey() {
+  sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+}
 
 function client() {
   if (!configured) throw new Error('請先在 supabase-config.js 填入 Supabase URL 與 anon key。');
@@ -223,8 +239,23 @@ async function renameServer(index) {
   try {
     await assertAdmin();
     say('正在更新 Server 名稱…');
-    const body = new URLSearchParams({ action: 'updateServerName', id, name: normalizedName });
+    const body = new URLSearchParams({
+      action: 'updateServerName',
+      id,
+      name: normalizedName,
+      adminKey: getAdminKey()
+    });
     await fetch(NAME_API, { method: 'POST', mode: 'no-cors', body });
+    let verified = null;
+    for (let attempt = 0; attempt < 6 && !verified; attempt += 1) {
+      await wait(attempt === 0 ? 500 : 900);
+      verified = await ServerBloomData.getRemoteServerById(id);
+      if (verified?.name !== normalizedName) verified = null;
+    }
+    if (!verified) {
+      clearAdminKey();
+      throw new Error('Google Apps Script 沒有確認改名，請確認管理密碼或部署設定。');
+    }
     server.name = normalizedName;
     const baselineServer = baseline.find(item => item.id === server.id);
     if (baselineServer) baselineServer.name = normalizedName;

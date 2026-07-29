@@ -12,6 +12,13 @@ const REQUIRED_HEADERS = [
   'bannerPreset',
   'customBanner'
 ];
+const ADMIN_KEY_PROPERTY = 'SERVERBLOOM_ADMIN_KEY';
+const SERVER_CATEGORIES = ['遊戲', '聊天交友', '創作', '技術', '學習', '其他'];
+const DISCORD_INVITE_RE = /^https:\/\/(?:www\.)?(discord\.gg\/[A-Za-z0-9-]{2,32}|discord\.com\/invite\/[A-Za-z0-9-]{2,32})\/?$/i;
+const BANNER_PRESET_RE = /^[a-z0-9][a-z0-9-]{0,79}$/i;
+const DANGEROUS_TEXT_RE = /<\s*\/?\s*script\b|javascript\s*:|data\s*:|file\s*:|vbscript\s*:/i;
+const SERVER_SUBMISSION_COOLDOWN_SECONDS = 10 * 60;
+const SERVER_SUBMISSION_DAILY_LIMIT = 5;
 
 function doGet(e) {
   try {
@@ -28,11 +35,15 @@ function doGet(e) {
 function doPost(e) {
   try {
     const data = parseRequest_(e);
-    if (data.action === 'updateBanner') {
+    const action = clean_(data.action);
+    if (action === 'updateBanner') {
       return jsonOutput_(updateBanner_(data));
     }
-    if (data.action === 'updateServerName') {
+    if (action === 'updateServerName') {
       return jsonOutput_(updateServerName_(data));
+    }
+    if (action && action !== 'createServer') {
+      throw new Error('不支援的操作');
     }
     return jsonOutput_(createServer_(data));
   } catch (error) {
@@ -42,11 +53,11 @@ function doPost(e) {
 }
 
 function updateServerName_(data) {
-  const id = clean_(data.id);
-  const name = clean_(data.name);
+  requireAdminKey_(data);
+
+  const id = clean_(data.id, 120);
+  const name = sanitizeText_(data.name, '社群名稱', 40, true);
   if (!id) throw new Error('缺少社群 ID');
-  if (!name) throw new Error('社群名稱不可為空');
-  if (name.length > 80) throw new Error('社群名稱不可超過 80 個字元');
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -69,9 +80,11 @@ function updateServerName_(data) {
 }
 
 function updateBanner_(data) {
-  const id = clean_(data.id);
-  const bannerPreset = clean_(data.bannerPreset);
-  const customBanner = clean_(data.customBanner);
+  requireAdminKey_(data);
+
+  const id = clean_(data.id, 120);
+  const bannerPreset = validateBannerPreset_(data.bannerPreset);
+  const customBanner = validateOptionalHttpsUrl_(data.customBanner, 'customBanner', 500);
   if (!id) throw new Error('缺少社群 ID');
   if (!bannerPreset && !customBanner) throw new Error('bannerPreset 與 customBanner 不可同時為空');
 
@@ -104,21 +117,21 @@ function updateBanner_(data) {
 }
 
 function createServer_(data) {
+  const name = sanitizeText_(data.name, '社群名稱', 40, true);
+  const inviteUrl = normalizeDiscordInviteUrl_(data.inviteUrl);
+  const description = sanitizeText_(data.description, '社群簡介', 300, true);
   const server = {
-    id: clean_(data.id) || createId_(data.name),
-    name: clean_(data.name),
-    category: clean_(data.category) || '其他',
-    inviteUrl: clean_(data.inviteUrl),
-    tags: clean_(data.tags),
-    description: clean_(data.description),
-    color: clean_(data.color) || '#755cff',
+    id: clean_(data.id, 80) || createId_(name),
+    name: name,
+    category: validateCategory_(data.category),
+    inviteUrl: inviteUrl,
+    tags: formatTags_(data.tags),
+    description: description,
+    color: safeColor_(data.color),
     createdAt: clean_(data.createdAt) || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd'),
-    bannerPreset: clean_(data.bannerPreset),
-    customBanner: clean_(data.customBanner)
+    bannerPreset: validateBannerPreset_(data.bannerPreset),
+    customBanner: validateOptionalHttpsUrl_(data.customBanner, 'customBanner', 500)
   };
-  if (!server.name || !server.inviteUrl || !server.description) {
-    throw new Error('社群名稱、邀請網址與簡介為必填');
-  }
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -131,6 +144,8 @@ function createServer_(data) {
       return index > 0 && (clean_(row[idColumn]) === server.id || clean_(row[inviteColumn]) === server.inviteUrl);
     });
     if (duplicate) throw new Error('此社群已經存在');
+
+    recordServerSubmission_(data, server);
 
     const row = table.headers.map(function (header) {
       return Object.prototype.hasOwnProperty.call(server, header) ? server[header] : '';
@@ -210,8 +225,119 @@ function createId_(name) {
   return slug || ('server-' + Date.now());
 }
 
-function clean_(value) {
-  return value == null ? '' : String(value).trim();
+function clean_(value, maxLength) {
+  const text = value == null ? '' : String(value)
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return maxLength ? text.slice(0, maxLength) : text;
+}
+
+function sanitizeText_(value, label, maxLength, required) {
+  const text = clean_(value);
+  if (required && !text) throw new Error(label + '為必填');
+  if (text.length > maxLength) throw new Error(label + '最多 ' + maxLength + ' 字');
+  if (DANGEROUS_TEXT_RE.test(text)) throw new Error(label + '含有不安全內容');
+  return text;
+}
+
+function validateCategory_(value) {
+  const category = clean_(value);
+  return SERVER_CATEGORIES.indexOf(category) >= 0 ? category : '其他';
+}
+
+function normalizeDiscordInviteUrl_(value) {
+  const text = clean_(value, 120);
+  const match = text.match(DISCORD_INVITE_RE);
+  if (!match) {
+    throw new Error('Discord 邀請連結格式不正確');
+  }
+  const code = match[1].split('/').pop();
+  if (!/^[A-Za-z0-9-]{2,32}$/.test(code)) {
+    throw new Error('Discord 邀請碼格式不正確');
+  }
+  return match[1].toLowerCase().indexOf('discord.gg/') === 0
+    ? 'https://discord.gg/' + code
+    : 'https://discord.com/invite/' + code;
+}
+
+function formatTags_(value) {
+  const items = clean_(value, 140).split(/[、,，\s]+/)
+    .map(function (item) { return sanitizeText_(item, '標籤', 20, false); })
+    .filter(Boolean)
+    .slice(0, 6);
+  return items.join(',');
+}
+
+function safeColor_(value) {
+  const color = clean_(value);
+  return /^#[0-9a-f]{6}$/i.test(color) ? color : '#755cff';
+}
+
+function validateBannerPreset_(value) {
+  const preset = clean_(value, 80);
+  if (!preset) return '';
+  if (!BANNER_PRESET_RE.test(preset)) throw new Error('Banner preset 格式不正確');
+  return preset;
+}
+
+function validateOptionalHttpsUrl_(value, label, maxLength) {
+  const text = clean_(value, maxLength);
+  if (!text) return '';
+  if (!/^https:\/\/[^\s<>"']+$/i.test(text) || DANGEROUS_TEXT_RE.test(text)) {
+    throw new Error(label + ' 網址格式不正確');
+  }
+  return text;
+}
+
+function requireAdminKey_(data) {
+  const expected = PropertiesService.getScriptProperties().getProperty(ADMIN_KEY_PROPERTY);
+  if (!expected) {
+    throw new Error('尚未設定管理密碼');
+  }
+  const provided = clean_(data.adminKey);
+  if (!provided || provided !== expected) {
+    throw new Error('管理密碼錯誤');
+  }
+}
+
+function recordServerSubmission_(data, server) {
+  const fingerprint = serverSubmissionFingerprint_(data, server);
+  const cache = CacheService.getScriptCache();
+  const cooldownKey = 'server-submit-cooldown:' + fingerprint;
+  if (cache.get(cooldownKey)) {
+    throw new Error('送出太頻繁，請稍後再試');
+  }
+
+  const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd');
+  const dailyKey = 'SERVERBLOOM_SUBMIT_' + today + '_' + fingerprint;
+  const props = PropertiesService.getScriptProperties();
+  const count = Number(props.getProperty(dailyKey) || '0');
+  if (count >= SERVER_SUBMISSION_DAILY_LIMIT) {
+    throw new Error('今日投稿次數已達上限，請明天再試');
+  }
+
+  props.setProperty(dailyKey, String(count + 1));
+  cache.put(cooldownKey, '1', SERVER_SUBMISSION_COOLDOWN_SECONDS);
+}
+
+function serverSubmissionFingerprint_(data, server) {
+  const visitorId = clean_(data.visitorId, 120).replace(/[^A-Za-z0-9_.:-]/g, '');
+  if (visitorId) {
+    return 'visitor-' + hashText_(visitorId);
+  }
+  return 'invite-' + hashText_(server.inviteUrl || server.name);
+}
+
+function hashText_(value) {
+  const bytes = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    clean_(value)
+  );
+  return bytes.map(function (byte) {
+    const value = (byte + 256) % 256;
+    return ('0' + value.toString(16)).slice(-2);
+  }).join('').slice(0, 32);
 }
 
 function errorMessage_(error) {

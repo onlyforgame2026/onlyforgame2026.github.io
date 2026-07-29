@@ -39,7 +39,9 @@ assert.match(adminPage, /assets\/js\/admin\.js/);
 assert.match(admin, /data-name/);
 assert.match(admin, /action: 'updateServerName'/);
 assert.match(admin, /await assertAdmin\(\)/);
-assert.match(appsScript, /data\.action === 'updateServerName'/);
+assert.match(appsScript, /action === 'updateServerName'/);
 assert.match(appsScript, /function updateServerName_\(data\)/);
+assert.match(appsScript, /requireAdminKey_\(data\);/);
+assert.match(admin, /adminKey: getAdminKey\(\)/);
 
 console.log('Front-end search and back-office rename checks passed.');

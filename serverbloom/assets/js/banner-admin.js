@@ -2,6 +2,7 @@
   'use strict';
 
   const adminPreview = new URLSearchParams(location.search).get('adminPreview') === '1';
+  const adminKeyStorage = 'serverbloomAdminApiKey';
   const ownServerName = 'Only for Game';
   const suggestedPath = 'assets/servers/onlyforgame/banner-custom.webp';
   const categoryLabels = Object.freeze({
@@ -93,6 +94,8 @@
   function restorePreview(){if(!activeCard||!originalPreview)return;const image=activeCard.querySelector('.card-banner-image');if(image){image.dataset.bannerManualSource=originalPreview.manualSource;image.dataset.bannerSource=originalPreview.source;image.src=originalPreview.src}activeCard.dataset.bannerPreset=originalPreview.preset;label(activeCard,originalPreview.label);activeCard.querySelector('.bookmark').textContent=originalPreview.star}
   function setSyncStatus(message,type=''){const node=modal.querySelector('.banner-sync-status');node.className=`banner-sync-status${type?` ${type}`:''}`;node.textContent=message}
   function wait(ms){return new Promise(resolve=>window.setTimeout(resolve,ms))}
+  function getAdminKey(){const saved=sessionStorage.getItem(adminKeyStorage);if(saved)return saved;const key=prompt('請輸入 ServerBloom 管理密碼');const cleaned=String(key||'').trim();if(!cleaned)throw new Error('已取消管理操作');sessionStorage.setItem(adminKeyStorage,cleaned);return cleaned}
+  function clearAdminKey(){sessionStorage.removeItem(adminKeyStorage)}
 
   async function verifyBanner(serverId,bannerPreset,attempts=10){
     for(let attempt=0;attempt<attempts;attempt+=1){
@@ -110,11 +113,11 @@
     if(!existing)throw new Error('Google Sheet 找不到指定社群');
     const canonicalId=String(existing.id||'').trim();
     if(!canonicalId)throw new Error('Google Sheet 社群缺少 ID');
-    const body=new URLSearchParams({action:'updateBanner',id:canonicalId,bannerPreset,customBanner:''});
+    const body=new URLSearchParams({action:'updateBanner',id:canonicalId,bannerPreset,customBanner:'',adminKey:getAdminKey()});
     console.info('[ServerBloom] 正在同步 Banner',{serverId:canonicalId,bannerPreset});
     await fetch(ServerBloomData.API_URL,{method:'POST',mode:'no-cors',body});
     const verified=await verifyBanner(canonicalId,bannerPreset);
-    if(!verified)throw new Error('API 沒有確認寫入');
+    if(!verified){clearAdminKey();throw new Error('API 沒有確認寫入，請確認管理密碼或部署設定')}
     console.info('[ServerBloom] Banner 同步完成',{serverId:canonicalId,bannerPreset});
     return verified;
   }
