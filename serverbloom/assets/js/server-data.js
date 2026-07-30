@@ -98,6 +98,9 @@
 
   async function loadRemoteServers() {
     const payload = await jsonp(API_URL);
+    if (payload?.ok === false) {
+      throw new Error(payload.error || 'Google Apps Script 讀取失敗。');
+    }
     return (Array.isArray(payload?.servers) ? payload.servers : [])
       .map(normalizeRemote)
       .filter(server => server.id && server.name && server.inviteUrl);
