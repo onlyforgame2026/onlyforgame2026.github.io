@@ -284,7 +284,7 @@ function normalizeHeader_(value) {
   return clean_(value)
     .normalize('NFKC')
     .toLowerCase()
-    .replace(/[\\s_-]+/g, '');
+    .replace(/[\s_-]+/g, '');
 }
 
 function createId_(name) {
