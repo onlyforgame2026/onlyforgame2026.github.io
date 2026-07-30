@@ -247,14 +247,22 @@ async function renameServer(index) {
     });
     await fetch(NAME_API, { method: 'POST', mode: 'no-cors', body });
     let verified = null;
+    let verificationError = '';
     for (let attempt = 0; attempt < 6 && !verified; attempt += 1) {
       await wait(attempt === 0 ? 500 : 900);
-      verified = await ServerBloomData.getRemoteServerById(id);
-      if (verified?.name !== normalizedName) verified = null;
+      try {
+        verified = await ServerBloomData.getRemoteServerById(id);
+        if (verified?.name !== normalizedName) verified = null;
+      } catch (error) {
+        verificationError = error?.message || String(error);
+      }
     }
     if (!verified) {
       clearAdminKey();
-      throw new Error('Google Apps Script 沒有確認改名，請確認管理密碼或部署設定。');
+      throw new Error(
+        verificationError ||
+        'Google Apps Script 沒有確認改名，請確認管理密碼、Sheet 欄位或部署版本。'
+      );
     }
     server.name = normalizedName;
     const baselineServer = baseline.find(item => item.id === server.id);
