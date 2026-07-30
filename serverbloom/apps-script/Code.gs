@@ -199,13 +199,20 @@ function readTable_(sheet) {
   const values = sheet.getDataRange().getDisplayValues();
   if (!values.length) throw new Error('servers 工作表沒有欄名');
 
-  const headers = values[0].map(clean_);
+  // 有些 Google Sheet 會在欄位標題前放置說明列或空白列。
+  // 先在前 20 列尋找同時包含 id 與 name（或相容標題）的真正標題列。
+  const headerRowIndex = findHeaderRow_(values);
+  if (headerRowIndex < 0) {
+    throw new Error('Google Sheet 找不到標題列：需要包含 id 與 name 欄位');
+  }
+
+  const headers = values[headerRowIndex].map(clean_);
   const rawColumns = {};
   headers.forEach(function (header, index) {
     rawColumns[normalizeHeader_(header)] = index;
   });
 
-  // 讀取公開資料時，只有 id 與 name 是所有功能都必須存在的核心欄位。
+  // 讀取公開資料時，只有 id 與 name 是所有功能都必須的核心欄位。
   // 其他欄位（例如 Banner 欄位）可能尚未建立；缺少時先以空值讀取，
   // 只有真正執行相關更新功能時，才由 requireColumn_ 明確提示缺少哪一欄。
   const columns = {};
@@ -216,21 +223,43 @@ function readTable_(sheet) {
     if (columns[field] < 0) requireColumn_(rawColumns, field);
   });
 
-  const rows = values.slice(1).filter(function (row) {
-    return row.some(function (value) { return clean_(value) !== ''; });
-  }).map(function (row) {
-    const record = {};
-    Object.keys(columns).forEach(function (field) {
-      const column = columns[field];
-      record[field] = column >= 0 && row[column] != null ? row[column] : '';
+  const rows = values.slice(headerRowIndex + 1)
+    .filter(function (row) {
+      return row.some(function (value) { return clean_(value) !== ''; });
+    })
+    .map(function (row) {
+      const record = {};
+      Object.keys(columns).forEach(function (field) {
+        const column = columns[field];
+        record[field] = column >= 0 && row[column] != null ? row[column] : '';
+      });
+      record.tags = clean_(record.tags).split(',').map(clean_).filter(Boolean);
+      return record;
     });
-    record.tags = clean_(record.tags).split(',').map(clean_).filter(Boolean);
-    return record;
-  });
 
-  return { values: values, headers: headers, columns: columns, rows: rows };
+  return {
+    values: values,
+    headers: headers,
+    columns: columns,
+    rows: rows,
+    headerRowIndex: headerRowIndex
+  };
 }
 
+function findHeaderRow_(values) {
+  const limit = Math.min(values.length, 20);
+  for (let rowIndex = 0; rowIndex < limit; rowIndex += 1) {
+    const rawColumns = {};
+    (values[rowIndex] || []).forEach(function (header, columnIndex) {
+      const key = normalizeHeader_(header);
+      if (key) rawColumns[key] = columnIndex;
+    });
+    if (findColumn_(rawColumns, 'id') >= 0 && findColumn_(rawColumns, 'name') >= 0) {
+      return rowIndex;
+    }
+  }
+  return -1;
+}
 function requireColumn_(columns, name) {
   const column = findColumn_(columns, name);
   if (column < 0) {
@@ -255,7 +284,7 @@ function normalizeHeader_(value) {
   return clean_(value)
     .normalize('NFKC')
     .toLowerCase()
-    .replace(/[^a-z0-9\\u4e00-\\u9fff]/g, '');
+    .replace(/[\\s_-]+/g, '');
 }
 
 function createId_(name) {
