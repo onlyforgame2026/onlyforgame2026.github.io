@@ -205,9 +205,15 @@ function readTable_(sheet) {
     rawColumns[normalizeHeader_(header)] = index;
   });
 
+  // 讀取公開資料時，只有 id 與 name 是所有功能都必須存在的核心欄位。
+  // 其他欄位（例如 Banner 欄位）可能尚未建立；缺少時先以空值讀取，
+  // 只有真正執行相關更新功能時，才由 requireColumn_ 明確提示缺少哪一欄。
   const columns = {};
   REQUIRED_HEADERS.forEach(function (field) {
-    columns[field] = requireColumn_(rawColumns, field);
+    columns[field] = findColumn_(rawColumns, field);
+  });
+  ['id', 'name'].forEach(function (field) {
+    if (columns[field] < 0) requireColumn_(rawColumns, field);
   });
 
   const rows = values.slice(1).filter(function (row) {
@@ -216,7 +222,7 @@ function readTable_(sheet) {
     const record = {};
     Object.keys(columns).forEach(function (field) {
       const column = columns[field];
-      record[field] = row[column] == null ? '' : row[column];
+      record[field] = column >= 0 && row[column] != null ? row[column] : '';
     });
     record.tags = clean_(record.tags).split(',').map(clean_).filter(Boolean);
     return record;
