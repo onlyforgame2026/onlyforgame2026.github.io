@@ -13,6 +13,18 @@ const REQUIRED_HEADERS = [
   'customBanner'
 ];
 const ADMIN_KEY_PROPERTY = 'SERVERBLOOM_ADMIN_KEY';
+const HEADER_ALIASES = Object.freeze({
+  id: ['id', 'serverId', 'server_id', '社群ID', '伺服器ID'],
+  name: ['name', 'serverName', 'server_name', '社群名稱', '伺服器名稱', '名稱'],
+  category: ['category', 'type', '分類', '類別'],
+  inviteUrl: ['inviteUrl', 'invite_url', 'invite', 'discordUrl', 'discord_url', 'Discord邀請連結', '邀請連結'],
+  tags: ['tags', 'tag', '標籤'],
+  description: ['description', 'desc', '簡介', '介紹'],
+  color: ['color', 'primaryColor', 'primary_color', '顏色'],
+  createdAt: ['createdAt', 'created_at', 'created', '建立時間'],
+  bannerPreset: ['bannerPreset', 'banner_preset', '預設Banner', '預設背景'],
+  customBanner: ['customBanner', 'custom_banner', '自訂Banner', '客製Banner']
+});
 const SERVER_CATEGORIES = ['遊戲', '聊天交友', '創作', '技術', '學習', '其他'];
 const DISCORD_INVITE_RE = /^https:\/\/(?:www\.)?(discord\.gg\/[A-Za-z0-9-]{2,32}|discord\.com\/invite\/[A-Za-z0-9-]{2,32})\/?$/i;
 const BANNER_PRESET_RE = /^[a-z0-9][a-z0-9-]{0,79}$/i;
@@ -147,8 +159,9 @@ function createServer_(data) {
 
     recordServerSubmission_(data, server);
 
-    const row = table.headers.map(function (header) {
-      return Object.prototype.hasOwnProperty.call(server, header) ? server[header] : '';
+    const row = table.headers.map(function () { return ''; });
+    Object.keys(table.columns).forEach(function (field) {
+      row[table.columns[field]] = server[field] == null ? '' : server[field];
     });
     sheet.appendRow(row);
     SpreadsheetApp.flush();
@@ -185,37 +198,58 @@ function getServerSheet_() {
 function readTable_(sheet) {
   const values = sheet.getDataRange().getDisplayValues();
   if (!values.length) throw new Error('servers 工作表沒有欄名');
+
   const headers = values[0].map(clean_);
-  const columns = {};
+  const rawColumns = {};
   headers.forEach(function (header, index) {
-    columns[normalizeHeader_(header)] = index;
+    rawColumns[normalizeHeader_(header)] = index;
   });
-  REQUIRED_HEADERS.forEach(function (header) {
-    requireColumn_(columns, header);
+
+  const columns = {};
+  REQUIRED_HEADERS.forEach(function (field) {
+    columns[field] = requireColumn_(rawColumns, field);
   });
+
   const rows = values.slice(1).filter(function (row) {
     return row.some(function (value) { return clean_(value) !== ''; });
   }).map(function (row) {
     const record = {};
-    headers.forEach(function (header, index) {
-      record[header] = row[index] == null ? '' : row[index];
+    Object.keys(columns).forEach(function (field) {
+      const column = columns[field];
+      record[field] = row[column] == null ? '' : row[column];
     });
     record.tags = clean_(record.tags).split(',').map(clean_).filter(Boolean);
     return record;
   });
+
   return { values: values, headers: headers, columns: columns, rows: rows };
 }
 
 function requireColumn_(columns, name) {
-  const key = normalizeHeader_(name);
-  if (!Object.prototype.hasOwnProperty.call(columns, key)) {
-    throw new Error('Google Sheet 缺少欄位：' + name);
+  const column = findColumn_(columns, name);
+  if (column < 0) {
+    throw new Error('Google Sheet 缺少欄位：' + name +
+      '（可使用相容標題：' + (HEADER_ALIASES[name] || [name]).join('、') + '）');
   }
-  return columns[key];
+  return column;
+}
+
+function findColumn_(columns, name) {
+  const candidates = [name].concat(HEADER_ALIASES[name] || []);
+  for (let index = 0; index < candidates.length; index += 1) {
+    const key = normalizeHeader_(candidates[index]);
+    if (Object.prototype.hasOwnProperty.call(columns, key)) {
+      return columns[key];
+    }
+  }
+  return -1;
 }
 
 function normalizeHeader_(value) {
-  return clean_(value).toLowerCase();
+  return clean_(value)
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^a-z0-9\\u4e00-\\u9fff]/g, '');
 }
 
 function createId_(name) {
